@@ -1,0 +1,104 @@
+{
+  "meta": {
+    "name": "门牌",
+    "format": 1,
+    "generated": "2026-11-12T22:01:52",
+    "shops": 3,
+    "riders": 2,
+    "note": "纯静态文件，无账号、无交易、无评价、无价格。整包可拷走。"
+  },
+  "shops": [
+    {
+      "id": "haoyouduo",
+      "name": "好又多超市",
+      "address": "解放路 12 号",
+      "phone": "13800000001",
+      "hours": "07:00-22:00",
+      "lat": 29.8401,
+      "lon": 112.9002,
+      "tags": [
+        "生鲜",
+        "日杂"
+      ],
+      "note": "熟客可以赊账",
+      "open": true,
+      "updated": "2026-11-12T20:39:47",
+      "hash": "7faefe682eb426a2",
+      "path": "catalog/haoyouduo.json",
+      "brief": "本地鸡蛋、西红柿、大米、散装酱油",
+      "count": 5
+    },
+    {
+      "id": "laochen",
+      "name": "老陈五金",
+      "address": "解放路 28 号",
+      "phone": "13800000002",
+      "hours": "08:00-18:30",
+      "lat": 29.8412,
+      "lon": 112.9016,
+      "tags": [
+        "五金",
+        "水电"
+      ],
+      "note": "会接水电活，可上门",
+      "open": true,
+      "updated": "2026-11-12T20:39:47",
+      "hash": "f7169cd4725ac3a1",
+      "path": "catalog/laochen.json",
+      "brief": "电线 2.5 平方、PPR 水管、LED 灯泡",
+      "count": 3
+    },
+    {
+      "id": "zhangjie",
+      "name": "张姐早餐",
+      "address": "菜市场东门",
+      "phone": "13800000003",
+      "hours": "05:30-10:30",
+      "lat": 29.8393,
+      "lon": 112.8988,
+      "tags": [
+        "早餐"
+      ],
+      "note": "热干面自己熬的芝麻酱",
+      "open": false,
+      "updated": "2026-11-12T20:40:24",
+      "hash": "ee3f9e167c72c51f",
+      "path": "catalog/zhangjie.json",
+      "brief": "热干面、豆皮",
+      "count": 2
+    }
+  ],
+  "riders": [
+    {
+      "id": "laowang",
+      "name": "老王",
+      "phone": "13800000011",
+      "vehicle": "电动三轮",
+      "capacity": "约 200 斤 / 一趟",
+      "areas": [
+        "解放路",
+        "菜市场"
+      ],
+      "window": "14:00-18:00",
+      "note": "熟人捎带，油钱随意",
+      "available_now": true,
+      "updated": "2026-11-12T20:39:47",
+      "hash": "a2e611d544b9ed2a"
+    },
+    {
+      "id": "xiaoliu",
+      "name": "小刘",
+      "phone": "13800000012",
+      "vehicle": "踏板摩托",
+      "capacity": "约 50 斤 / 一趟",
+      "areas": [
+        "全城"
+      ],
+      "window": "19:00-22:00",
+      "note": "下班后跑两趟",
+      "available_now": true,
+      "updated": "2026-11-12T20:39:47",
+      "hash": "045e69fbe65c2f52"
+    }
+  ]
+}

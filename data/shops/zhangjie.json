@@ -1,0 +1,30 @@
+{
+  "id": "zhangjie",
+  "token": "demo-zhangjie",
+  "name": "张姐早餐",
+  "address": "菜市场东门",
+  "phone": "13800000003",
+  "hours": "05:30-10:30",
+  "lat": 29.8393,
+  "lon": 112.8988,
+  "tags": [
+    "早餐"
+  ],
+  "note": "热干面自己熬的芝麻酱",
+  "open": false,
+  "updated": "2026-11-12T20:40:24",
+  "items": [
+    {
+      "name": "热干面",
+      "unit": "碗",
+      "note": "",
+      "tag": "零售价"
+    },
+    {
+      "name": "豆皮",
+      "unit": "份",
+      "note": "三鲜",
+      "tag": "零售价"
+    }
+  ]
+}

@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>门牌 · 这条街上有什么</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  :root{--paper:#F7F6F2;--card:#FFFFFF;--ink:#1F2937;--sub:#6B7280;--line:#E5E3DC;
+        --teal:#0F6E56;--teal-l:#E1F5EE;--amber:#B45309;--amber-l:#FAEEDA}
+  body{font-family:system-ui,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--paper);color:var(--ink);padding-bottom:64px;overflow-x:hidden;max-width:100vw}
+  header{position:sticky;top:0;z-index:500;background:var(--paper);padding:14px 16px 10px;border-bottom:1px solid var(--line)}
+  .brand{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+  .brand b{font-size:20px;letter-spacing:2px}
+  .brand span{font-size:12px;color:var(--sub)}
+  .stat{margin-top:6px;font-size:13px;color:var(--sub)}
+  .stat em{font-style:normal;color:var(--teal);font-weight:600}
+  .mapwrap{position:relative}
+  #map{height:38vh;min-height:220px;background:#E8E6DF}
+  .mapnote{position:absolute;left:10px;bottom:10px;z-index:400;background:rgba(255,255,255,.94);
+           border:1px solid var(--line);border-radius:8px;padding:6px 10px;font-size:11px;color:var(--sub);display:none}
+  .mapnote.show{display:block}
+  #mapfallback{display:none;height:120px;align-items:center;justify-content:center;color:var(--sub);font-size:13px;background:#EFEDE6}
+  .list{padding:12px 12px 0}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:10px;position:relative}
+  .card.off{opacity:.62}
+  .card h3{font-size:16px;display:flex;align-items:center;gap:8px}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--teal);display:inline-block;flex:none}
+  .card.off .dot{background:#B4B2A9}
+  .badge{font-size:11px;padding:2px 8px;border-radius:99px;background:var(--teal-l);color:var(--teal);font-weight:500}
+  .badge.off{background:#F1EFE8;color:#6B6A63}
+  .addr{font-size:12px;color:var(--sub);margin-top:4px}
+  .items{margin-top:10px;display:flex;flex-wrap:wrap;gap:6px}
+  .chip{font-size:12px;background:#F2F1EC;border-radius:6px;padding:4px 8px;color:#3F3D37}
+  .chip i{font-style:normal;color:var(--amber);font-size:11px;margin-left:4px}
+  .empty{color:var(--sub);font-size:13px;padding:8px 2px}
+  .call{margin-top:12px;display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--teal);
+        border:1px solid var(--teal);border-radius:8px;padding:6px 12px;text-decoration:none;font-weight:500}
+  nav{position:fixed;left:0;right:0;bottom:0;background:#FFF;border-top:1px solid var(--line);
+      display:flex;padding:8px 0 calc(8px + env(safe-area-inset-bottom))}
+  nav a{flex:1;text-align:center;font-size:12px;color:var(--sub);text-decoration:none}
+  nav a.on{color:var(--teal);font-weight:600}
+  nav a span{display:block;font-size:18px;line-height:1.3}
+  .mask{position:fixed;inset:0;background:rgba(31,41,55,.42);display:none;z-index:900}
+  .mask.show{display:block}
+  .sheet{position:fixed;left:0;right:0;bottom:0;background:#FFF;border-radius:16px 16px 0 0;z-index:901;
+         padding:18px 16px 24px;max-height:76vh;overflow:auto;transform:translateY(100%);transition:.22s}
+  .sheet.show{transform:translateY(0)}
+  .sheet h2{font-size:18px;margin-bottom:4px}
+  .sheet .close{position:absolute;right:14px;top:12px;color:var(--sub);font-size:20px;background:none;border:0}
+  .rowline{display:flex;justify-content:space-between;font-size:13px;padding:8px 0;border-bottom:1px dashed var(--line)}
+  .rowline span:first-child{color:var(--sub)}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand"><b>门牌</b><span>这条街上有什么</span></div>
+  <div class="stat" id="stat">正在读取…</div>
+</header>
+<div class="mapwrap">
+  <div id="map"></div>
+  <div class="mapnote" id="mapnote">底图暂不可用 · 圆点是店铺的相对位置</div>
+</div>
+<div id="mapfallback">离线模式：地图不可用，以下列表照常可看</div>
+<div class="list" id="list"></div>
+
+<nav>
+  <a href="index.html" class="on"><span>◉</span>逛街</a>
+  <a href="rider.html"><span>⇄</span>运力</a>
+  <a href="shop.html"><span>✎</span>我的店</a>
+</nav>
+
+<div class="mask" id="mask"></div>
+<div class="sheet" id="sheet">
+  <button class="close" id="close">✕</button>
+  <div id="sheetbody"></div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+let shops = [], map = null, markers = [];
+
+function esc(s){ const d=document.createElement('div'); d.textContent=s==null?'':String(s); return d.innerHTML; }
+
+function initMap(){
+  if (typeof L === 'undefined') { document.getElementById('map').style.display='none';
+    document.getElementById('mapfallback').style.display='flex'; return; }
+  map = L.map('map', {zoomControl:false, attributionControl:false}).setView([29.840, 112.900], 15);
+  buildTiles();
+  map.on('click', () => closeSheet());
+}
+
+// 底图三档降级：本地离线瓦片 → 在线 OSM → 示意点阵
+let tileMode = 0;
+function buildTiles(){
+  const note = document.getElementById('mapnote');
+  if (tileMode > 1){ note.textContent = '底图暂不可用 · 圆点是店铺的相对位置';
+    note.classList.add('show'); return; }
+  const url = tileMode === 0 ? 'tiles/{z}/{x}/{y}.png'
+                             : 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+  const layer = L.tileLayer(url, {maxZoom:19, errorTileUrl:''}).addTo(map);
+  let errs = 0;
+  layer.on('tileerror', ()=>{
+    if (++errs >= 2){ map.removeLayer(layer); tileMode++; buildTiles(); }
+  });
+  layer.on('tileload', ()=>{ errs = 0; note.classList.remove('show'); });
+  setTimeout(()=>{
+    if (tileMode > 1 || !document.querySelector('#map img.leaflet-tile')) {
+      note.textContent = tileMode > 1 ? '底图暂不可用 · 圆点是店铺的相对位置'
+                                      : '底图加载慢 · 先把离线瓦片放进 web/tiles/';
+      note.classList.add('show');
+    }
+  }, 4000);
+}
+
+function render(){
+  const open = shops.filter(s=>s.open).length;
+  document.getElementById('stat').innerHTML =
+    '开门做生意 <em>'+open+'</em> 家 · 共 '+shops.length+' 家 · <span id="tick"></span>';
+  tick();
+
+  const box = document.getElementById('list');
+  if (!shops.length){
+    box.innerHTML = '<p class="empty">这条街还没有店挂上门牌。到「我的店」挂一个试试。</p>';
+  } else {
+    box.innerHTML = shops.map(s=>{
+      const items = s.items.slice(0,4).map(i=>
+        `<span class="chip">${esc(i.name)}${i.unit?' / '+esc(i.unit):''}<i>${esc(i.tag)}</i></span>`).join('');
+      const more = s.items.length>4 ? `<span class="chip">…还有 ${s.items.length-4} 样</span>` : '';
+      return `<div class="card ${s.open?'':'off'}" data-id="${esc(s.id)}">
+        <h3><i class="dot"></i>${esc(s.name)}
+          <span class="badge ${s.open?'':'off'}">${s.open?'营业中':'已休息'}</span></h3>
+        <div class="addr">${esc(s.address)||'—'}${s.hours?' · '+esc(s.hours):''}</div>
+        <div class="items">${items||'<span class="chip">今日还没上货</span>'}${more}</div>
+      </div>`;
+    }).join('');
+    box.querySelectorAll('.card').forEach(el=>{
+      el.onclick = () => openSheet(shops.find(s=>s.id===el.dataset.id));
+    });
+  }
+
+  if (map){
+    markers.forEach(m=>map.removeLayer(m)); markers=[];
+    shops.filter(s=>s.lat&&s.lon).forEach(s=>{
+      const color = s.open ? '#0F6E56' : '#B4B2A9';
+      const m = L.circleMarker([s.lat,s.lon],{radius:9,color:'#fff',weight:2,fillColor:color,fillOpacity:1})
+        .addTo(map).bindTooltip(s.name,{direction:'top',offset:[0,-8]});
+      m.on('click', e=>{ L.DomEvent.stopPropagation(e); openSheet(s); });
+      markers.push(m);
+    });
+    if (markers.length===1) map.setView(markers[0].getLatLng(), 16);
+    else if (markers.length>1) map.fitBounds(L.featureGroup(markers).getBounds().pad(0.25));
+  }
+}
+
+function tick(){
+  const el = document.getElementById('tick');
+  if (!el) return;
+  const d = new Date();
+  el.textContent = d.toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'});
+}
+
+function openSheet(s){
+  if (!s) return;
+  const rows = s.items.map(i=>`<div class="rowline"><span>${esc(i.name)}${i.unit?' / '+esc(i.unit):''}</span>
+    <span>${esc(i.note)||'—'} · ${esc(i.tag)}</span></div>`).join('');
+  document.getElementById('sheetbody').innerHTML = `
+    <h2>${esc(s.name)} <span class="badge ${s.open?'':'off'}">${s.open?'营业中':'已休息'}</span></h2>
+    <div class="addr" style="margin-bottom:12px">${esc(s.address)||'—'}${s.hours?' · '+esc(s.hours):''}</div>
+    ${rows||'<p class="empty">今日还没上货</p>'}
+    ${s.note?`<p style="font-size:13px;color:var(--sub);margin-top:12px">${esc(s.note)}</p>`:''}
+    <p style="font-size:12px;color:var(--sub);margin-top:14px;line-height:1.7">
+      这里不标价、不做评价 —— 多少钱、好不好，直接打电话问老板，或者去店里聊。</p>
+    ${s.phone?`<a class="call" href="tel:${esc(s.phone)}">📞 打电话 ${esc(s.phone)}</a>`:''}`;
+  document.getElementById('mask').classList.add('show');
+  document.getElementById('sheet').classList.add('show');
+}
+function closeSheet(){
+  document.getElementById('mask').classList.remove('show');
+  document.getElementById('sheet').classList.remove('show');
+}
+document.getElementById('mask').onclick = closeSheet;
+document.getElementById('close').onclick = closeSheet;
+
+async function load(){
+  try{
+    const r = await fetch('/api/shops');
+    const d = await r.json();
+    shops = d.shops || [];
+    render();
+  }catch(e){
+    document.getElementById('stat').textContent = '连不上本机服务，检查一下是否开着';
+  }
+}
+initMap(); load(); setInterval(load, 20000); setInterval(tick, 1000);
+</script>
+</body>
+</html>

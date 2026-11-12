@@ -1,0 +1,16 @@
+{
+  "id": "laowang",
+  "token": "demo-laowang",
+  "name": "老王",
+  "phone": "13800000011",
+  "vehicle": "电动三轮",
+  "capacity": "约 200 斤 / 一趟",
+  "areas": [
+    "解放路",
+    "菜市场"
+  ],
+  "window": "14:00-18:00",
+  "note": "熟人捎带，油钱随意",
+  "available_now": true,
+  "updated": "2026-11-12T20:39:47"
+}

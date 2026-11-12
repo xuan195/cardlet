@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>门牌 · 谁有空捎货</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  :root{--paper:#F7F6F2;--card:#FFF;--ink:#1F2937;--sub:#6B7280;--line:#E5E3DC;
+        --teal:#0F6E56;--teal-l:#E1F5EE;--amber:#B45309;--amber-l:#FAEEDA}
+  body{font-family:system-ui,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--paper);color:var(--ink);padding-bottom:64px;overflow-x:hidden;max-width:100vw}
+  header{position:sticky;top:0;z-index:500;background:var(--paper);padding:14px 16px 10px;border-bottom:1px solid var(--line)}
+  header b{font-size:18px;letter-spacing:1px}
+  header p{font-size:12px;color:var(--sub);margin-top:3px;line-height:1.6}
+  .wrap{padding:12px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:10px}
+  .card.off{opacity:.6}
+  .card h3{font-size:16px;display:flex;align-items:center;gap:8px}
+  .badge{font-size:11px;padding:2px 8px;border-radius:99px;background:var(--teal-l);color:var(--teal);font-weight:500}
+  .badge.off{background:#F1EFE8;color:#6B6A63}
+  .meta{font-size:12px;color:var(--sub);margin-top:6px;line-height:1.8}
+  .meta b{color:var(--ink);font-weight:500}
+  .areas{margin-top:8px;display:flex;flex-wrap:wrap;gap:6px}
+  .chip{font-size:12px;background:#F2F1EC;border-radius:6px;padding:3px 8px;color:#3F3D37}
+  .call{margin-top:10px;display:inline-block;font-size:13px;color:var(--teal);border:1px solid var(--teal);
+        border-radius:8px;padding:6px 12px;text-decoration:none;font-weight:500}
+  .sec{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin-top:14px}
+  .sec h3{font-size:14px;margin-bottom:8px}
+  label{display:block;font-size:12px;color:var(--sub);margin:10px 0 4px}
+  input,textarea,select{width:100%;border:1px solid var(--line);border-radius:8px;padding:10px;font-size:14px;
+        font-family:inherit;background:#FCFCFA;color:var(--ink)}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .big{width:100%;border:0;border-radius:12px;padding:15px;font-size:15px;font-weight:600;color:#fff;
+       background:var(--teal);cursor:pointer;margin-top:14px}
+  .hint{font-size:11px;color:var(--sub);line-height:1.7;margin-top:10px}
+  .note{background:var(--amber-l);color:#633806;font-size:12px;padding:10px 12px;border-radius:8px;
+        line-height:1.7;margin-top:12px}
+  nav{position:fixed;left:0;right:0;bottom:0;background:#FFF;border-top:1px solid var(--line);
+      display:flex;padding:8px 0 calc(8px + env(safe-area-inset-bottom))}
+  nav a{flex:1;text-align:center;font-size:12px;color:var(--sub);text-decoration:none}
+  nav a.on{color:var(--teal);font-weight:600}
+  nav a span{display:block;font-size:18px;line-height:1.3}
+</style>
+</head>
+<body>
+<header>
+  <b>谁有空捎货</b>
+  <p>只挂运力牌，不报价、不接单、不抽成。价钱你们自己谈。</p>
+</header>
+
+<div class="wrap">
+  <div id="list"></div>
+
+  <div class="sec">
+    <h3>挂一块运力牌</h3>
+    <div class="grid2">
+      <div><label>标识（字母数字）</label><input id="rid" placeholder="laowang"></div>
+      <div><label>称呼</label><input id="name" placeholder="老王"></div>
+    </div>
+    <div class="grid2">
+      <div><label>电话</label><input id="phone" placeholder="13800000000"></div>
+      <div><label>什么车</label><input id="vehicle" placeholder="电动三轮"></div>
+    </div>
+    <label>能带多少</label>
+    <input id="capacity" placeholder="约 200 斤 / 一趟">
+    <label>常跑哪几条街（逗号分隔）</label>
+    <input id="areas" placeholder="解放路,菜市场">
+    <label>今天什么时候有空</label>
+    <input id="window" placeholder="14:00-18:00">
+    <label>一句话（可空）</label>
+    <input id="note" placeholder="熟人捎带，油钱随意">
+    <button class="big" id="save">挂上去</button>
+    <div class="note">
+      工具到这里就结束了：它只让"想捎货的人"和"有货要捎的人"互相看见。
+      价格、路线、时效，全部离线商量 —— <b>没有订单、没有派单、没有抽成</b>，
+      也就不存在"平台修改规则"这回事。
+    </div>
+    <p class="hint">法律提示：本工具仅用于熟人之间非营利的顺路捎带。
+      以收费运输为常业的，需依《道路运输条例》取得相应许可。</p>
+  </div>
+</div>
+
+<nav>
+  <a href="index.html"><span>◉</span>逛街</a>
+  <a href="rider.html" class="on"><span>⇄</span>运力</a>
+  <a href="shop.html"><span>✎</span>我的店</a>
+</nav>
+
+<script>
+const esc = s => String(s==null?'':s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+async function load(){
+  const r = await fetch('/api/riders'); const d = await r.json();
+  const list = d.riders||[];
+  const box = document.getElementById('list');
+  if (!list.length){
+    box.innerHTML = '<div class="card"><p style="font-size:13px;color:#6B7280">今天还没有人挂运力牌。</p></div>';
+    return;
+  }
+  box.innerHTML = list.map(r=>`
+    <div class="card ${r.available_now?'':'off'}">
+      <h3>${esc(r.name)||'匿名'} <span class="badge ${r.available_now?'':'off'}">${r.available_now?'现在能捎':'暂停'}</span></h3>
+      <div class="meta">
+        <b>${esc(r.vehicle)||'—'}</b> · ${esc(r.capacity)||'运力未写'}<br>
+        ${r.window?'今天 '+esc(r.window)+' 有空<br>':''}
+        ${r.note?esc(r.note):''}
+      </div>
+      <div class="areas">${(r.areas||[]).map(a=>`<span class="chip">${esc(a)}</span>`).join('')}</div>
+      ${r.phone?`<a class="call" href="tel:${esc(r.phone)}">📞 打电话问价</a>`:''}
+    </div>`).join('');
+}
+
+async function save(){
+  const rid = document.getElementById('rid').value.trim().toLowerCase();
+  if (!rid){ alert('先填一个标识，比如 laowang'); return; }
+  const body = {
+    token: localStorage.getItem('dp_rtoken_'+rid) || '',
+    name: document.getElementById('name').value.trim(),
+    phone: document.getElementById('phone').value.trim(),
+    vehicle: document.getElementById('vehicle').value.trim(),
+    capacity: document.getElementById('capacity').value.trim(),
+    areas: document.getElementById('areas').value.split(/[,，]/).map(s=>s.trim()).filter(Boolean),
+    window: document.getElementById('window').value.trim(),
+    note: document.getElementById('note').value.trim(),
+    available_now: true,
+  };
+  const r = await fetch('/api/rider/'+rid, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  const d = await r.json();
+  if (!r.ok){ alert('失败：'+(d.error||r.status)); return; }
+  if (d.token) localStorage.setItem('dp_rtoken_'+rid, d.token);
+  alert('运力牌挂好了，这条街能看到你。');
+  load();
+}
+
+document.getElementById('save').onclick = save;
+load(); setInterval(load, 20000);
+</script>
+</body>
+</html>

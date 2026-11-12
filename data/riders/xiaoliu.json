@@ -1,0 +1,15 @@
+{
+  "id": "xiaoliu",
+  "token": "demo-xiaoliu",
+  "name": "小刘",
+  "phone": "13800000012",
+  "vehicle": "踏板摩托",
+  "capacity": "约 50 斤 / 一趟",
+  "areas": [
+    "全城"
+  ],
+  "window": "19:00-22:00",
+  "note": "下班后跑两趟",
+  "available_now": true,
+  "updated": "2026-11-12T20:39:47"
+}

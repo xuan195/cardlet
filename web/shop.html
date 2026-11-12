@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>门牌 · 我的店</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  :root{--paper:#F7F6F2;--card:#FFF;--ink:#1F2937;--sub:#6B7280;--line:#E5E3DC;
+        --teal:#0F6E56;--teal-l:#E1F5EE;--amber:#B45309;--amber-l:#FAEEDA;--red:#A32D2D}
+  body{font-family:system-ui,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--paper);color:var(--ink);padding-bottom:64px;overflow-x:hidden;max-width:100vw}
+  header{position:sticky;top:0;z-index:500;background:var(--paper);padding:14px 16px 12px;border-bottom:1px solid var(--line)}
+  header b{font-size:18px;letter-spacing:1px}
+  header p{font-size:12px;color:var(--sub);margin-top:3px}
+  .wrap{padding:14px 12px}
+  .sec{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px}
+  .sec h3{font-size:14px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center}
+  .sec h3 small{font-weight:400;font-size:11px;color:var(--sub)}
+  label{display:block;font-size:12px;color:var(--sub);margin:10px 0 4px}
+  input,select,textarea{width:100%;border:1px solid var(--line);border-radius:8px;padding:10px;font-size:14px;
+        font-family:inherit;background:#FCFCFA;color:var(--ink)}
+  input:focus,select:focus,textarea:focus{outline:2px solid var(--teal-l);border-color:var(--teal)}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .item{border:1px solid var(--line);border-radius:10px;padding:10px;margin-bottom:8px;background:#FCFCFA}
+  .item .top{display:flex;gap:8px}
+  .item .top input{flex:1}
+  .item .del{background:none;border:0;color:var(--red);font-size:16px;padding:0 4px;cursor:pointer}
+  .item .row2{display:flex;gap:8px;margin-top:8px}
+  .item .row2 input{flex:1}
+  .item .row2 select{width:96px;flex:none}
+  .add{width:100%;border:1px dashed var(--teal);color:var(--teal);background:var(--teal-l);
+       border-radius:10px;padding:10px;font-size:13px;font-weight:500;cursor:pointer}
+  .big{width:100%;border:0;border-radius:12px;padding:16px;font-size:16px;font-weight:600;color:#fff;
+       background:var(--teal);cursor:pointer;letter-spacing:1px}
+  .big.closed{background:#8A8A82}
+  .ghost{width:100%;border:1px solid var(--line);border-radius:12px;padding:13px;font-size:14px;
+         background:#fff;color:var(--ink);margin-top:10px;cursor:pointer}
+  #map{height:170px;border-radius:10px;margin-top:8px;background:#E8E6DF}
+  .hint{font-size:11px;color:var(--sub);line-height:1.7;margin-top:6px}
+  .status{font-size:12px;padding:8px 12px;border-radius:8px;margin-bottom:12px;display:none}
+  .status.ok{display:block;background:var(--teal-l);color:var(--teal)}
+  .status.err{display:block;background:#FCEBEB;color:var(--red)}
+  nav{position:fixed;left:0;right:0;bottom:0;background:#FFF;border-top:1px solid var(--line);
+      display:flex;padding:8px 0 calc(8px + env(safe-area-inset-bottom))}
+  nav a{flex:1;text-align:center;font-size:12px;color:var(--sub);text-decoration:none}
+  nav a.on{color:var(--teal);font-weight:600}
+  nav a span{display:block;font-size:18px;line-height:1.3}
+  .shopsel{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+  .shopsel button{border:1px solid var(--line);background:#fff;border-radius:99px;padding:6px 12px;font-size:12px;cursor:pointer}
+  .shopsel button.on{border-color:var(--teal);background:var(--teal-l);color:var(--teal);font-weight:600}
+</style>
+</head>
+<body>
+<header>
+  <b>我的店</b>
+  <p>上架不标价 · 开关即营业 · 数据只存在这台机器上</p>
+</header>
+
+<div class="wrap">
+  <div class="status" id="status"></div>
+
+  <div class="sec">
+    <h3>选一家店 <small>或新建</small></h3>
+    <div class="shopsel" id="shops"></div>
+    <label>店铺标识（字母数字，用作网址）</label>
+    <input id="sid" placeholder="例如 haoyouduo">
+  </div>
+
+  <div class="sec">
+    <h3>基本信息</h3>
+    <label>店名</label>
+    <input id="name" placeholder="好又多超市">
+    <label>地址</label>
+    <input id="address" placeholder="解放路 12 号">
+    <div class="grid2">
+      <div><label>电话（客人打这个）</label><input id="phone" placeholder="13800000000"></div>
+      <div><label>营业时间</label><input id="hours" placeholder="07:00-22:00"></div>
+    </div>
+    <label>一句话备注（可空）</label>
+    <input id="note" placeholder="熟客可以赊账">
+    <label>标签（逗号分隔）</label>
+    <input id="tags" placeholder="生鲜,日杂">
+    <label>位置 —— 点地图选点，或按定位</label>
+    <div id="map"></div>
+    <div class="grid2" style="margin-top:8px">
+      <input id="lat" placeholder="纬度" readonly>
+      <input id="lon" placeholder="经度" readonly>
+    </div>
+  </div>
+
+  <div class="sec">
+    <h3>今日有什么 <small>只写东西，不写价</small></h3>
+    <div id="items"></div>
+    <button class="add" id="additem">＋ 加一样</button>
+    <p class="hint">价签只是"什么档"：可议 / 批发价 / 零售价 / 面谈。<b>没有价格输入框</b>——
+      多少钱是老板和客人之间的事，工具不掺和。</p>
+  </div>
+
+  <div class="sec">
+    <h3>保存与营业</h3>
+    <button class="big" id="save">保存店铺信息</button>
+    <button class="big closed" id="toggle" style="margin-top:10px">开门 / 关门</button>
+    <button class="ghost" id="board">📺 打开电子门牌（挂门口）</button>
+    <p class="hint">开门＝这台机器在线，路过的人能看到你；关门＝立刻从这条街消失。
+      物理状态就是网络状态，不需要任何额外操作。</p>
+  </div>
+</div>
+
+<nav>
+  <a href="index.html"><span>◉</span>逛街</a>
+  <a href="rider.html"><span>⇄</span>运力</a>
+  <a href="shop.html" class="on"><span>✎</span>我的店</a>
+</nav>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const TAGS = ['可议','批发价','零售价','面谈'];
+let map=null, marker=null, token=null, allShops=[];
+localStorage.getItem('dp_shop') && (document.getElementById('sid').value = localStorage.getItem('dp_shop'));
+
+function setStatus(msg, ok){
+  const el=document.getElementById('status');
+  el.textContent=msg; el.className='status '+(ok?'ok':'err');
+  setTimeout(()=>{ el.className='status'; }, 3500);
+}
+
+function initMap(){
+  if (typeof L==='undefined'){ document.getElementById('map').style.display='none'; return; }
+  const lat = parseFloat(document.getElementById('lat').value)||29.840;
+  const lon = parseFloat(document.getElementById('lon').value)||112.900;
+  map = L.map('map').setView([lat,lon],15);
+  L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(map);
+  map.on('click', e=>setPoint(e.latlng.lat, e.latlng.lng));
+  if (document.getElementById('lat').value) setPoint(lat,lon);
+}
+function setPoint(lat,lon){
+  document.getElementById('lat').value = lat.toFixed(6);
+  document.getElementById('lon').value = lon.toFixed(6);
+  if (!map) return;
+  if (marker) map.removeLayer(marker);
+  marker = L.marker([lat,lon]).addTo(map);
+}
+
+function addItem(it){
+  it = it || {name:'',unit:'',note:'',tag:'可议'};
+  const el = document.createElement('div');
+  el.className='item';
+  el.innerHTML = `
+    <div class="top">
+      <input class="i-name" placeholder="货品名称，如 本地鸡蛋" value="${(it.name||'').replace(/"/g,'&quot;')}">
+      <button class="del" title="删掉">✕</button>
+    </div>
+    <div class="row2">
+      <input class="i-unit" placeholder="单位，如 斤/箱" value="${(it.unit||'').replace(/"/g,'&quot;')}">
+      <select class="i-tag">${TAGS.map(t=>`<option ${t===it.tag?'selected':''}>${t}</option>`).join('')}</select>
+    </div>
+    <div class="row2"><input class="i-note" placeholder="备注，如 今早到货" value="${(it.note||'').replace(/"/g,'&quot;')}"></div>`;
+  el.querySelector('.del').onclick = ()=>el.remove();
+  document.getElementById('items').appendChild(el);
+}
+
+function collectItems(){
+  return [...document.querySelectorAll('.item')].map(el=>({
+    name: el.querySelector('.i-name').value.trim(),
+    unit: el.querySelector('.i-unit').value.trim(),
+    note: el.querySelector('.i-note').value.trim(),
+    tag:  el.querySelector('.i-tag').value,
+  })).filter(x=>x.name);
+}
+
+function fill(s){
+  document.getElementById('name').value=s.name||'';
+  document.getElementById('address').value=s.address||'';
+  document.getElementById('phone').value=s.phone||'';
+  document.getElementById('hours').value=s.hours||'';
+  document.getElementById('note').value=s.note||'';
+  document.getElementById('tags').value=(s.tags||[]).join(',');
+  if (s.lat) setPoint(s.lat,s.lon);
+  document.getElementById('items').innerHTML='';
+  (s.items||[]).forEach(addItem);
+  document.getElementById('toggle').textContent = s.open ? '现在开着 · 点一下关门' : '现在关着 · 点一下开门';
+  document.getElementById('toggle').className = 'big' + (s.open?'':' closed');
+}
+
+async function loadShops(){
+  const r = await fetch('/api/shops'); const d = await r.json();
+  allShops = d.shops||[];
+  const box = document.getElementById('shops');
+  box.innerHTML = allShops.map(s=>`<button data-id="${s.id}">${s.name}</button>`).join('')
+    || '<span style="font-size:12px;color:#6B7280">还没有店，直接在下面填一个</span>';
+  box.querySelectorAll('button').forEach(b=>b.onclick=()=>{
+    document.getElementById('sid').value=b.dataset.id;
+    localStorage.setItem('dp_shop', b.dataset.id);
+    box.querySelectorAll('button').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on');
+    loadOne(b.dataset.id);
+  });
+}
+
+async function loadOne(id){
+  const r = await fetch('/api/shop/'+id);
+  if (!r.ok) return;
+  const s = await r.json();
+  fill(s);
+}
+
+async function save(){
+  const sid = document.getElementById('sid').value.trim().toLowerCase();
+  if (!sid){ setStatus('先给店铺起个标识（字母数字）', false); return; }
+  const body = {
+    token: localStorage.getItem('dp_token_'+sid) || '',
+    name: document.getElementById('name').value.trim(),
+    address: document.getElementById('address').value.trim(),
+    phone: document.getElementById('phone').value.trim(),
+    hours: document.getElementById('hours').value.trim(),
+    note: document.getElementById('note').value.trim(),
+    tags: document.getElementById('tags').value.split(/[,，]/).map(x=>x.trim()).filter(Boolean),
+    lat: document.getElementById('lat').value,
+    lon: document.getElementById('lon').value,
+    items: collectItems(),
+  };
+  const r = await fetch('/api/shop/'+sid, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(body)});
+  const d = await r.json();
+  if (!r.ok){ setStatus('保存失败：'+ (d.error||r.status), false); return; }
+  if (d.token) localStorage.setItem('dp_token_'+sid, d.token);
+  localStorage.setItem('dp_shop', sid);
+  setStatus('已保存。这条街现在能看到你的店了。', true);
+  loadShops();
+}
+
+async function toggle(){
+  const sid = document.getElementById('sid').value.trim().toLowerCase();
+  if (!sid){ setStatus('先保存店铺', false); return; }
+  const r = await fetch('/api/shop/'+sid+'/toggle', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({token: localStorage.getItem('dp_token_'+sid)||''})
+  });
+  const d = await r.json();
+  if (!r.ok){ setStatus('操作失败：'+(d.error||r.status), false); return; }
+  document.getElementById('toggle').textContent = d.open ? '现在开着 · 点一下关门' : '现在关着 · 点一下开门';
+  document.getElementById('toggle').className = 'big' + (d.open?'':' closed');
+  setStatus(d.open ? '已开门，路过的人能看到你了。' : '已关门，你已经从这条街消失了。', true);
+  loadShops();
+}
+
+document.getElementById('additem').onclick = ()=>addItem();
+document.getElementById('save').onclick = save;
+document.getElementById('toggle').onclick = toggle;
+document.getElementById('board').onclick = ()=>{
+  const sid = document.getElementById('sid').value.trim().toLowerCase();
+  if (!sid){ setStatus('先保存店铺', false); return; }
+  location.href = 'board.html?id='+encodeURIComponent(sid);
+};
+
+initMap(); loadShops();
+navigator.geolocation && document.addEventListener('dblclick', ()=>{
+  navigator.geolocation.getCurrentPosition(p=>setPoint(p.coords.latitude,p.coords.longitude));
+});
+</script>
+</body>
+</html>

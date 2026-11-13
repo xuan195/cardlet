@@ -66,7 +66,7 @@
   .viewtoggle button.on{background:#fff;color:var(--teal);box-shadow:0 1px 2px rgba(0,0,0,.08)}
 
   /* ---------- 内容区 ---------- */
-  .wrap{padding:8px 16px 20px}
+  .wrap{padding:8px 16px 96px}
   .sec-label{font-size:12px;color:var(--sub);letter-spacing:1px;margin:14px 2px 8px;
         display:flex;align-items:center;gap:6px}
   .sec-label b{font-weight:500;color:var(--ink)}
@@ -204,6 +204,28 @@
     border:1px solid rgba(255,255,255,.4);font-size:15px;line-height:1;
     display:flex;align-items:center;justify-content:center}
 
+  .typex{width:30px;height:30px;border-radius:8px;flex:none;display:flex;align-items:center;
+    justify-content:center;color:var(--sub);background:transparent;transition:.15s}
+  .typex:active{background:#F2F0E9;color:#A32D2D}
+
+  /* ---------- 编辑页顶栏 / 开关 / 下拉 ---------- */
+  .editbar{display:flex;align-items:center;gap:10px;padding:10px 16px 4px}
+  .editbar button{width:34px;height:34px;border-radius:10px;background:#fff;border:1px solid var(--line);
+    display:flex;align-items:center;justify-content:center;color:var(--ink);flex:none}
+  .editbar b{font-size:15px;font-weight:500}
+
+  .switch{width:46px;height:27px;border-radius:99px;border:0;background:#D8D4C9;position:relative;
+    flex:none;transition:background .18s;padding:0}
+  .switch::after{content:"";position:absolute;top:3px;left:3px;width:21px;height:21px;border-radius:50%;
+    background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.22);transition:transform .18s}
+  .switch.on{background:var(--teal)}
+  .switch.on::after{transform:translateX(19px)}
+
+  select{width:100%;height:44px;border-radius:10px;border:1px solid var(--line);background-color:#fff;
+    padding:0 34px 0 12px;font-size:14.5px;color:var(--ink);appearance:none;-webkit-appearance:none;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%237A756C' stroke-width='2.6' stroke-linecap='round'><path d='M6 9l6 6 6-6'/></svg>");
+    background-repeat:no-repeat;background-position:right 12px center}
+
   .hidden{display:none!important}
 </style>
 </head>
@@ -227,7 +249,7 @@
   <div class="searchbox" id="searchbox">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
       <circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5" stroke-linecap="round"/></svg>
-    <input id="q" type="search" placeholder="搜店名、货品、街道" autocomplete="off">
+    <input id="q" type="search" placeholder="搜姓名、店名、类型、街道" autocomplete="off">
     <button class="clear" id="q-clear" aria-label="清空">✕</button>
   </div>
 </header>
@@ -235,11 +257,9 @@
 <!-- ============ 逛逛 ============ -->
 <section id="page-browse">
   <div class="toolbar">
-    <div class="chips-row">
+    <div class="chips-row" id="chips-row">
       <button class="chip-btn on" data-filter="all">全部</button>
       <button class="chip-btn" data-filter="fav">收藏 <span id="favcount">0</span></button>
-      <button class="chip-btn" data-filter="shop">商店</button>
-      <button class="chip-btn" data-filter="rider">运力</button>
     </div>
     <div class="viewtoggle">
       <button data-mode="list" class="on" aria-label="列表模式" title="列表">
@@ -269,25 +289,35 @@
 </section>
 
 <!-- ============ 发布 ============ -->
-<section id="page-publish" class="hidden">
-  <div class="wrap">
-    <div class="chips-row" style="margin-bottom:14px">
-      <button class="chip-btn on" data-pub="shop">挂商店</button>
-      <button class="chip-btn" data-pub="rider">挂运力</button>
-    </div>
+<section id="page-edit" class="hidden">
+  <div class="editbar">
+    <button id="edit-back" aria-label="返回">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M15 5l-7 7 7 7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <b id="edit-title">新建名片</b>
+  </div>
 
-    <div class="form-card" id="form-shop">
+  <div class="wrap">
+    <div class="form-card">
+      <div class="field2">
+        <div class="field"><label>姓名</label><input id="f-person" placeholder="王建国"></div>
+        <div class="field"><label>电话</label><input id="f-phone" inputmode="tel" placeholder="138…"></div>
+      </div>
       <div class="field">
-        <label>店名</label>
-        <input id="f-name" placeholder="好又多超市">
+        <label>单位 / 店名</label>
+        <input id="f-name" placeholder="好又多超市（没有可不填）">
+      </div>
+      <div class="field2">
+        <div class="field">
+          <label>类型</label>
+          <select id="f-type"></select>
+        </div>
+        <div class="field"><label>营业时间</label><input id="f-hours" placeholder="07:00-22:00"></div>
       </div>
       <div class="field">
         <label>地址</label>
         <input id="f-addr" placeholder="解放路 12 号">
-      </div>
-      <div class="field2">
-        <div class="field"><label>电话</label><input id="f-phone" inputmode="tel" placeholder="138…"></div>
-        <div class="field"><label>营业时间</label><input id="f-hours" placeholder="07:00-22:00"></div>
       </div>
       <div class="field">
         <label>位置 <span id="f-pos" style="color:var(--teal)"></span></label>
@@ -298,72 +328,68 @@
             <button data-pick="shop" data-act="out">−</button>
             <button data-pick="shop" data-act="me" style="font-size:13px">定</button>
           </div>
-          <div class="pin-hint" id="hint-shop">在地图上点一下，标出店的位置</div>
+          <div class="pin-hint" id="hint-shop">在地图上点一下，标出位置</div>
           <div class="attrib">© OpenStreetMap</div>
         </div>
       </div>
       <div class="field">
-        <label>今日有什么</label>
-        <textarea id="f-items" placeholder="一行一样，格式：名称/单位/备注&#10;本地鸡蛋/斤/今早到货&#10;大米/袋/25kg"></textarea>
-        <div class="help">只写有什么，不写价钱 —— 多少钱是老板和客人之间的事。</div>
-      </div>
-    </div>
-
-    <div class="form-card hidden" id="form-rider">
-      <div class="field2">
-        <div class="field"><label>称呼</label><input id="r-name" placeholder="老王"></div>
-        <div class="field"><label>电话</label><input id="r-phone" inputmode="tel" placeholder="138…"></div>
-      </div>
-      <div class="field2">
-        <div class="field"><label>什么车</label><input id="r-vehicle" placeholder="电动三轮"></div>
-        <div class="field"><label>能带多少</label><input id="r-capacity" placeholder="约200斤"></div>
-      </div>
-      <div class="field">
-        <label>今天什么时候有空</label>
-        <input id="r-window" placeholder="14:00-18:00">
-      </div>
-      <div class="field">
-        <label>常在哪一带跑 <span id="r-pos" style="color:var(--teal)"></span></label>
-        <div class="mapwrap">
-          <canvas id="pick-rider"></canvas>
-          <div class="mapctl">
-            <button data-pick="rider" data-act="in">＋</button>
-            <button data-pick="rider" data-act="out">−</button>
-            <button data-pick="rider" data-act="me" style="font-size:13px">定</button>
-          </div>
-          <div class="pin-hint" id="hint-rider">点一下你常在的位置</div>
-          <div class="attrib">© OpenStreetMap</div>
-        </div>
-        <div class="help">选在常跑的那片就行，方便邻居在地图上找到你。</div>
+        <label>提供什么</label>
+        <textarea id="f-items" placeholder="一行一样，格式：名称/备注&#10;本地鸡蛋/今早到货&#10;大米 25kg"></textarea>
+        <div class="help">只写有什么、能做什么，不写价钱 —— 多少钱是买卖双方自己谈的事。</div>
       </div>
       <div class="field">
         <label>一句话（可空）</label>
-        <input id="r-note" placeholder="熟人捎带，油钱随意">
+        <input id="f-note" placeholder="熟人捎带，油钱随意">
       </div>
     </div>
 
-    <button class="btn" id="btn-save" style="margin-top:18px">挂上去</button>
+    <button class="btn" id="btn-save" style="margin-top:18px">保存</button>
     <p style="font-size:11.5px;color:var(--sub);line-height:1.7;margin-top:12px;text-align:center">
-      标注只存在你和邻居的设备上，不经过任何平台。</p>
+      名片只存在你自己和收到它的人手里，不经过任何平台。</p>
   </div>
 </section>
 
-<!-- ============ 我的 ============ -->
+<!-- ============ 我的名片 ============ -->
 <section id="page-mine" class="hidden">
   <div class="wrap">
-    <div class="sec-label"><b>我发布的</b></div>
+    <div class="sec-label"><b>我的名片</b><span id="mine-count"></span></div>
     <div class="form-card" id="mine-list"></div>
+    <button class="btn ghost" id="btn-new-card" style="margin-top:14px">＋ 新建一张名片</button>
+    <p style="font-size:11.5px;color:var(--sub);line-height:1.7;margin-top:14px;text-align:center">
+      一个人可以有好几张：店铺一张、跑腿一张，各发各的。</p>
+  </div>
+</section>
 
-    <div class="sec-label"><b>收藏</b></div>
-    <div class="form-card" id="fav-list"></div>
+<!-- ============ 设置 ============ -->
+<section id="page-settings" class="hidden">
+  <div class="wrap">
+    <div class="sec-label"><b>自动同步</b></div>
+    <div class="form-card">
+      <div class="kv" style="align-items:center">
+        <span>和同一个 WiFi 下的手机自动对账</span>
+        <button class="switch" id="sw-sync" role="switch" aria-checked="false"></button>
+      </div>
+      <div class="help" style="font-size:11.5px;color:var(--sub);margin-top:12px;line-height:1.75">
+        关闭时，名片只能靠扫二维码更新。开启后，两台手机连同一个路由器、都开着名片，就会自动比对版本、只补过期的内容。<br>
+        只同步双方都已经持有的名片 —— 不会凭空多出陌生的名片。</div>
+    </div>
+
+    <div class="sec-label"><b>名片类型</b></div>
+    <div class="form-card">
+      <div id="type-list"></div>
+      <div style="display:flex;gap:8px;margin-top:14px">
+        <input id="type-new" placeholder="加一个类型，比如「水电」" style="flex:1;min-width:0">
+        <button class="btn ghost sm" id="type-add" style="flex:none;width:auto;padding:0 16px">添加</button>
+      </div>
+      <div class="help" style="font-size:11.5px;color:var(--sub);margin-top:12px;line-height:1.7">
+        类型决定名片夹顶部的筛选条。删掉一个类型不会动到已经用它建好的名片。</div>
+    </div>
 
     <div class="sec-label"><b>这台设备</b></div>
     <div class="form-card">
       <div class="kv"><span>设备指纹</span><span class="v" id="devid">—</span></div>
       <div class="kv"><span>本地记录</span><span class="v" id="evcount">0 条</span></div>
       <div class="kv"><span>连线状态</span><span class="v" id="nodeinfo">—</span></div>
-      <div class="help" style="font-size:11.5px;color:var(--sub);margin-top:12px;line-height:1.7">
-        标注会自动和同网段的其他手机交换，不需要手动操作。断网时照常可用，等下次连上自动补齐。</div>
     </div>
 
     <div class="sec-label"><b>换手机</b></div>
@@ -382,18 +408,20 @@
 <nav>
   <button class="on" data-page="browse">
     <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
-      <circle cx="11" cy="11" r="7"/><path d="M20 20l-3.8-3.8" stroke-linecap="round"/></svg>
-    逛逛
-  </button>
-  <button data-page="publish">
-    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
-      <path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg>
-    发布
+      <rect x="3" y="6" width="18" height="12" rx="2.5"/>
+      <path d="M7 11h6M7 14.5h4" stroke-linecap="round"/></svg>
+    名片夹
   </button>
   <button data-page="mine">
     <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
       <circle cx="12" cy="8.5" r="3.6"/><path d="M4.5 20c1.2-3.8 4-5.6 7.5-5.6s6.3 1.8 7.5 5.6" stroke-linecap="round"/></svg>
-    我的
+    我的名片
+  </button>
+  <button data-page="settings">
+    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
+      <circle cx="12" cy="12" r="3.2"/>
+      <path d="M12 3.6v2.2M12 18.2v2.2M20.4 12h-2.2M5.8 12H3.6M17.9 6.1l-1.6 1.6M7.7 16.3l-1.6 1.6M17.9 17.9l-1.6-1.6M7.7 7.7L6.1 6.1" stroke-linecap="round"/></svg>
+    设置
   </button>
 </nav>
 
@@ -425,11 +453,14 @@ const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 
 const K_ID = "dp_identity", K_EV = "dp_events", K_PUSH = "dp_last_push", K_FAV = "dp_favs";
+const K_SYNC = "dp.autosync";
+// 自动同步默认关闭：它要求两台手机连同一个 WiFi 且都开着名片，一直开着只会白耗电
+let autosync = localStorage.getItem(K_SYNC) === "1";
 
 let identity = null, store = null, rootId = null;
-let ui = { page: "browse", filter: "all", mode: "list", q: "", pub: "shop" };
+let ui = { page: "browse", filter: "all", mode: "list", q: "", editing: null };
 let favs = new Set();
-let pickedShop = null, pickedRider = null;
+let pickedShop = null;
 let geo = { lat: 29.84, lon: 112.90, z: 16 };
 
 /* ---------------- 瓦片与投影 ---------------- */
@@ -541,7 +572,7 @@ function createMap(canvas, opts){
   return map;
 }
 
-let browseMap = null, shopMap = null, riderMap = null;
+let browseMap = null, shopMap = null;
 let pendingDraw = false;
 function redrawAll(){
   if (pendingDraw) return;
@@ -550,7 +581,6 @@ function redrawAll(){
     pendingDraw = false;
     if (browseMap && ui.page==="browse" && ui.mode==="map" && browseMap.cv.offsetParent) browseMap.draw();
     if (shopMap && shopMap.cv.offsetParent) shopMap.draw();
-    if (riderMap && riderMap.cv.offsetParent) riderMap.draw();
   }, 16);
 }
 
@@ -625,24 +655,19 @@ function boot(){
       onTap: (m, ll) => { pickedShop = { lat:+ll.lat.toFixed(6), lon:+ll.lon.toFixed(6) };
         $("f-pos").textContent = "✓ 已选"; $("hint-shop").classList.add("hide"); m.draw(); }
     });
-    riderMap = createMap($("pick-rider"), {
-      height: 220,
-      onTap: (m, ll) => { pickedRider = { lat:+ll.lat.toFixed(6), lon:+ll.lon.toFixed(6) };
-        $("r-pos").textContent = "✓ 已选"; $("hint-rider").classList.add("hide"); m.draw(); }
-    });
-
-    browseMap.bind(); shopMap.bind(); riderMap.bind();
+    browseMap.bind(); shopMap.bind();
     fitMaps();
 
     // 支持 ?page=&mode=&pub=&q= 直接打开某个状态，方便分享与自测
     const qs = new URLSearchParams(location.search);
     if (qs.get("mode") === "map"){ ui.mode = "map"; markActive("[data-mode]", "mode"); }
-    if (qs.get("pub") === "rider"){ ui.pub = "rider"; markActive("[data-pub]", "pub");
-      $("form-shop").classList.add("hidden"); $("form-rider").classList.remove("hidden");
-      $("btn-save").textContent = "发运力名片"; }
     if (qs.get("q")){ ui.q = qs.get("q"); $("q").value = ui.q; $("q-clear").classList.add("show"); }
 
-    render(); syncNow();
+    refreshChips();
+    renderSettings();
+    renderTypeSelect();
+    render();
+    if (autosync) syncNow(); else { $("syncpill").textContent = "手动"; $("nodeinfo").textContent = "自动同步已关闭"; }
     if (qs.get("page")) go(qs.get("page"));
     if (qs.get("demo") === "1") seedDemo();
     if (qs.get("w")) document.body.style.width = Math.max(320, +qs.get("w")) + "px";
@@ -662,16 +687,30 @@ function markActive(sel, key){
 
 /* 预览用：在当前设备上造一条本地示例，方便看满状态界面 */
 function seedDemo(){
-  store.add("anchor", "demo-" + Date.now().toString(36), { fields: {
-    kind: "shop", name: "示例小卖部", address: "示例路 1 号", phone: "13800000000",
-    hours: "07:00-22:00", lat: geo.lat, lon: geo.lon,
-    items: [{ name: "冰棍", unit: "根", note: "老冰棍", tag: "零售价" }], open: true
-  }});
-  render();
+  const base = { lat: geo.lat, lon: geo.lon };
+  const rows = [
+    { person:"王建国", name:"好又多超市", type:"日用百货", address:"解放路 12 号", phone:"13800000001",
+      hours:"07:00-22:00", ver:3, imported:1,
+      items:[{name:"本地鸡蛋",note:"今早到货"},{name:"大米 25kg",note:""},{name:"酱油",note:"两种牌子"}] },
+    { person:"李桂芳", name:"桂芳理发", type:"理发", address:"解放路 18 号", phone:"13800000002",
+      hours:"09:00-19:00，周一休", ver:1, imported:1,
+      items:[{name:"剪发",note:"老人小孩便宜"},{name:"烫发",note:""}] },
+    { person:"老赵", name:"赵记早点", type:"餐饮", address:"建设街 3 号", phone:"13800000003",
+      hours:"05:30-10:00", ver:7, imported:1,
+      items:[{name:"热干面",note:"六点出锅"},{name:"豆皮",note:"卖完为止"}] },
+    { person:"陈师傅", name:"", type:"跑腿", address:"", phone:"13800000004",
+      hours:"", ver:2, imported:0,
+      items:[{name:"三轮车",note:"能带 200 斤"},{name:"下午两点到六点有空",note:""}] }
+  ];
+  rows.forEach((r,i)=>{
+    const fields = { ...r, lat: base.lat + (i-2)*0.0012, lon: base.lon + (i-2)*0.0009, open:true };
+    store.add("anchor", "demo-" + i, { fields });
+  });
+  render(); redrawAll();
 }
 
 function fitMaps(){
-  [browseMap, shopMap, riderMap].forEach(m=>{ if (m){ m.fit(); m.draw(); } });
+  [browseMap, shopMap].forEach(m=>{ if (m){ m.fit(); m.draw(); } });
 }
 
 let geoDone = false;
@@ -680,15 +719,14 @@ function tryGeolocate(){
     geoDone = true;
     const lat=p.coords.latitude, lon=p.coords.longitude;
     geo = { lat, lon, z:16 };
-    [browseMap, shopMap, riderMap].forEach(m=>{ if(!m) return;
+    [browseMap, shopMap].forEach(m=>{ if(!m) return;
       if (!m.pin) { m.lat=lat; m.lon=lon; } m.draw(); });
-    // 店和骑手默认也放到当前位置附近，省得自己找
+    // 名片默认放到当前位置附近，省得自己找
     if (!pickedShop) pickedShop = { lat:+lat.toFixed(6), lon:+lon.toFixed(6) };
-    if (!pickedRider) pickedRider = { lat:+lat.toFixed(6), lon:+lon.toFixed(6) };
-    shopMap.pin = pickedShop; riderMap.pin = pickedRider;
-    shopMap.centerOn(lat,lon); riderMap.centerOn(lat,lon);
-    $("f-pos").textContent = "✓ 已定位"; $("r-pos").textContent = "✓ 已定位";
-    $("hint-shop").classList.add("hide"); $("hint-rider").classList.add("hide");
+    shopMap.pin = pickedShop;
+    shopMap.centerOn(lat,lon);
+    $("f-pos").textContent = "✓ 已定位";
+    $("hint-shop").classList.add("hide");
   }, ()=>{ /* 用户拒绝也无所谓，手点地图即可 */ }, { timeout: 8000, maximumAge: 600000 });
 }
 
@@ -713,20 +751,22 @@ function isMine(s){
 }
 
 function allItems(){
-  return Object.values(stateAll()).map(s=>({ ...s, _mine: isMine(s), _rider: isRider(s) }))
-    .filter(s => s.name);   // 没名字的孤儿不显示
+  return Object.values(stateAll()).map(s=>({ ...s, _mine: isMine(s) }))
+    .filter(s => s.name || s.person);   // 姓名和店名都没有的孤儿不显示
 }
+
+/* 名片上显示的名字：有店名用店名，没有就用姓名 */
+function cardTitle(s){ return s.name || s.person || "（无名）"; }
 
 function filtered(){
   const q = ui.q.trim().toLowerCase();
   let list = allItems();
   if (ui.filter === "fav") list = list.filter(s=>favs.has(s.id));
-  if (ui.filter === "shop") list = list.filter(s=>!s._rider);
-  if (ui.filter === "rider") list = list.filter(s=>s._rider);
+  else if (String(ui.filter).startsWith("t:")) list = list.filter(s=>s.type === ui.filter.slice(2));
   if (q){
     list = list.filter(s=>{
-      const hay = [s.name, s.address, s.hours, s.note, s.vehicle, s.capacity,
-        ...(s.tags||[]), ...(s.areas||[]), ...((s.items||[]).map(i=>i.name))]
+      const hay = [s.person, s.name, s.type, s.address, s.hours, s.note,
+        ...((s.items||[]).map(i=>[i.name,i.note].filter(Boolean).join(" ")))]
         .filter(Boolean).join(" ").toLowerCase();
       return hay.includes(q);
     });
@@ -734,7 +774,7 @@ function filtered(){
   return list.sort((a,b)=>{
     const af = favs.has(a.id) ? 0 : 1, bf = favs.has(b.id) ? 0 : 1;
     if (af !== bf) return af - bf;
-    return String(a.name||"").localeCompare(String(b.name||""), "zh");
+    return String(cardTitle(a)).localeCompare(String(cardTitle(b)), "zh");
   });
 }
 
@@ -763,7 +803,7 @@ function renderList(list){
       <div class="big">${hasQ ? "没找到匹配的" : isFav ? "还没有收藏" : "这条街还是空的"}</div>
       <div class="sm">${hasQ ? "换个词试试，比如店名或货品" :
         isFav ? "逛街时点卡片右上角的星标，就能收藏常去的店" :
-        "去「发布」贴一张名片，邻居就能看到你店里有啥"}</div>
+        "去「我的名片」新建一张，然后递二维码给旁边的人"}</div>
       ${hasQ ? '<button class="btn ghost sm" id="empty-clear" style="margin-top:18px;width:auto;padding:0 20px">清空搜索</button>' : ""}
     </div>`;
     const c = $("empty-clear");
@@ -771,17 +811,17 @@ function renderList(list){
     return;
   }
 
-  const shops = list.filter(s=>!s._rider), riders = list.filter(s=>s._rider);
-  let html = "";
-  if (shops.length){
-    html += `<div class="sec-label">商店 <b>${shops.length}</b></div>`;
-    html += shops.map(cardHtml).join("");
-  }
-  if (riders.length){
-    html += `<div class="sec-label" style="margin-top:18px">谁有空捎货 <b>${riders.length}</b></div>`;
-    html += riders.map(cardHtml).join("");
-  }
-  box.innerHTML = html;
+  // 按类型分组，和顶部筛选条一一对应
+  const order = [], bucket = new Map();
+  list.forEach(s=>{
+    const k = s.type || "未分类";
+    if (!bucket.has(k)){ bucket.set(k, []); order.push(k); }
+    bucket.get(k).push(s);
+  });
+  box.innerHTML = order.map((k,i)=>
+    `<div class="sec-label"${i?" style=\"margin-top:18px\"":""}>${esc(k)} <b>${bucket.get(k).length}</b></div>` +
+    bucket.get(k).map(cardHtml).join("")
+  ).join("");
 
   box.querySelectorAll("[data-open]").forEach(el=>{
     el.onclick = e=>{
@@ -798,13 +838,11 @@ function renderList(list){
 function cardHtml(s){
   const on = favs.has(s.id);
   const closed = s.open === false;
-  const tags = s._rider
-    ? [...(s.areas||[]).map(a=>`<span class="tag">${esc(a)}</span>`)]
-    : (s.items||[]).slice(0,4).map(i=>
-        `<span class="tag">${esc(i.name)}${i.unit?" / "+esc(i.unit):""}${i.tag?`<span class="p">${esc(i.tag)}</span>`:""}</span>`);
-  const sub = s._rider
-    ? [s.vehicle, s.capacity, s.window ? "今天 "+s.window : ""].filter(Boolean).join(" · ")
-    : [s.address, s.hours].filter(Boolean).join(" · ");
+  const tc = typeColor(s.type);
+  const tags = (s.items||[]).slice(0,4).map(i=>
+    `<span class="tag">${esc(i.name)}${i.note?" · "+esc(i.note):""}</span>`);
+  const who = (s.person && s.name) ? s.person : "";
+  const sub = [who, s.address, s.hours].filter(Boolean).join(" · ");
 
   return `<div class="card${closed?" is-closed":""}" data-open="${esc(s.id)}">
     <button class="star ${on?"on":""}" data-star="${esc(s.id)}" aria-label="收藏">
@@ -812,10 +850,10 @@ function cardHtml(s){
            stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
         <path d="M12 3.6l2.6 5.3 5.8.8-4.2 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8L3.6 9.7l5.8-.8z"/></svg>
     </button>
-    <h3>${esc(s.name)}
-      ${closed?`<span class="badge off">${s._rider?"已收工":"已歇业"}</span>`:""}
-      ${s.imported?'<span class="badge ci">邻居捎来</span>':(s._mine?'<span class="badge mine">我发布的</span>':"")}
-      ${s._rider?'<span class="badge rider">运力</span>':""}
+    <h3>${esc(cardTitle(s))}
+      ${s.type?`<span class="badge" style="background:${tc}1f;color:${tc}">${esc(s.type)}</span>`:""}
+      ${closed?'<span class="badge off">已歇业</span>':""}
+      ${s.imported?'<span class="badge ci">收来的</span>':(s._mine?'<span class="badge mine">我的</span>':"")}
     </h3>
     <div class="sub">${esc(sub)||"&nbsp;"}</div>
     ${tags.length?`<div class="tagline">${tags.join("")}</div>`:""}
@@ -837,43 +875,48 @@ function toggleFav(id){
 
 function showDetail(raw){
   if (!raw) return;
-  // 从原始 state 补上两个派生标记，任何调用点都不用操心
-  const s = { ...raw, _mine: isMine(raw), _rider: isRider(raw) };
-  const rows = s._rider ? `
-    <div class="itemrow"><span>${esc(s.vehicle)||"—"}</span><span class="nt">${esc(s.capacity)||""}</span></div>
-    ${s.window?`<div class="itemrow"><span>今天有空</span><span class="nt">${esc(s.window)}</span></div>`:""}
-    ${(s.areas||[]).length?`<div class="itemrow"><span>常跑</span><span class="nt">${s.areas.map(esc).join("、")}</span></div>`:""}
-  ` : (s.items||[]).map(i=>`
-    <div class="itemrow"><span>${esc(i.name)}${i.unit?" / "+esc(i.unit):""}</span>
-      <span class="nt">${esc(i.note||"")}${i.tag?" "+esc(i.tag):""}</span></div>`).join("");
-
+  const s = { ...raw, _mine: isMine(raw) };
+  const tc = typeColor(s.type);
+  const kv = (k, v) => v ? `<div class="itemrow"><span>${k}</span><span class="nt">${esc(v)}</span></div>` : "";
+  const items = (s.items||[]).map(i=>
+    `<div class="itemrow"><span>${esc(i.name)}</span><span class="nt">${esc(i.note||"")}</span></div>`).join("");
   const on = favs.has(s.id);
+  const tel = s.phone
+    ? `<a class="btn sm" href="tel:${esc(s.phone)}" style="display:flex;align-items:center;justify-content:center;text-decoration:none;height:38px;border-radius:10px;background:var(--teal);color:#fff;font-size:13.5px;font-weight:500">打电话</a>`
+    : "";
+
   $("sheet-body").innerHTML = `
-    <h2>${esc(s.name)}</h2>
-    <div class="sub" style="font-size:13px;color:var(--sub);margin-bottom:10px">
-      ${esc(s._rider ? [s.vehicle,s.capacity].filter(Boolean).join(" · ") : [s.address,s.hours].filter(Boolean).join(" · "))}</div>
-    ${rows || '<div class="itemrow"><span style="color:var(--sub)">今天还没上货</span></div>'}
+    <h2>${esc(cardTitle(s))}</h2>
+    <div class="sub" style="font-size:13px;color:var(--sub);margin-bottom:12px">
+      ${s.person && s.name ? esc(s.person) + " · " : ""}${s.type?`<span style="color:${tc}">${esc(s.type)}</span> · `:""}第 ${s.ver||1} 版</div>
+    ${kv("地址", s.address)}
+    ${kv("营业", s.hours)}
+    ${kv("电话", s.phone)}
+    ${items || '<div class="itemrow"><span style="color:var(--sub)">还没写提供什么</span></div>'}
     ${s.note?`<div class="itemrow"><span style="color:var(--sub);font-size:13px">${esc(s.note)}</span></div>`:""}
     ${s._mine
       ? `<div class="act">
            <button class="btn ghost sm" id="d-share">分享</button>
+           <button class="btn ghost sm" id="d-edit">编辑</button>
            <button class="btn ghost sm" id="d-toggle">${s.open===false?"开业":"歇业"}</button>
-           <button class="btn danger sm" id="d-del">删除</button>
-         </div>`
+         </div>
+         <button id="d-del" style="display:block;margin:10px auto 0;background:none;border:0;
+           color:var(--danger,#B4232A);font-size:12px;text-decoration:underline;padding:6px 10px">删除这张名片</button>`
       : `<div class="act">
            <button class="btn ghost sm" id="d-share">分享</button>
            <button class="btn ghost sm" id="d-star">${on?"★ 已收藏":"☆ 收藏"}</button>
-           ${s.phone?`<a class="btn sm" href="tel:${esc(s.phone)}" style="display:flex;align-items:center;justify-content:center;text-decoration:none;height:38px;border-radius:10px;background:var(--teal);color:#fff;font-size:13.5px;font-weight:500">打电话</a>`:""}
+           ${tel}
          </div>
          ${s.imported
            ? `<p style="font-size:11.5px;color:var(--sub);line-height:1.75;margin-top:14px">
-                这张名片是邻居捎来的。歇业、改内容、删除，只有发布者本人才做得动。</p>
+                这张名片是别人给你的。歇业、改内容、删除，只有名片主人才做得动。</p>
               <button id="d-drop" style="display:block;margin:10px auto 0;background:none;border:0;
                 color:var(--sub);font-size:12px;text-decoration:underline;padding:6px 10px">
                 从我这台手机上移除</button>`
            : ""}`}`;
   $("d-share").onclick = ()=> shareItem(s);
   const st = $("d-star"); if (st) st.onclick = ()=>{ toggleFav(s.id); closeSheet(); };
+  const ed = $("d-edit"); if (ed) ed.onclick = ()=>{ closeSheet(); editCard(s.id); };
   const dt = $("d-toggle"); if (dt) dt.onclick = ()=>{ toggleOpen(s.id, s.open !== false); closeSheet(); };
   const dd = $("d-del"); if (dd) dd.onclick = ()=>{ closeSheet(); deleteItem(s.id); };
   const dro = $("d-drop"); if (dro) dro.onclick = ()=>{ closeSheet(); dropCopy(s.id); };
@@ -892,56 +935,60 @@ function dropCopy(id){
   toast("已从本机移除");
 }
 
-/* ---------------- 渲染：我的 ---------------- */
+/* ---------------- 渲染：我的名片 ---------------- */
 function renderMine(){
   const all = allItems();
   const mine = all.filter(s=>s._mine);
-  const fav = all.filter(s=>favs.has(s.id));
 
   $("evcount").textContent = store.events.size + " 条";
-
+  $("mine-count").textContent = mine.length ? mine.length + " 张" : "";
   $("mine-list").innerHTML = mine.length ? mine.map(s=>{
     const closed = s.open === false;
+    const tc = typeColor(s.type);
+    const line = [s.type, s.address].filter(Boolean).join(" · ");
     return `<div class="list-item">
-      <div class="grow" data-edit="${esc(s.id)}">
-        <div class="t">${esc(s.name)}${closed?` <span class="badge off">${s._rider?"已收工":"已歇业"}</span>`:""}</div>
-        <div class="s">${s._rider?"运力名片":"商店"} · ${esc(s._rider?(s.vehicle||""):(s.address||""))||"—"}</div>
+      <div class="grow" data-open3="${esc(s.id)}">
+        <div class="t">${esc(cardTitle(s))}
+          ${s.person && s.name?`<span style="color:var(--sub);font-size:12px;font-weight:400">${esc(s.person)}</span>`:""}
+          ${closed?'<span class="badge off">已歇业</span>':""}</div>
+        <div class="s">${esc(line)||"—"} · 第 ${s.ver||1} 版</div>
       </div>
-      <button class="btn ${closed?"":"ghost"} sm" data-toggleopen="${esc(s.id)}" data-cur="${closed?0:1}"
-        style="width:auto;padding:0 14px;flex:none">${closed?"开业":"歇业"}</button>
-      <button class="iconbtn" data-del="${esc(s.id)}" aria-label="删除">
-        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
-          <path d="M4 7h16M9.5 7V5.2h5V7M6.5 7l.9 12.2h9.2L17.5 7" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </button>
+      <button class="btn ghost sm" data-edit2="${esc(s.id)}"
+        style="width:auto;padding:0 14px;flex:none">编辑</button>
     </div>`;
   }).join("")
-    : '<div class="empty" style="padding:26px 10px"><div class="sm">还没发布过。去「发布」贴一张名片试试。</div></div>';
+    : '<div class="empty" style="padding:26px 10px"><div class="sm">还没有名片。点下面「新建一张名片」。</div></div>';
 
-  $("fav-list").innerHTML = fav.length ? fav.map(s=>`
-    <div class="list-item">
-      <div class="grow">
-        <div class="t">${esc(s.name)}</div>
-        <div class="s">${s._rider?"运力":"商店"} · ${esc(s.address||s.vehicle||"")||"—"}</div>
-      </div>
-      <button class="btn ghost sm" data-open2="${esc(s.id)}" style="width:auto;padding:0 14px">查看</button>
-    </div>`).join("")
-    : '<div class="empty" style="padding:26px 10px"><div class="sm">还没有收藏。逛街时点卡片上的星标即可。</div></div>';
+  document.querySelectorAll("[data-open3]").forEach(b=>{
+    b.onclick = ()=>{ const s = all.find(x=>x.id===b.dataset.open3); if (s) showDetail(s); };
+  });
+  document.querySelectorAll("[data-edit2]").forEach(b=>{
+    b.onclick = e=>{ e.stopPropagation(); editCard(b.dataset.edit2); };
+  });
+}
 
-  document.querySelectorAll("[data-edit],[data-open2]").forEach(b=>{
+/* ---------------- 渲染：设置 ---------------- */
+function renderSettings(){
+  $("sw-sync").classList.toggle("on", autosync);
+  $("sw-sync").setAttribute("aria-checked", autosync ? "true" : "false");
+  $("type-list").innerHTML = types.map((t,i)=>`
+    <div class="kv" style="align-items:center;border-bottom:1px solid var(--line);padding:10px 0">
+      <span style="display:flex;align-items:center;gap:9px">
+        <i style="width:9px;height:9px;border-radius:50%;background:${t.color};display:inline-block"></i>
+        ${esc(t.label)}</span>
+      <button class="typex" data-typedel="${i}" aria-label="删除该类型">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <path d="M6 6l12 12M18 6L6 18" stroke-linecap="round"/></svg>
+      </button>
+    </div>`).join("");
+  $("type-list").querySelectorAll("[data-typedel]").forEach(b=>{
     b.onclick = ()=>{
-      const id = b.dataset.edit || b.dataset.open2;
-      const s = all.find(x=>x.id===id);
-      if (s) showDetail(s);
+      const i = +b.dataset.typedel;
+      if (types.length <= 1) return toast("至少留一个类型");
+      const label = types[i].label;
+      types.splice(i,1); saveTypes(); renderSettings(); refreshChips(); render();
+      toast("已删除类型「" + label + "」");
     };
-  });
-  document.querySelectorAll("[data-toggleopen]").forEach(b=>{
-    b.onclick = e=>{
-      e.stopPropagation();
-      toggleOpen(b.dataset.toggleopen, b.dataset.cur === "1");
-    };
-  });
-  document.querySelectorAll("[data-del]").forEach(b=>{
-    b.onclick = e=>{ e.stopPropagation(); deleteItem(b.dataset.del); };
   });
 }
 
@@ -954,52 +1001,128 @@ function deleteItem(id){
   toast("已删除");
 }
 
-/* ---------------- 发布 ---------------- */
-$("btn-save").onclick = ()=>{
-  const id = "n-" + Date.now().toString(36);
-  if (ui.pub === "shop"){
-    const name = $("f-name").value.trim();
-    if (!name) return toast("先填个店名");
-    const loc = pickedShop || { lat: geo.lat, lon: geo.lon };
-    store.add("anchor", id, { fields: {
-      kind:"shop", name,
-      address: $("f-addr").value.trim(),
-      phone: $("f-phone").value.trim(),
-      hours: $("f-hours").value.trim(),
-      lat: +loc.lat.toFixed(6), lon: +loc.lon.toFixed(6),
-      items: parseItems($("f-items").value), open: true
-    }});
-    ["f-name","f-addr","f-phone","f-hours","f-items"].forEach(k=>$(k).value="");
-    pickedShop = null; shopMap.pin = null; shopMap.draw();
-    $("f-pos").textContent = ""; $("hint-shop").classList.remove("hide");
+/* ---------------- 名片类型 ---------------- */
+const K_TYPES = "dp.types";
+const DEFAULT_TYPES = [
+  { label: "餐饮",     color: "#B45309" },
+  { label: "日用百货", color: "#1D5FA8" },
+  { label: "维修",     color: "#0F6E56" },
+  { label: "理发",     color: "#8C3B6B" },
+  { label: "跑腿",     color: "#9A3412" },
+  { label: "其他",     color: "#7A756C" }
+];
+let types = (function(){
+  try{
+    const raw = localStorage.getItem(K_TYPES);
+    if (raw){
+      const a = JSON.parse(raw);
+      if (Array.isArray(a) && a.length && a.every(t=>t && t.label)) return a;
+    }
+  }catch(e){}
+  return DEFAULT_TYPES.map(t=>({ ...t }));
+})();
+function saveTypes(){ localStorage.setItem(K_TYPES, JSON.stringify(types)); }
+function typeColor(label){
+  const t = types.find(x=>x.label === label);
+  return t ? t.color : "#7A756C";
+}
+function renderTypeSelect(){
+  const sel = $("f-type");
+  const cur = sel.value;
+  sel.innerHTML = types.map(t=>`<option>${esc(t.label)}</option>`).join("");
+  if (cur && types.some(t=>t.label===cur)) sel.value = cur;
+}
+
+/* 筛选条：全部 / 收藏 / 每个类型一个 */
+function refreshChips(){
+  if (String(ui.filter).startsWith("t:") && !types.some(t=>"t:"+t.label===ui.filter)) ui.filter = "all";
+  const rows = [{ f:"all", t:"全部" }, { f:"fav", t:'收藏 <span id="favcount">'+favs.size+'</span>' }]
+    .concat(types.map(t=>({ f:"t:"+t.label, t:esc(t.label) })));
+  $("chips-row").innerHTML = rows.map(r=>
+    `<button class="chip-btn${ui.filter===r.f?" on":""}" data-filter="${esc(r.f)}">${r.t}</button>`).join("");
+  $("chips-row").querySelectorAll("[data-filter]").forEach(b=>{
+    b.onclick = ()=>{ ui.filter = b.dataset.filter; refreshChips(); render(); };
+  });
+}
+
+/* ---------------- 名片编辑 ---------------- */
+const CARD_INPUTS = ["f-person","f-name","f-phone","f-hours","f-addr","f-items","f-note"];
+
+function newCard(){
+  ui.editing = null;
+  $("edit-title").textContent = "新建名片";
+  CARD_INPUTS.forEach(k=>$(k).value="");
+  renderTypeSelect();
+  pickedShop = null; shopMap.pin = null; shopMap.draw();
+  $("f-pos").textContent = ""; $("hint-shop").classList.remove("hide");
+  go("edit");
+  setTimeout(fitMaps, 40);
+}
+
+function editCard(id){
+  const s = stateAll()[id];
+  if (!s) return;
+  ui.editing = id;
+  $("edit-title").textContent = "编辑名片";
+  $("f-person").value = s.person || "";
+  $("f-name").value   = s.name || "";
+  $("f-phone").value  = s.phone || "";
+  $("f-hours").value  = s.hours || "";
+  $("f-addr").value   = s.address || "";
+  $("f-note").value   = s.note || "";
+  $("f-items").value  = (s.items||[]).map(i=>[i.name, i.note].filter(Boolean).join("/")).join("\n");
+  renderTypeSelect();
+  if (s.type && types.some(t=>t.label===s.type)) $("f-type").value = s.type;
+
+  pickedShop = (s.lat && s.lon) ? { lat:s.lat, lon:s.lon } : null;
+  shopMap.pin = pickedShop;
+  if (pickedShop){
+    shopMap.centerOn(s.lat, s.lon);
+    $("f-pos").textContent = "✓ 已选"; $("hint-shop").classList.add("hide");
   } else {
-    const name = $("r-name").value.trim();
-    if (!name) return toast("先填个称呼");
-    const loc = pickedRider || { lat: geo.lat, lon: geo.lon };
-    store.add("anchor", id, { fields: {
-      kind:"rider", name,
-      phone: $("r-phone").value.trim(),
-      vehicle: $("r-vehicle").value.trim(),
-      capacity: $("r-capacity").value.trim(),
-      window: $("r-window").value.trim(),
-      note: $("r-note").value.trim(),
-      lat: +loc.lat.toFixed(6), lon: +loc.lon.toFixed(6),
-      open: true
-    }});
-    ["r-name","r-phone","r-vehicle","r-capacity","r-window","r-note"].forEach(k=>$(k).value="");
-    pickedRider = null; riderMap.pin = null; riderMap.draw();
-    $("r-pos").textContent = ""; $("hint-rider").classList.remove("hide");
+    $("f-pos").textContent = ""; $("hint-shop").classList.remove("hide");
   }
+  shopMap.draw();
+  go("edit");
+  setTimeout(fitMaps, 40);
+}
+
+$("btn-save").onclick = ()=>{
+  const person = $("f-person").value.trim();
+  const shopName = $("f-name").value.trim();
+  if (!person && !shopName) return toast("至少填个姓名或店名");
+  const loc = pickedShop || { lat: geo.lat, lon: geo.lon };
+  const fields = {
+    person, name: shopName,
+    type: $("f-type").value,
+    phone: $("f-phone").value.trim(),
+    hours: $("f-hours").value.trim(),
+    address: $("f-addr").value.trim(),
+    note: $("f-note").value.trim(),
+    items: parseItems($("f-items").value),
+    lat: +loc.lat.toFixed(6), lon: +loc.lon.toFixed(6),
+    open: true
+  };
+  if (ui.editing){
+    const cur = stateAll()[ui.editing] || {};
+    fields.ver = (+cur.ver || 1) + 1;        // 版本 +1，别人扫码时才知道要更新
+    store.add("fact", ui.editing, { fields });
+    toast("已更新到第 " + fields.ver + " 版");
+  } else {
+    fields.ver = 1;
+    store.add("anchor", "n-" + Date.now().toString(36), { fields });
+    toast("名片建好了");
+  }
+  ui.editing = null;
   syncNow();
   render();
-  go("browse");
-  toast("已挂上，邻居马上能看到");
+  go("mine");
 };
 
 function parseItems(text){
   return text.split("\n").map(l=>l.trim()).filter(Boolean).slice(0,40).map(line=>{
     const p = line.split("/").map(s=>s.trim());
-    return { name:p[0]||"", unit:p[1]||"", note:p[2]||"", tag:"可议" };
+    return { name:p[0]||"", note:p[1]||"" };
   }).filter(x=>x.name);
 }
 
@@ -1014,6 +1137,12 @@ function shiftMin(ts,min){ const d=new Date(ts); d.setMinutes(d.getMinutes()-min
 async function syncNow(){
   if (!store) return;
   const pill = $("syncpill");
+  // 自动同步没开就什么都不做：名片只在手动扫码时才动
+  if (!autosync){
+    pill.className = "pill";
+    pill.textContent = "手动";
+    return;
+  }
   try{
     const since = latestTs();
     const url = "/api/p2p/pull" + (since ? "?since=" + encodeURIComponent(shiftMin(since,5)) : "");
@@ -1047,36 +1176,27 @@ async function syncNow(){
 /* ---------------- 交互 ---------------- */
 function go(page){
   ui.page = page;
-  ["browse","publish","mine"].forEach(p=>{
-    $("page-"+p).classList.toggle("hidden", p!==page);
+  ["browse","mine","edit","settings"].forEach(p=>{
+    const el = $("page-"+p);
+    if (el) el.classList.toggle("hidden", p!==page);
   });
-  document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on", b.dataset.page===page));
+  // 编辑页挂在「我的名片」下面，导航仍高亮那一栏
+  const navKey = page === "edit" ? "mine" : page;
+  document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on", b.dataset.page===navKey));
   $("searchbox").classList.toggle("hidden", page!=="browse");
-  if (page==="publish") requestAnimationFrame(fitMaps);
+  if (page==="edit") requestAnimationFrame(fitMaps);
+  if (page==="mysettings"||page==="settings") renderSettings();
+  if (page==="mine") renderMine();
   if (page==="browse" && ui.mode==="map") requestAnimationFrame(()=>{browseMap.fit();browseMap.draw();});
   window.scrollTo({top:0});
 }
 document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>go(b.dataset.page));
 
-document.querySelectorAll("[data-filter]").forEach(b=>b.onclick=()=>{
-  ui.filter = b.dataset.filter;
-  document.querySelectorAll("[data-filter]").forEach(x=>x.classList.toggle("on", x===b));
-  render();
-});
 document.querySelectorAll("[data-mode]").forEach(b=>b.onclick=()=>{
   ui.mode = b.dataset.mode;
   document.querySelectorAll("[data-mode]").forEach(x=>x.classList.toggle("on", x===b));
   render();
 });
-document.querySelectorAll("[data-pub]").forEach(b=>b.onclick=()=>{
-  ui.pub = b.dataset.pub;
-  document.querySelectorAll("[data-pub]").forEach(x=>x.classList.toggle("on", x===b));
-  $("form-shop").classList.toggle("hidden", ui.pub!=="shop");
-  $("form-rider").classList.toggle("hidden", ui.pub!=="rider");
-  $("btn-save").textContent = ui.pub==="shop" ? "贴出名片" : "发运力名片";
-  requestAnimationFrame(fitMaps);
-});
-
 $("q").addEventListener("input", e=>{
   ui.q = e.target.value;
   $("q-clear").classList.toggle("show", !!ui.q);
@@ -1085,7 +1205,7 @@ $("q").addEventListener("input", e=>{
 $("q-clear").onclick = ()=>{ $("q").value=""; ui.q=""; $("q-clear").classList.remove("show"); render(); };
 
 document.querySelectorAll("[data-pick]").forEach(b=>b.onclick=()=>{
-  const m = b.dataset.pick==="shop" ? shopMap : riderMap;
+  const m = shopMap;
   const act = b.dataset.act;
   if (act==="in") m.zoom(1);
   else if (act==="out") m.zoom(-1);
@@ -1117,7 +1237,6 @@ function toast(msg){
   toastTimer = setTimeout(()=>{ el.style.opacity="0"; }, 1900);
 }
 
-$("btn-sync") && ($("btn-sync").onclick = ()=>{ syncNow(); toast("正在同步…"); });
 
 /* ---------------- 分享二维码 ---------------- */
 function b64u(str){
@@ -1137,19 +1256,21 @@ function b64uDecode(s){
 
 /* 只打包"看得见的信息"，不塞签名和公钥 —— 否则二维码会密到扫不出来 */
 function packItem(s){
-  const p = {
-    v:1, id:s.id, k:s._rider?"r":"s",
-    n:s.name||"", a:s.address||"", ph:s.phone||"", h:s.hours||"",
-    la:+((s.lat||0).toFixed(5)), lo:+((s.lon||0).toFixed(5)),
-    o:s.open===false?0:1, no:s.note||""
+  return {
+    v: 2, id: s.id,
+    pe: s.person || "",
+    n:  s.name || "",
+    ty: s.type || "",
+    a:  s.address || "",
+    ph: s.phone || "",
+    h:  s.hours || "",
+    no: s.note || "",
+    la: +((s.lat||0).toFixed(5)),
+    lo: +((s.lon||0).toFixed(5)),
+    o:  s.open === false ? 0 : 1,
+    vr: +s.ver || 1,                       // 版本号：对方比这个大就说明该更新了
+    it: (s.items||[]).slice(0,12).map(i=>[i.name, i.note||""].join("~"))
   };
-  if (s._rider){
-    p.ve = s.vehicle||""; p.ca = s.capacity||""; p.wi = s.window||"";
-    p.ar = (s.areas||[]).join(",");
-  } else {
-    p.it = (s.items||[]).slice(0,12).map(i=>[i.name, i.unit||"", i.tag||"可议"].join("~"));
-  }
-  return p;
 }
 
 /* 本地生成二维码：装成 App 后没有服务端，不能靠 /api/qr */
@@ -1326,30 +1447,44 @@ async function scanPhoto(file){
 function importShared(code){
   let p;
   try { p = JSON.parse(b64uDecode(code)); } catch(e){ toast("二维码内容无法识别"); return; }
-  if (!p || p.v !== 1 || !p.n){ toast("这张名片的数据不完整"); return; }
-  const sid = p.id || ("n-" + Date.now().toString(36));
-  if (Object.keys(stateAll()).includes(sid)){ toast("这张名片已经在你的手机里了"); return; }
+  if (!p || !p.n || !p.pe){ toast("这张名片的数据不完整"); return; }
 
+  const sid = p.id || ("n-" + Date.now().toString(36));
   const fields = {
-    kind: p.k === "r" ? "rider" : "shop",
-    name: p.n, address: p.a || "", phone: p.ph || "", hours: p.h || "",
-    lat: p.la || 0, lon: p.lo || 0, open: p.o !== 0, note: p.no || "",
-    imported: 1
+    person: p.pe, name: p.n, type: p.ty || "",
+    address: p.a || "", phone: p.ph || "", hours: p.h || "",
+    lat: p.la || 0, lon: p.lo || 0, note: p.no || "",
+    open: p.o !== 0, ver: +p.vr || 1
   };
-  if (p.k === "r"){
-    fields.vehicle = p.ve || ""; fields.capacity = p.ca || "";
-    fields.window = p.wi || ""; fields.areas = (p.ar||"").split(",").filter(Boolean);
-  } else {
-    fields.items = (p.it||[]).map(t=>{
-      const parts = String(t).split("~");
-      return { name: parts[0]||"", unit: parts[1]||"", note:"", tag: parts[2]||"可议" };
-    }).filter(i=>i.name);
+  fields.items = (p.it||[]).map(t=>{
+    const q = String(t).split("~");
+    return { name: q[0] || "", note: q[1] || "" };
+  }).filter(i=>i.name);
+
+  const cur = stateAll()[sid];
+
+  if (cur){
+    // 已经在钱包里：只比版本，不重复收
+    const mine = +cur.ver || 1, theirs = +p.vr || 1;
+    if (theirs <= mine){
+      toast(mine === theirs ? "已经是最新版了" : "你手里的比这个还新");
+      showDetail(cur);
+      return;
+    }
+    store.add("fact", sid, { fields: { ...fields, imported: 1 } });
+    render(); redrawAll(); syncNow();
+    toast("已更新到第 " + theirs + " 版：" + p.n);
+    setTimeout(()=>{ const st = stateAll()[sid]; if (st) showDetail(st); }, 90);
+    return;
   }
+
+  fields.imported = 1;
   store.add("anchor", sid, { fields });
   render(); redrawAll(); syncNow();
   toast("收下了：" + p.n);
   setTimeout(()=>{ const st = stateAll()[sid]; if (st) showDetail(st); }, 90);
 }
+
 $("btn-scan").onclick = ()=> openScanner();
 $("scan-input").onchange = async e => {
   const f = e.target.files && e.target.files[0];
@@ -1391,6 +1526,38 @@ document.addEventListener("visibilitychange", ()=>{
     fitMaps(); syncNow();
   }
 });
+
+/* ---------------- 新界面的按钮 ---------------- */
+$("btn-new-card").onclick = ()=> newCard();
+$("edit-back").onclick = ()=>{ ui.editing = null; go("mine"); };
+
+$("sw-sync").onclick = ()=>{
+  autosync = !autosync;
+  localStorage.setItem(K_SYNC, autosync ? "1" : "0");
+  renderSettings();
+  const pill = $("syncpill");
+  if (autosync){
+    pill.className = "pill"; pill.textContent = "找手机…";
+    toast("已开启，连上同一个 WiFi 就会自动对上");
+    syncNow();
+  } else {
+    pill.className = "pill"; pill.textContent = "手动";
+    $("nodeinfo").textContent = "自动同步已关闭";
+    toast("已关闭，名片只能靠扫码更新");
+  }
+};
+
+$("type-add").onclick = ()=>{
+  const v = $("type-new").value.trim();
+  if (!v) return toast("先写个类型名");
+  if (types.some(t=>t.label === v)) return toast("已经有这个类型了");
+  const palette = ["#B45309","#1D5FA8","#0F6E56","#8C3B6B","#9A3412","#4B5563","#0E7490","#7C2D12"];
+  types.push({ label: v, color: palette[types.length % palette.length] });
+  saveTypes();
+  $("type-new").value = "";
+  renderSettings(); refreshChips(); renderTypeSelect();
+  toast("已添加「" + v + "」");
+};
 
 boot();
 </script>

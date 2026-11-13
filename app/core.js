@@ -17,7 +17,9 @@
   const TEMPORAL_FIELDS = new Set(["items", "note"]);
   // 结构性字段：店名、地址、营业开关…… 写一次就一直算数，直到有人改
   const STRUCTURAL_FIELDS = new Set(["kind", "name", "address", "phone", "hours",
-    "lat", "lon", "tags", "vehicle", "capacity", "areas", "window", "open", "imported"]);
+    "lat", "lon", "tags", "vehicle", "capacity", "areas", "window", "open", "imported",
+    // 名片模型：姓名、类型、版本号
+    "person", "type", "ver"]);
   const DEFAULT_TTL_DAYS = 7;
   const ANCHOR_TTL_DAYS = 30;
   const TRUST_L1_AUTHORS = 3;

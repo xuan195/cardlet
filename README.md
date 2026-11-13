@@ -104,6 +104,17 @@ doorplate/
 ├── data/                # 唯一真相源，拷走即备份
 │   ├── shops/*.json     # 一家店一个文件
 │   └── riders/*.json    # 一块运力牌一个文件
+├── app/                 # ★ 本地优先应用（手机可直接用，离线跑）
+│   ├── index.html       # 三屏：逛街 / 标注 / 我的
+│   ├── core.js          # 事件流+认领+担保引擎（浏览器与 Node 共用）
+│   ├── selftest.cjs     # JS 引擎自检 + 跨语言互验（27 项）
+│   └── interop.py       # Python ↔ JS 签名互验脚本
+├── p2p/                 # 事件流参考实现（Python）
+│   ├── identity.py      # 签名与设备指纹
+│   ├── store.py         # 事件、归约、担保链
+│   ├── selftest.py      # 29 项自检
+│   └── demo.py          # 五台手机碰面演示
+├── cloud/               # 微信云开发上传链路
 └── web/
     ├── index.html       # 顾客：地图 + 列表
     ├── shop.html        # 商家：编辑与开关门
@@ -111,6 +122,17 @@ doorplate/
     ├── rider.html       # 骑手运力牌
     └── tiles/           # 离线瓦片（放进来即生效）
 ```
+
+## 本地优先应用（app/）
+
+`python server.py` 之后打开 `http://<IP>:8000/app/index.html`，手机浏览器直接用。
+
+- **不联网也能工作**：密钥、事件、店铺全在 `localStorage` 里
+- **两台手机交换数据**：A 点「导出全部数据」→ 把文字发给 B → B 点「导入别人数据」
+- **自带计时器**：记录标一家店花多久，并推算「标 20 家要多久」
+
+引擎与 Python 版 `p2p/` **完全同构且可互验**：
+JS 签的事件 Python 能验，Python 签的 JS 也能验（`node app/selftest.cjs` 会跑这项）。
 
 ## 下一步
 

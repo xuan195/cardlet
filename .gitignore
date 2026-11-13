@@ -2,3 +2,4 @@
 __pycache__/
 *.pyc
 doorplate/p2p/_keys/
+doorplate/app/_interop/

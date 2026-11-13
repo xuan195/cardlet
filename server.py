@@ -126,6 +126,9 @@ class Handler(SimpleHTTPRequestHandler):
         rel = urlparse(path).path.lstrip("/") or "index.html"
         if rel == "":
             rel = "index.html"
+        # /app/ 指向 doorplate/app（本地优先的离线应用）
+        if rel.startswith("app/"):
+            return str(ROOT / rel)
         return str(WEB / rel)
 
     def log_message(self, fmt, *args):

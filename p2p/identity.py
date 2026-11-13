@@ -72,9 +72,14 @@ def sha256_hex(data: str) -> str:
 
 
 def device_id_of(pubkey: dict) -> str:
-    """公钥 → 设备指纹。任何人拿到公钥都能算出同一个指纹，无需中心登记。"""
+    """公钥 → 设备指纹。
+
+    统一用「十进制字符串」而不是整数来序列化 —— 1024 位整数超出 JS 的
+    安全整数范围，用字符串两边算出来的指纹才一致（Python / JS 可互验）。
+    """
     try:
-        return sha256_hex(canonical({"n": int(pubkey["n"]), "e": int(pubkey["e"])}))[:12]
+        return sha256_hex(canonical({"n": str(int(pubkey["n"])),
+                                     "e": str(int(pubkey["e"]))}))[:12]
     except Exception:
         return ""
 
@@ -119,7 +124,8 @@ class Identity:
     # ---- 标识 ----
     @property
     def pubkey(self) -> dict:
-        return {"n": self.n, "e": self.e}
+        # 线上格式统一用十进制字符串，保证与 JS 端算出的指纹一致
+        return {"n": str(self.n), "e": str(self.e)}
 
     @property
     def device_id(self) -> str:
@@ -127,15 +133,25 @@ class Identity:
         return device_id_of(self.pubkey)
 
     # ---- 签名 ----
+    @staticmethod
+    def _digest_int(message: str, n: int) -> int:
+        """对 (域前缀 + 消息原文) 的 UTF-8 字节做 SHA-256，取整数。
+
+        注意：必须哈希原始字节，不能哈希十六进制字符串——
+        否则 JS 端（直接哈希字节）算出来的值对不上，两端无法互验。
+        """
+        raw = DOMAIN + message.encode("utf-8")
+        return int.from_bytes(hashlib.sha256(raw).digest(), "big") % n
+
     def sign(self, message: str) -> str:
-        digest = int(sha256_hex((DOMAIN + message.encode("utf-8")).hex()), 16) % self.n
+        digest = self._digest_int(message, self.n)
         return format(pow(digest, self.d, self.n), "x")
 
     @staticmethod
     def verify(pubkey: dict, message: str, sig_hex: str) -> bool:
         try:
             n, e = int(pubkey["n"]), int(pubkey["e"])
-            digest = int(sha256_hex((DOMAIN + message.encode("utf-8")).hex()), 16) % n
+            digest = Identity._digest_int(message, n)
             return pow(int(sig_hex, 16), e, n) == digest
         except Exception:
             return False

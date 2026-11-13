@@ -83,6 +83,7 @@
   .badge.mine{background:var(--blue-soft);color:var(--blue)}
   .badge.rider{background:var(--blue-soft);color:var(--blue)}
   .badge.off{background:#EFEDE6;color:#7A756C}
+  .badge.ci{background:#F4F2EC;color:#7A756C}
   .card.is-closed{opacity:.62}
   .star{position:absolute;right:8px;top:10px;width:36px;height:36px;border-radius:50%;
         display:flex;align-items:center;justify-content:center;color:#C6C1B6;transition:.15s}
@@ -334,12 +335,9 @@
 
     <div class="sec-label"><b>数据</b></div>
     <div class="form-card">
-      <div class="itemrow" style="display:flex;gap:10px">
-        <button class="btn ghost sm" id="btn-export" style="flex:1">导出</button>
-        <button class="btn ghost sm" id="btn-import" style="flex:1">导入</button>
-      </div>
-      <div class="help" style="font-size:11.5px;color:var(--sub);margin-top:10px;line-height:1.7">
-        没有网络时，可以把数据导出成文字发给另一台手机。</div>
+      <div class="help" style="font-size:12px;color:var(--sub);line-height:1.7">
+        标注会自动和同网段的其他手机交换。想把某一块门牌发给不在场的邻居，
+        在它的详情里点「分享二维码」，让对方扫一下即可。</div>
       <button class="btn danger sm" id="btn-reset" style="margin-top:14px">清空本地数据后重新同步</button>
     </div>
   </div>
@@ -591,6 +589,11 @@ function boot(){
     render(); syncNow();
     if (qs.get("page")) go(qs.get("page"));
     if (qs.get("demo") === "1") seedDemo();
+    if (qs.get("add")){
+      const code = qs.get("add");
+      history.replaceState(null, "", location.pathname);   // 刷新时别重复导入
+      setTimeout(()=>importShared(code), 320);
+    }
     setInterval(()=>{ if (document.visibilityState === "visible") syncNow(); }, 6000);
     if (navigator.geolocation) tryGeolocate();
   }, 30);
@@ -747,7 +750,7 @@ function cardHtml(s){
     </button>
     <h3>${esc(s.name)}
       ${closed?`<span class="badge off">${s._rider?"已收工":"已歇业"}</span>`:""}
-      ${s._mine?'<span class="badge mine">我发布的</span>':""}
+      ${s.imported?'<span class="badge ci">邻居捎来</span>':(s._mine?'<span class="badge mine">我发布的</span>':"")}
       ${s._rider?'<span class="badge rider">运力</span>':""}
     </h3>
     <div class="sub">${esc(sub)||"&nbsp;"}</div>
@@ -768,7 +771,10 @@ function toggleFav(id){
   render();
 }
 
-function showDetail(s){
+function showDetail(raw){
+  if (!raw) return;
+  // 从原始 state 补上两个派生标记，任何调用点都不用操心
+  const s = { ...raw, _mine: isMine(raw), _rider: isRider(raw) };
   const rows = s._rider ? `
     <div class="itemrow"><span>${esc(s.vehicle)||"—"}</span><span class="nt">${esc(s.capacity)||""}</span></div>
     ${s.window?`<div class="itemrow"><span>今天有空</span><span class="nt">${esc(s.window)}</span></div>`:""}
@@ -789,10 +795,12 @@ function showDetail(s){
       <button class="btn danger sm" id="d-del">删除</button>
     </div>`:""}
     <div class="act">
+      <button class="btn ghost sm" id="d-share">分享二维码</button>
       <button class="btn ghost sm" id="d-star">${on?"★ 已收藏":"☆ 收藏"}</button>
       ${s.phone?`<a class="btn sm" href="tel:${esc(s.phone)}" style="display:flex;align-items:center;justify-content:center;text-decoration:none;height:38px;border-radius:10px;background:var(--teal);color:#fff;font-size:13.5px;font-weight:500">打电话</a>`:""}
     </div>`;
   $("d-star").onclick = ()=>{ toggleFav(s.id); closeSheet(); };
+  $("d-share").onclick = ()=> shareItem(s);
   const dt = $("d-toggle");
   if (dt) dt.onclick = ()=>{ toggleOpen(s.id, s.open !== false); closeSheet(); };
   const dd = $("d-del");
@@ -1027,30 +1035,81 @@ function toast(msg){
 
 $("btn-sync") && ($("btn-sync").onclick = ()=>{ syncNow(); toast("正在同步…"); });
 
-const b64 = o => btoa(unescape(encodeURIComponent(JSON.stringify(o))));
-const unb64 = s => JSON.parse(decodeURIComponent(escape(atob(s.trim()))));
-$("btn-export").onclick = ()=>{
-  $("sheet-body").innerHTML = `<h2>导出数据</h2>
-    <p style="font-size:13px;color:var(--sub);margin:8px 0 12px">复制这段发给另一台手机，在「导入」里粘贴。</p>
-    <div style="background:#F4F2EC;border:1px dashed var(--line);border-radius:10px;padding:12px;
-      font-size:11px;font-family:monospace;word-break:break-all;max-height:200px;overflow:auto">
-      ${esc(b64({t:"events",events:[...store.events.values()]}))}</div>`;
-  openSheet();
-};
-$("btn-import").onclick = ()=>{
-  $("sheet-body").innerHTML = `<h2>导入数据</h2>
-    <textarea id="imp" style="width:100%;min-height:120px;border:1px solid var(--line);
-      border-radius:10px;padding:12px;font-size:12px;font-family:monospace;margin-top:10px"
-      placeholder="粘贴对方导出的内容"></textarea>
-    <button class="btn" id="imp-go" style="margin-top:16px">导入</button>`;
-  openSheet();
-  $("imp-go").onclick = ()=>{
-    try{
-      const n = store.merge(unb64($("imp").value).events || []);
-      closeSheet(); render(); redrawAll(); toast("导入 " + n + " 条");
-    }catch(e){ toast("数据格式不对"); }
+/* ---------------- 分享二维码 ---------------- */
+function b64u(str){
+  const bytes = new TextEncoder().encode(str);
+  let bin = "";
+  bytes.forEach(b => { bin += String.fromCharCode(b); });
+  return btoa(bin).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
+}
+function b64uDecode(s){
+  s = String(s).replace(/-/g,"+").replace(/_/g,"/");
+  while (s.length % 4) s += "=";
+  const bin = atob(s);
+  const bytes = new Uint8Array(bin.length);
+  for (let i=0;i<bin.length;i++) bytes[i] = bin.charCodeAt(i);
+  return new TextDecoder().decode(bytes);
+}
+
+/* 只打包"看得见的信息"，不塞签名和公钥 —— 否则二维码会密到扫不出来 */
+function packItem(s){
+  const p = {
+    v:1, id:s.id, k:s._rider?"r":"s",
+    n:s.name||"", a:s.address||"", ph:s.phone||"", h:s.hours||"",
+    la:+((s.lat||0).toFixed(5)), lo:+((s.lon||0).toFixed(5)),
+    o:s.open===false?0:1, no:s.note||""
   };
-};
+  if (s._rider){
+    p.ve = s.vehicle||""; p.ca = s.capacity||""; p.wi = s.window||"";
+    p.ar = (s.areas||[]).join(",");
+  } else {
+    p.it = (s.items||[]).slice(0,12).map(i=>[i.name, i.unit||"", i.tag||"可议"].join("~"));
+  }
+  return p;
+}
+
+function shareItem(s){
+  const url = location.origin + location.pathname + "?add=" + b64u(JSON.stringify(packItem(s)));
+  $("sheet-body").innerHTML = `
+    <h2>分享「${esc(s.name)}」</h2>
+    <p style="font-size:13px;color:var(--sub);margin:6px 0 16px;line-height:1.7">
+      让邻居用手机相机或微信扫一下，这块门牌就会加到他自己的手机里。</p>
+    <div style="text-align:center;padding:2px 0 14px">
+      <img src="/api/qr?t=${encodeURIComponent(url)}" alt="二维码"
+           style="width:min(74vw,290px);height:auto;border-radius:12px;border:1px solid var(--line);background:#fff">
+    </div>
+    <div style="font-size:11px;color:var(--sub);word-break:break-all;background:#F4F2EC;
+      border-radius:8px;padding:10px;max-height:76px;overflow:auto">${esc(url)}</div>`;
+  openSheet();
+}
+
+function importShared(code){
+  let p;
+  try { p = JSON.parse(b64uDecode(code)); } catch(e){ toast("二维码内容无法识别"); return; }
+  if (!p || p.v !== 1 || !p.n){ toast("这块门牌的数据不完整"); return; }
+  const sid = p.id || ("n-" + Date.now().toString(36));
+  if (Object.keys(stateAll()).includes(sid)){ toast("这块门牌已经在你的手机里了"); return; }
+
+  const fields = {
+    kind: p.k === "r" ? "rider" : "shop",
+    name: p.n, address: p.a || "", phone: p.ph || "", hours: p.h || "",
+    lat: p.la || 0, lon: p.lo || 0, open: p.o !== 0, note: p.no || "",
+    imported: 1
+  };
+  if (p.k === "r"){
+    fields.vehicle = p.ve || ""; fields.capacity = p.ca || "";
+    fields.window = p.wi || ""; fields.areas = (p.ar||"").split(",").filter(Boolean);
+  } else {
+    fields.items = (p.it||[]).map(t=>{
+      const parts = String(t).split("~");
+      return { name: parts[0]||"", unit: parts[1]||"", note:"", tag: parts[2]||"可议" };
+    }).filter(i=>i.name);
+  }
+  store.add("anchor", sid, { fields });
+  render(); redrawAll(); syncNow();
+  toast("已加入：" + p.n);
+  setTimeout(()=>{ const st = stateAll()[sid]; if (st) showDetail(st); }, 90);
+}
 $("btn-reset").onclick = ()=>{
   if (!confirm("会清空这台设备上的标注缓存（密钥保留），然后重新从节点拉取。确定？")) return;
   localStorage.removeItem(K_EV);

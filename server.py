@@ -246,6 +246,43 @@ class Handler(SimpleHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(data)
 
+    def _serve_qr(self, text: str):
+        """生成二维码 SVG。用 qrcode 库保证编码正确，自己写编码器风险太高。"""
+        try:
+            import qrcode
+        except ImportError:
+            return self.send_json(
+                {"error": "缺少 qrcode 库，请运行：pip install qrcode"}, 501)
+        try:
+            qr = qrcode.QRCode(error_correction=qrcode.constants.ERROR_CORRECT_L,
+                               border=2, box_size=1)
+            qr.add_data(text)
+            qr.make(fit=True)
+            m = qr.get_matrix()
+        except Exception as e:
+            return self.send_json({"error": f"内容过长或无法编码：{e}"}, 400)
+
+        n = len(m)
+        scale = 8
+        size = n * scale
+        d = []
+        for y, row in enumerate(m):
+            run = None
+            for x, v in enumerate(row):
+                if v and run is None:
+                    run = x
+                elif not v and run is not None:
+                    d.append(f"M{run*scale} {y*scale}h{(x-run)*scale}v{scale}h-{(x-run)*scale}z")
+                    run = None
+            if run is not None:
+                d.append(f"M{run*scale} {y*scale}h{(n-run)*scale}v{scale}h-{(n-run)*scale}z")
+
+        svg = (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {size} {size}" '
+               f'width="{size}" height="{size}" shape-rendering="crispEdges">'
+               f'<rect width="{size}" height="{size}" fill="#ffffff"/>'
+               f'<path d="{"".join(d)}" fill="#1C1B19"/></svg>')
+        return self.send_bytes(svg.encode("utf-8"), "image/svg+xml")
+
     def _serve_tile(self, rel: str):
         """瓦片代理：本地有就发本地，没有就向上游拉一次并落盘。
 
@@ -345,6 +382,13 @@ class Handler(SimpleHTTPRequestHandler):
 
         if path.startswith("/tiles/"):
             return self._serve_tile(path[len("/tiles/"):])
+
+        # ---- 二维码：把一段文字渲染成 SVG ----
+        if path == "/api/qr":
+            text = (qs.get("t", [""])[0] or "").strip()
+            if not text:
+                return self.send_json({"error": "empty"}, 400)
+            return self._serve_qr(text)
 
         # ---- 事件节点：手机来拉 ----
         if path == "/api/p2p/pull":

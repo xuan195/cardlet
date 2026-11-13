@@ -43,7 +43,8 @@ from identity import Identity, canonical, sha256_hex, device_id_of
 TEMPORAL_FIELDS = {"items", "note"}
 # 结构性字段（店名、地址、营业开关、运力牌内容）：写一次一直算数，直到有人改
 STRUCTURAL_FIELDS = {"kind", "name", "address", "phone", "hours",
-                     "lat", "lon", "tags", "vehicle", "capacity", "areas", "window", "open"}
+                     "lat", "lon", "tags", "vehicle", "capacity", "areas", "window",
+                     "open", "imported"}
 
 DEFAULT_TTL_DAYS = 7          # 营业状态/货品 7 天没人确认就过期
 ANCHOR_TTL_DAYS = 30          # 路人标注 30 天没人认领就淡出

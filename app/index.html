@@ -51,15 +51,17 @@
 
   /* ---------- 工具条 ---------- */
   .toolbar{display:flex;align-items:center;gap:10px;padding:12px 16px 4px}
-  .chips-row{display:flex;gap:7px;flex:1;min-width:0;overflow-x:auto;scrollbar-width:none}
+  .chips-row{display:flex;gap:6px;flex:1;min-width:0;overflow-x:auto;scrollbar-width:none;
+        -webkit-mask-image:linear-gradient(to right,#000 calc(100% - 18px),transparent);
+        mask-image:linear-gradient(to right,#000 calc(100% - 18px),transparent)}
   .chips-row::-webkit-scrollbar{display:none}
-  .chip-btn{flex:none;font-size:13px;padding:7px 13px;border-radius:99px;background:#fff;
+  .chip-btn{flex:none;font-size:12.5px;padding:6px 11px;border-radius:99px;background:#fff;
         border:1px solid var(--line);color:var(--sub);white-space:nowrap;transition:.15s}
   .chip-btn.on{background:var(--ink);border-color:var(--ink);color:#fff;font-weight:500}
-  .viewtoggle{display:flex;background:#EBE8E1;border-radius:9px;padding:3px;flex:none}
-  .viewtoggle button{padding:5px 10px;border-radius:7px;font-size:12px;color:var(--sub);
-        display:flex;align-items:center;gap:4px;transition:.15s}
-  .viewtoggle button.on{background:#fff;color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.08)}
+  .viewtoggle{display:flex;background:#EBE8E1;border-radius:9px;padding:3px;flex:none;gap:2px}
+  .viewtoggle button{width:34px;height:28px;border-radius:7px;color:var(--sub);
+        display:flex;align-items:center;justify-content:center;transition:.15s}
+  .viewtoggle button.on{background:#fff;color:var(--teal);box-shadow:0 1px 2px rgba(0,0,0,.08)}
 
   /* ---------- 内容区 ---------- */
   .wrap{padding:8px 16px 20px}
@@ -220,13 +222,13 @@
       <button class="chip-btn" data-filter="rider">运力</button>
     </div>
     <div class="viewtoggle">
-      <button data-mode="list" class="on">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
-          <path d="M4 6h16M4 12h16M4 18h16" stroke-linecap="round"/></svg>列表
+      <button data-mode="list" class="on" aria-label="列表模式" title="列表">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
+          <path d="M4 6h16M4 12h16M4 18h16" stroke-linecap="round"/></svg>
       </button>
-      <button data-mode="map">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-          <path d="M9 4L4 6v14l5-2 6 2 5-2V4l-5 2-6-2z" stroke-linejoin="round"/></svg>地图
+      <button data-mode="map" aria-label="地图模式" title="地图">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <path d="M9 4L4 6v14l5-2 6 2 5-2V4l-5 2-6-2z" stroke-linejoin="round"/></svg>
       </button>
     </div>
   </div>
@@ -605,6 +607,7 @@ function boot(){
     render(); syncNow();
     if (qs.get("page")) go(qs.get("page"));
     if (qs.get("demo") === "1") seedDemo();
+    if (qs.get("w")) document.body.style.width = Math.max(320, +qs.get("w")) + "px";
     if (qs.get("add")){
       const code = qs.get("add");
       history.replaceState(null, "", location.pathname);   // 刷新时别重复导入

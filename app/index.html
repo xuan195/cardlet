@@ -146,6 +146,9 @@
         border-bottom:1px solid var(--line);font-size:14px}
   .kv:last-child{border-bottom:0}
   .kv .v{color:var(--sub);font-size:13px}
+  .iconbtn{width:38px;height:38px;border-radius:10px;flex:none;display:flex;align-items:center;
+        justify-content:center;color:#A32D2D;background:#FBEDED;transition:.15s}
+  .iconbtn:active{background:#F6DEDE}
 
   /* ---------- 底部导航 ---------- */
   nav{position:fixed;left:0;right:0;bottom:0;z-index:60;background:rgba(255,255,255,.96);
@@ -587,6 +590,7 @@ function boot(){
 
     render(); syncNow();
     if (qs.get("page")) go(qs.get("page"));
+    if (qs.get("demo") === "1") seedDemo();
     setInterval(()=>{ if (document.visibilityState === "visible") syncNow(); }, 6000);
     if (navigator.geolocation) tryGeolocate();
   }, 30);
@@ -594,6 +598,16 @@ function boot(){
 
 function markActive(sel, key){
   document.querySelectorAll(sel).forEach(x=>x.classList.toggle("on", x.dataset[key] === ui[key]));
+}
+
+/* 预览用：在当前设备上造一条本地示例，方便看满状态界面 */
+function seedDemo(){
+  store.add("anchor", "demo-" + Date.now().toString(36), { fields: {
+    kind: "shop", name: "示例小卖部", address: "示例路 1 号", phone: "13800000000",
+    hours: "07:00-22:00", lat: geo.lat, lon: geo.lon,
+    items: [{ name: "冰棍", unit: "根", note: "老冰棍", tag: "零售价" }], open: true
+  }});
+  render();
 }
 
 function fitMaps(){
@@ -770,14 +784,19 @@ function showDetail(s){
       ${esc(s._rider ? [s.vehicle,s.capacity].filter(Boolean).join(" · ") : [s.address,s.hours].filter(Boolean).join(" · "))}</div>
     ${rows || '<div class="itemrow"><span style="color:var(--sub)">今天还没上货</span></div>'}
     ${s.note?`<div class="itemrow"><span style="color:var(--sub);font-size:13px">${esc(s.note)}</span></div>`:""}
+    ${s._mine?`<div class="act">
+      <button class="btn ${s.open===false?"":"ghost"} sm" id="d-toggle">${s.open===false?"恢复营业":"标记歇业"}</button>
+      <button class="btn danger sm" id="d-del">删除</button>
+    </div>`:""}
     <div class="act">
-      ${s._mine?`<button class="btn ${s.open===false?"":"ghost"} sm" id="d-toggle">${s.open===false?"恢复营业":"标记歇业"}</button>`:""}
       <button class="btn ghost sm" id="d-star">${on?"★ 已收藏":"☆ 收藏"}</button>
       ${s.phone?`<a class="btn sm" href="tel:${esc(s.phone)}" style="display:flex;align-items:center;justify-content:center;text-decoration:none;height:38px;border-radius:10px;background:var(--teal);color:#fff;font-size:13.5px;font-weight:500">打电话</a>`:""}
     </div>`;
   $("d-star").onclick = ()=>{ toggleFav(s.id); closeSheet(); };
   const dt = $("d-toggle");
   if (dt) dt.onclick = ()=>{ toggleOpen(s.id, s.open !== false); closeSheet(); };
+  const dd = $("d-del");
+  if (dd) dd.onclick = ()=>{ closeSheet(); deleteItem(s.id); };
   openSheet();
 }
 
@@ -798,6 +817,10 @@ function renderMine(){
       </div>
       <button class="btn ${closed?"":"ghost"} sm" data-toggleopen="${esc(s.id)}" data-cur="${closed?0:1}"
         style="width:auto;padding:0 14px;flex:none">${closed?"开业":"歇业"}</button>
+      <button class="iconbtn" data-del="${esc(s.id)}" aria-label="删除">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
+          <path d="M4 7h16M9.5 7V5.2h5V7M6.5 7l.9 12.2h9.2L17.5 7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
     </div>`;
   }).join("")
     : '<div class="empty" style="padding:26px 10px"><div class="sm">还没发布过。去「发布」挂一块门牌试试。</div></div>';
@@ -825,6 +848,18 @@ function renderMine(){
       toggleOpen(b.dataset.toggleopen, b.dataset.cur === "1");
     };
   });
+  document.querySelectorAll("[data-del]").forEach(b=>{
+    b.onclick = e=>{ e.stopPropagation(); deleteItem(b.dataset.del); };
+  });
+}
+
+/* 删除自己的标注：写一条 retract 事件，只有标注作者发才作数 */
+function deleteItem(id){
+  if (!confirm("删除后这块门牌会从所有邻居的手机上消失，确定吗？")) return;
+  store.add("retract", id, {});
+  if (favs.has(id)){ favs.delete(id); localStorage.setItem(K_FAV, JSON.stringify([...favs])); }
+  render(); redrawAll(); syncNow();
+  toast("已删除");
 }
 
 /* ---------------- 发布 ---------------- */

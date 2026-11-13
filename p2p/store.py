@@ -228,9 +228,14 @@ def reduce_events(events: list, pubkeys: dict, now: datetime = None,
         groups.setdefault(ev["target"], []).append(ev)
 
     # 只有认领、没有 anchor 的孤儿不算一家店
-    return {shop_id: _reduce_one(shop_id, group, now, rc_all.get(shop_id, {}))
-            for shop_id, group in groups.items()
-            if any(e["type"] == "anchor" for e in group)}
+    out = {}
+    for shop_id, group in groups.items():
+        if not any(e["type"] == "anchor" for e in group):
+            continue
+        reduced = _reduce_one(shop_id, group, now, rc_all.get(shop_id, {}))
+        if reduced is not None:
+            out[shop_id] = reduced
+    return out
 
 
 def _reduce_one(shop_id: str, group: list, now: datetime, rc: dict) -> dict:
@@ -251,8 +256,16 @@ def _reduce_one(shop_id: str, group: list, now: datetime, rc: dict) -> dict:
 
     # 谁说的话算数：店主 > 标注作者 > 其他人
     authority = owner
-    if not authority and anchors:
-        authority = sorted(anchors, key=lambda e: (e["ts"], e["id"]))[0]["author"]
+    anchor_author = None
+    if anchors:
+        anchor_author = sorted(anchors, key=lambda e: (e["ts"], e["id"]))[0]["author"]
+        if not authority:
+            authority = anchor_author
+
+    # 撤回：只有标注作者能删自己的标注
+    # 日志只增不减，所以用一条 retract 事件把整条记录作废
+    if any(e["type"] == "retract" and e["author"] == anchor_author for e in group):
+        return None
 
     state = {"id": shop_id}
     conflicts = {}

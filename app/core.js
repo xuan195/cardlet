@@ -360,7 +360,8 @@
     for (const [shop, group] of Object.entries(groups)) {
       // 只有认领、没有 anchor 的孤儿不算一家店
       if (!group.some(e => e.type === "anchor")) continue;
-      out[shop] = reduceOne(shop, group, now, rcAll[shop] || {});
+      const reduced = reduceOne(shop, group, now, rcAll[shop] || {});
+      if (reduced) out[shop] = reduced;
     }
     return out;
   }
@@ -383,9 +384,11 @@
 
     // 谁说的话算数：店主 > 标注作者 > 其他人
     // 没有认购流程时，标注作者就是这家店的"话事人"
-    const authority = owner || (anchors.length
-      ? [...anchors].sort(byCand)[0].author
-      : null);
+    const anchorAuthor = anchors.length ? [...anchors].sort(byCand)[0].author : null;
+    const authority = owner || anchorAuthor;
+
+    // 撤回：只有标注作者能删自己的标注。日志只增不减，所以用一条 retract 事件作废整条记录
+    if (group.some(e => e.type === "retract" && e.author === anchorAuthor)) return null;
 
     const state = { id: shopId };
     const conflicts = {};

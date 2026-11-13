@@ -199,6 +199,18 @@ def main():
     st = solo.state(NOW)["solo_shop"]
     check("无根时首个认领生效（否则永远起不来）", st["trust"] == "L2", st["trust"])
 
+    print("[15] 撤回：只有标注作者能删自己的标注")
+    r = mk(owner_a)
+    r.add("anchor", "del-me", {"fields": {"name": "临时店"}}, ts=ts(20))
+    check("标注建立成功", "del-me" in r.state(NOW))
+    p = mk(passer1)
+    p.merge(list(r.events.values()))
+    p.add("retract", "del-me", {}, ts=ts(15))
+    check("别人撤回无效", "del-me" in p.state(NOW))
+    r.merge(list(p.events.values()))
+    r.add("retract", "del-me", {}, ts=ts(10))
+    check("作者撤回后消失", "del-me" not in r.state(NOW))
+
     print(f"\n结果：{passed} 通过 / {failed} 失败\n")
     return 0 if failed == 0 else 1
 

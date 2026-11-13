@@ -184,6 +184,24 @@
   .sheet .act{display:flex;gap:10px;margin-top:16px}
   .sheet .act .btn{flex:1}
 
+  /* ---------- 实时扫码 ---------- */
+  #scanwrap{position:fixed;inset:0;z-index:200;background:#000;
+    display:flex;flex-direction:column;align-items:center;justify-content:center}
+  #scanwrap.hidden{display:none!important}
+  #scanvid{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+  #scanwrap .sframe{position:relative;width:min(66vw,238px);height:min(66vw,238px);
+    border-radius:16px;border:2px solid rgba(255,255,255,.92);
+    box-shadow:0 0 0 9999px rgba(0,0,0,.58);overflow:hidden}
+  #scanwrap .sframe i{position:absolute;left:0;right:0;top:0;height:2px;
+    background:linear-gradient(90deg,transparent,#7BD1C4,transparent);animation:swipe 2.4s linear infinite}
+  @keyframes swipe{0%{transform:translateY(0)}100%{transform:translateY(min(66vw,238px))}}
+  #scanwrap .shint{position:relative;margin-top:24px;color:#fff;font-size:13.5px;
+    letter-spacing:.3px;text-shadow:0 1px 4px rgba(0,0,0,.7)}
+  #scanwrap .sclose{position:absolute;top:calc(env(safe-area-inset-top) + 14px);right:16px;
+    width:36px;height:36px;border-radius:50%;background:rgba(0,0,0,.45);color:#fff;
+    border:1px solid rgba(255,255,255,.4);font-size:15px;line-height:1;
+    display:flex;align-items:center;justify-content:center}
+
   .hidden{display:none!important}
 </style>
 </head>
@@ -382,6 +400,13 @@
   <div class="grab"></div>
   <button class="sheet-close" id="sheet-close" aria-label="关闭">✕</button>
   <div id="sheet-body"></div>
+</div>
+
+<div id="scanwrap" class="hidden">
+  <video id="scanvid" playsinline muted autoplay></video>
+  <div class="sframe"><i></i></div>
+  <p class="shint" id="shint">对准对方的二维码，识别到就自动加进来</p>
+  <button class="sclose" id="scanclose" aria-label="关闭">✕</button>
 </div>
 
 <input type="file" id="scan-input" accept="image/*" capture="environment" style="display:none">
@@ -676,7 +701,14 @@ function anchorAuthor(shopId){
   }
   return null;
 }
-function isMine(s){ return anchorAuthor(s.id) === identity.deviceId; }
+/* 这块钱到底是我写的、还是邻居捎来的？
+   扫别人的码进来时，那条 anchor 是用我自己密钥重签的（技术上绕不开），
+   所以只看作者会把别人的店算成我的 —— 必须再用 imported 挡一道。
+   捎来的店我没有处置权：不能歇业、不能删。 */
+function isMine(s){
+  if (!s || s.imported) return false;
+  return anchorAuthor(s.id) === identity.deviceId;
+}
 
 function allItems(){
   return Object.values(stateAll()).map(s=>({ ...s, _mine: isMine(s), _rider: isRider(s) }))
@@ -830,12 +862,32 @@ function showDetail(raw){
            <button class="btn ghost sm" id="d-share">分享</button>
            <button class="btn ghost sm" id="d-star">${on?"★ 已收藏":"☆ 收藏"}</button>
            ${s.phone?`<a class="btn sm" href="tel:${esc(s.phone)}" style="display:flex;align-items:center;justify-content:center;text-decoration:none;height:38px;border-radius:10px;background:var(--teal);color:#fff;font-size:13.5px;font-weight:500">打电话</a>`:""}
-         </div>`}`;
+         </div>
+         ${s.imported
+           ? `<p style="font-size:11.5px;color:var(--sub);line-height:1.75;margin-top:14px">
+                这块门牌是邻居捎来的。歇业、改内容、删除，只有发布者本人才做得动。</p>
+              <button id="d-drop" style="display:block;margin:10px auto 0;background:none;border:0;
+                color:var(--sub);font-size:12px;text-decoration:underline;padding:6px 10px">
+                从我这台手机上移除</button>`
+           : ""}`}`;
   $("d-share").onclick = ()=> shareItem(s);
   const st = $("d-star"); if (st) st.onclick = ()=>{ toggleFav(s.id); closeSheet(); };
   const dt = $("d-toggle"); if (dt) dt.onclick = ()=>{ toggleOpen(s.id, s.open !== false); closeSheet(); };
   const dd = $("d-del"); if (dd) dd.onclick = ()=>{ closeSheet(); deleteItem(s.id); };
+  const dro = $("d-drop"); if (dro) dro.onclick = ()=>{ closeSheet(); dropCopy(s.id); };
   openSheet();
+}
+
+/* 把邻居捎来的那副本从本机抹掉。只删本地事件，不影响原发布者。 */
+function dropCopy(id){
+  if (!confirm("只从这台手机上移除，原发布者和其他人都还在。")) return;
+  const gone = [];
+  for (const e of [...store.events.values()]) if (e.target === id) gone.push(e.id);
+  for (const eid of gone) store.events.delete(eid);
+  store.save();
+  if (favs.has(id)){ favs.delete(id); localStorage.setItem(K_FAV, JSON.stringify([...favs])); }
+  render(); redrawAll();
+  toast("已从本机移除");
 }
 
 /* ---------------- 渲染：我的 ---------------- */
@@ -1125,7 +1177,7 @@ function shareItem(s){
   $("sheet-body").innerHTML = `
     <h2>分享「${esc(s.name)}」</h2>
     <p style="font-size:13px;color:var(--sub);margin:6px 0 16px;line-height:1.7">
-      对方在门牌里点右上角<b>扫一扫</b>，拍下这个码，这块门牌就加到他手机里了。</p>
+      对方在门牌里点右上角<b>扫一扫</b>，对准这个码，就自动加到他手机里了。</p>
     <div style="text-align:center;padding:2px 0 12px">
       <div style="display:inline-block;padding:12px;background:#fff;border-radius:12px;
         border:1px solid var(--line);line-height:0">${art}</div>
@@ -1140,8 +1192,112 @@ function shareItem(s){
   openSheet();
 }
 
-/* 扫一扫：用系统相机拍一张，本地解码。http 下浏览器不给实时摄像头，
-   但「拍照 → 本地识别」不需要安全上下文，所以这条路更稳。 */
+/* 扫一扫 ------------------------------------------------------------------
+   首选实时取景：摄像头画面逐帧丢给 jsQR，对准就自动收进来。
+   拿不到摄像头（老浏览器 / 非安全上下文）才退回「系统相机拍一张再认」。 */
+let scanStream = null, scanRAF = 0, scanCanvas = null, scanCtx = null;
+let scanLast = 0, scanPushed = false;
+
+async function openScanner(){
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia){
+    showPhotoFallback("这个环境不给用摄像头");
+    return;
+  }
+  let stream = null;
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({
+      audio: false,
+      video: { facingMode: { ideal: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } }
+    });
+  } catch (e){
+    showPhotoFallback("摄像头没能打开");
+    return;
+  }
+  scanStream = stream;
+  $("scanwrap").classList.remove("hidden");
+  const v = $("scanvid");
+  v.srcObject = stream;
+  try { await v.play(); } catch(e){ }
+  try { history.pushState({ scan: 1 }, ""); scanPushed = true; } catch(e){ scanPushed = false; }
+
+  if (!scanCanvas){
+    scanCanvas = document.createElement("canvas");
+    scanCtx = scanCanvas.getContext("2d", { willReadFrequently: true });
+  }
+  scanLast = 0;
+  scanRAF = requestAnimationFrame(scanTick);
+}
+
+function scanTick(ts){
+  if (!scanStream){ scanRAF = 0; return; }
+  const v = $("scanvid");
+  if (v && v.videoWidth && ts - scanLast > 110){
+    scanLast = ts;
+    const vw = v.videoWidth, vh = v.videoHeight;
+    const k = Math.min(1, 700 / Math.max(vw, vh));
+    const w = Math.round(vw * k), h = Math.round(vh * k);
+    if (scanCanvas.width !== w || scanCanvas.height !== h){
+      scanCanvas.width = w; scanCanvas.height = h;
+    }
+    scanCtx.drawImage(v, 0, 0, w, h);
+    const img = scanCtx.getImageData(0, 0, w, h);
+    const found = window.jsQR
+      ? jsQR(img.data, img.width, img.height, { inversionAttempts: "dontInvert" })
+      : null;
+    if (found && found.data){
+      const text = found.data;
+      closeScanner();
+      if (navigator.vibrate){ try { navigator.vibrate(45); } catch(e){ } }
+      handleScanText(text);
+      return;
+    }
+  }
+  scanRAF = requestAnimationFrame(scanTick);
+}
+
+function tearDownScanner(){
+  if (scanRAF){ cancelAnimationFrame(scanRAF); scanRAF = 0; }
+  if (scanStream){
+    scanStream.getTracks().forEach(t=>{ try { t.stop(); } catch(e){ } });
+    scanStream = null;
+  }
+  const v = $("scanvid"); if (v) v.srcObject = null;
+  const w = $("scanwrap"); if (w) w.classList.add("hidden");
+}
+
+/* 点 ✕ 或按手机返回键都走这里 */
+function closeScanner(){
+  tearDownScanner();
+  if (scanPushed){ scanPushed = false; try { history.back(); } catch(e){ } }
+}
+window.addEventListener("popstate", ()=>{
+  if (scanPushed){ scanPushed = false; tearDownScanner(); }
+});
+$("scanclose").onclick = closeScanner;
+
+/* 摄像头不可用时的退路 */
+function showPhotoFallback(reason){
+  $("sheet-body").innerHTML = `
+    <h2>没法实时取景</h2>
+    <p style="font-size:13px;color:var(--sub);margin:6px 0 16px;line-height:1.7">
+      ${esc(reason)}。改用系统相机拍一张，照片里只要有二维码就能认出来。</p>
+    <div class="act">
+      <button class="btn" id="d-photo">打开相机拍一张</button>
+      <button class="btn ghost" id="d-photo-cancel" style="flex:none;width:auto;padding:0 18px">取消</button>
+    </div>`;
+  openSheet();
+  $("d-photo").onclick = ()=>{ closeSheet(); setTimeout(()=>$("scan-input").click(), 60); };
+  $("d-photo-cancel").onclick = closeSheet;
+}
+
+/* 二维码里可能是一段带 ?add= 的链接，也可能就是裸数据 */
+function handleScanText(text){
+  let payload = String(text || "");
+  const m = payload.match(/[?&]add=([^&]+)/);
+  if (m) payload = decodeURIComponent(m[1]);
+  importShared(payload);
+}
+
 async function scanPhoto(file){
   const url = URL.createObjectURL(file);
   const img = await new Promise((res, rej)=>{
@@ -1162,11 +1318,7 @@ async function scanPhoto(file){
     ? jsQR(data.data, data.width, data.height, { inversionAttempts: "attemptBoth" })
     : null;
   if (!found || !found.data){ toast("没认出二维码，靠近点再拍一张"); return; }
-
-  let payload = found.data;
-  const m = payload.match(/[?&]add=([^&]+)/);
-  if (m) payload = decodeURIComponent(m[1]);
-  importShared(payload);
+  handleScanText(found.data);
 }
 
 function importShared(code){
@@ -1193,10 +1345,10 @@ function importShared(code){
   }
   store.add("anchor", sid, { fields });
   render(); redrawAll(); syncNow();
-  toast("已加入：" + p.n);
+  toast("收下了：" + p.n);
   setTimeout(()=>{ const st = stateAll()[sid]; if (st) showDetail(st); }, 90);
 }
-$("btn-scan").onclick = ()=> $("scan-input").click();
+$("btn-scan").onclick = ()=> openScanner();
 $("scan-input").onchange = async e => {
   const f = e.target.files && e.target.files[0];
   e.target.value = "";

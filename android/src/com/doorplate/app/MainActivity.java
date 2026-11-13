@@ -1,10 +1,14 @@
 package com.doorplate.app;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.KeyEvent;
+import android.webkit.PermissionRequest;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
@@ -20,6 +24,7 @@ import android.webkit.WebViewClient;
 public class MainActivity extends Activity {
 
     private static final int REQ_FILE = 1001;
+    private static final int REQ_CAM = 1002;
     private WebView web;
     private ValueCallback<Uri[]> fileCallback;
 
@@ -41,8 +46,27 @@ public class MainActivity extends Activity {
             s.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
         } catch (Throwable ignored) { }
 
+        // 扫一扫要实时取景：系统层面先要到 CAMERA 权限
+        askCameraPermission();
+
         web.setWebViewClient(new WebViewClient());
         web.setWebChromeClient(new WebChromeClient() {
+            /* 页面里调 getUserMedia 时 WebView 默认一律拒绝，这里必须放行，
+               否则前端只能退回「拍一张再认」那条老路。 */
+            @Override
+            public void onPermissionRequest(final PermissionRequest request) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            request.grant(request.getResources());
+                        } catch (Throwable t) {
+                            try { request.deny(); } catch (Throwable ignored) { }
+                        }
+                    }
+                });
+            }
+
             @Override
             public boolean onShowFileChooser(WebView view,
                                              ValueCallback<Uri[]> callback,
@@ -68,6 +92,12 @@ public class MainActivity extends Activity {
 
         setContentView(web);
         web.loadUrl("file:///android_asset/index.html");
+    }
+
+    private void askCameraPermission() {
+        if (Build.VERSION.SDK_INT < 23) return;
+        if (checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) return;
+        requestPermissions(new String[]{ Manifest.permission.CAMERA }, REQ_CAM);
     }
 
     @Override

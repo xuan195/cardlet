@@ -1,9 +1,14 @@
+# 本文件位于 doorplate/ 下，路径相对本目录
 .shots/
 __pycache__/
 *.pyc
-doorplate/p2p/_keys/
-doorplate/app/_interop/
-doorplate/data/tiles/
-doorplate/data/events.jsonl
-doorplate/android/build/
-doorplate/android/assets/
+p2p/_keys/
+app/_interop/
+
+# 运行时数据
+data/tiles/
+data/events.jsonl
+
+# APK 构建中间产物（doorplate.apk 本体仍入库）
+android/build/
+android/assets/

@@ -218,8 +218,13 @@ class Handler(SimpleHTTPRequestHandler):
         return str(WEB / rel)
 
     def log_message(self, fmt, *args):
-        if "/api/" in (args[0] if args else ""):
-            sys.stderr.write("[%s] %s\n" % (self.log_date_time_string(), fmt % args))
+        # args 里可能是 HTTPStatus 之类的非字符串，先拼成整串再判断，别直接下标
+        try:
+            msg = fmt % args if args else str(fmt)
+        except Exception:
+            msg = str(fmt)
+        if "/api/" in msg:
+            sys.stderr.write("[%s] %s\n" % (self.log_date_time_string(), msg))
 
     # ---------- 响应 ----------
     def send_json(self, obj, code=200):

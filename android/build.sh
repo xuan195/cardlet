@@ -33,8 +33,8 @@ echo "==> aapt2 link（清单 + 资源）"
   -A "$HERE/assets" \
   --min-sdk-version 21 \
   --target-sdk-version 34 \
-  --version-code 1 \
-  --version-name 1.0
+  --version-code 2 \
+  --version-name 1.1
 
 echo "==> javac"
 javac -nowarn -encoding UTF-8 -source 8 -target 8 \

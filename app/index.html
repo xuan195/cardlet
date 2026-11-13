@@ -189,7 +189,17 @@
 <header class="appbar">
   <div class="row1">
     <h1>门牌</h1>
-    <span class="pill" id="syncpill">同步中</span>
+    <div style="display:flex;align-items:center;gap:8px">
+      <button id="btn-scan" aria-label="扫一扫"
+        style="width:34px;height:34px;border-radius:10px;background:#fff;border:1px solid var(--line);
+               display:flex;align-items:center;justify-content:center;color:var(--ink)">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
+          <path d="M4 8V5.5A1.5 1.5 0 015.5 4H8M16 4h2.5A1.5 1.5 0 0120 5.5V8M20 16v2.5a1.5 1.5 0 01-1.5 1.5H16M8 20H5.5A1.5 1.5 0 014 18.5V16" stroke-linecap="round"/>
+          <path d="M4 12h16" stroke-linecap="round"/>
+        </svg>
+      </button>
+      <span class="pill" id="syncpill">同步中</span>
+    </div>
   </div>
   <div class="searchbox" id="searchbox">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
@@ -368,6 +378,8 @@
   <div id="sheet-body"></div>
 </div>
 
+<input type="file" id="scan-input" accept="image/*" capture="environment" style="display:none">
+<script src="vendor/jsQR.js"></script>
 <script src="core.js"></script>
 <script>
 /* =========================================================
@@ -1069,18 +1081,53 @@ function packItem(s){
 }
 
 function shareItem(s){
-  const url = location.origin + location.pathname + "?add=" + b64u(JSON.stringify(packItem(s)));
+  const code = b64u(JSON.stringify(packItem(s)));
+  const link = location.origin + location.pathname + "?add=" + code;
   $("sheet-body").innerHTML = `
     <h2>分享「${esc(s.name)}」</h2>
     <p style="font-size:13px;color:var(--sub);margin:6px 0 16px;line-height:1.7">
-      让邻居用手机相机或微信扫一下，这块门牌就会加到他自己的手机里。</p>
-    <div style="text-align:center;padding:2px 0 14px">
-      <img src="/api/qr?t=${encodeURIComponent(url)}" alt="二维码"
+      对方在门牌里点右上角<b>扫一扫</b>，拍下这个码，这块门牌就加到他手机里了。</p>
+    <div style="text-align:center;padding:2px 0 12px">
+      <img src="/api/qr?t=${encodeURIComponent(code)}" alt="二维码"
            style="width:min(74vw,290px);height:auto;border-radius:12px;border:1px solid var(--line);background:#fff">
     </div>
-    <div style="font-size:11px;color:var(--sub);word-break:break-all;background:#F4F2EC;
-      border-radius:8px;padding:10px;max-height:76px;overflow:auto">${esc(url)}</div>`;
+    <p style="font-size:11.5px;color:var(--sub);line-height:1.7;text-align:center">
+      这个码里只有店铺信息，不带任何服务器地址。<br>换个地方、换台电脑，一样能扫。</p>
+    <details style="margin-top:12px">
+      <summary style="font-size:11.5px;color:var(--sub);cursor:pointer">同一 WiFi 时想直接打开？</summary>
+      <div style="font-size:11px;color:var(--sub);word-break:break-all;background:#F4F2EC;
+        border-radius:8px;padding:10px;margin-top:8px;max-height:72px;overflow:auto">${esc(link)}</div>
+    </details>`;
   openSheet();
+}
+
+/* 扫一扫：用系统相机拍一张，本地解码。http 下浏览器不给实时摄像头，
+   但「拍照 → 本地识别」不需要安全上下文，所以这条路更稳。 */
+async function scanPhoto(file){
+  const url = URL.createObjectURL(file);
+  const img = await new Promise((res, rej)=>{
+    const i = new Image();
+    i.onload = ()=>res(i); i.onerror = rej; i.src = url;
+  });
+  const max = 1400;
+  const scale = Math.min(1, max / Math.max(img.width, img.height));
+  const c = document.createElement("canvas");
+  c.width = Math.round(img.width * scale);
+  c.height = Math.round(img.height * scale);
+  const ctx = c.getContext("2d", { willReadFrequently: true });
+  ctx.drawImage(img, 0, 0, c.width, c.height);
+  URL.revokeObjectURL(url);
+
+  const data = ctx.getImageData(0, 0, c.width, c.height);
+  const found = window.jsQR
+    ? jsQR(data.data, data.width, data.height, { inversionAttempts: "attemptBoth" })
+    : null;
+  if (!found || !found.data){ toast("没认出二维码，靠近点再拍一张"); return; }
+
+  let payload = found.data;
+  const m = payload.match(/[?&]add=([^&]+)/);
+  if (m) payload = decodeURIComponent(m[1]);
+  importShared(payload);
 }
 
 function importShared(code){
@@ -1110,6 +1157,14 @@ function importShared(code){
   toast("已加入：" + p.n);
   setTimeout(()=>{ const st = stateAll()[sid]; if (st) showDetail(st); }, 90);
 }
+$("btn-scan").onclick = ()=> $("scan-input").click();
+$("scan-input").onchange = async e => {
+  const f = e.target.files && e.target.files[0];
+  e.target.value = "";
+  if (!f) return;
+  try { await scanPhoto(f); } catch(err){ toast("图片读取失败"); }
+};
+
 $("btn-reset").onclick = ()=>{
   if (!confirm("会清空这台设备上的标注缓存（密钥保留），然后重新从节点拉取。确定？")) return;
   localStorage.removeItem(K_EV);

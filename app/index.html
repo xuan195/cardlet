@@ -2,682 +2,1008 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>门牌 · 本地</title>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#F7F6F2">
+<title>门牌</title>
 <style>
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-  :root{--paper:#F7F6F2;--card:#FFF;--ink:#1F2937;--sub:#6B7280;--line:#E5E3DC;
-        --teal:#0F6E56;--teal-l:#E1F5EE;--amber:#B45309;--amber-l:#FAEEDA;--red:#A32D2D}
-  html,body{overflow-x:hidden;max-width:100vw}
-  body{font-family:system-ui,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--paper);
-       color:var(--ink);padding-bottom:68px}
-  header{position:sticky;top:0;z-index:50;background:var(--paper);padding:10px 16px 8px;border-bottom:1px solid var(--line)}
-  .hrow{display:flex;align-items:center;justify-content:space-between;gap:8px}
-  header h1{font-size:17px;letter-spacing:2px}
-  .pill{font-size:11px;padding:3px 9px;border-radius:99px;background:#EFEEE8;color:var(--sub)}
-  .pill.ok{background:var(--teal-l);color:var(--teal)}
-  .pill.err{background:#FCEBEB;color:var(--red)}
-  .wrap{padding:10px 12px}
-  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:10px}
-  .card h3{font-size:15px;display:flex;align-items:center;gap:8px;margin-bottom:6px}
-  .sec-title{font-size:13px;color:var(--sub);margin:14px 2px 8px;letter-spacing:1px}
-  .badge{font-size:11px;padding:2px 8px;border-radius:99px;background:var(--teal-l);color:var(--teal);font-weight:500;flex:none}
-  .badge.l0{background:#F1EFE8;color:#6B6A63}
-  .badge.l1{background:#E6F1FB;color:#0C447C}
-  .badge.wait{background:var(--amber-l);color:#633806}
-  .badge.rider{background:#E6F1FB;color:#0C447C}
-  .meta{font-size:12px;color:var(--sub);line-height:1.7}
-  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
-  .chip{font-size:12px;background:#F2F1EC;border-radius:6px;padding:4px 8px;color:#3F3D37}
-  .chip i{font-style:normal;color:var(--amber);margin-left:4px;font-size:11px}
-  label{display:block;font-size:12px;color:var(--sub);margin:10px 0 4px}
-  input,textarea{border:1px solid var(--line);border-radius:8px;padding:10px;font-size:15px;
-        font-family:inherit;background:#FCFCFA;color:var(--ink);width:100%}
-  textarea{min-height:76px;font-size:12px;font-family:ui-monospace,monospace}
-  .btn{width:100%;border:0;border-radius:10px;padding:13px;font-size:15px;font-weight:600;
-       background:var(--teal);color:#fff;margin-top:10px;cursor:pointer}
-  .btn.ghost{background:#fff;color:var(--teal);border:1px solid var(--teal)}
-  .btn.sm{padding:7px 12px;font-size:13px;width:auto;margin:0}
-  .row{display:flex;gap:8px;margin-top:10px}
-  .row>*{flex:1}
-  .hint{font-size:11px;color:var(--sub);line-height:1.7;margin-top:8px}
-  .mapbox{position:relative;margin-top:8px;border-radius:10px;overflow:hidden;background:#E8E6DF}
-  #map{display:block;width:100%;height:220px;touch-action:none}
-  .mapctl{position:absolute;right:8px;top:8px;display:flex;flex-direction:column;gap:6px}
-  .mapctl button{width:34px;height:34px;border:0;border-radius:8px;background:rgba(255,255,255,.94);
-       font-size:17px;color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.14);cursor:pointer}
-  .attr{position:absolute;left:6px;bottom:4px;font-size:9px;color:#5F5E5A;background:rgba(255,255,255,.72);
-        padding:1px 4px;border-radius:3px}
-  .loadbar{position:absolute;left:0;right:0;top:0;height:2px;background:var(--amber);width:0;transition:width .2s}
-  .seg{display:flex;background:#EDEBE4;border-radius:10px;padding:3px;margin-bottom:12px}
-  .seg button{flex:1;border:0;background:none;padding:9px;border-radius:8px;font-size:14px;
-        color:var(--sub);font-family:inherit;cursor:pointer}
-  .seg button.on{background:#fff;color:var(--teal);font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,.08)}
-  nav{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);
-      display:flex;padding:7px 0 calc(7px + env(safe-area-inset-bottom));z-index:60}
-  nav button{flex:1;background:none;border:0;font-size:12px;color:var(--sub);font-family:inherit;cursor:pointer}
+  :root{
+    --paper:#F5F4EF; --card:#FFFFFF; --ink:#1C1B19; --sub:#7A756C; --line:#E6E3DA;
+    --teal:#0F6E56; --teal-2:#12805F; --teal-soft:#E4F2EC;
+    --amber:#B45309; --amber-soft:#FBEEDC;
+    --blue:#1D5FA8; --blue-soft:#E7F0FA;
+    --shadow:0 1px 2px rgba(28,27,25,.06), 0 4px 14px rgba(28,27,25,.05);
+    --r-card:14px; --r-ctrl:10px;
+  }
+  html,body{height:100%;overflow-x:hidden}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+    background:var(--paper); color:var(--ink); font-size:15px; line-height:1.5;
+    -webkit-font-smoothing:antialiased; padding-bottom:calc(64px + env(safe-area-inset-bottom));
+  }
+  button{font-family:inherit;cursor:pointer;border:0;background:none;color:inherit}
+  input,textarea{font-family:inherit;font-size:16px;color:var(--ink)}
+  input::placeholder,textarea::placeholder{color:#A8A29A}
+
+  /* ---------- 顶栏 ---------- */
+  .appbar{position:sticky;top:0;z-index:40;background:rgba(245,244,239,.94);
+          backdrop-filter:saturate(180%) blur(12px);-webkit-backdrop-filter:saturate(180%) blur(12px);
+          padding:12px 16px 10px;border-bottom:1px solid var(--line)}
+  .appbar .row1{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:28px}
+  .appbar h1{font-size:19px;font-weight:600;letter-spacing:3px}
+  .pill{font-size:11px;padding:4px 10px;border-radius:99px;background:#EEECE5;color:var(--sub);
+        display:inline-flex;align-items:center;gap:5px;white-space:nowrap;transition:.2s}
+  .pill::before{content:"";width:6px;height:6px;border-radius:50%;background:#B9B4AA}
+  .pill.ok{background:var(--teal-soft);color:var(--teal)}
+  .pill.ok::before{background:var(--teal)}
+  .pill.err{background:#FBE9E9;color:#A32D2D}
+  .pill.err::before{background:#A32D2D}
+
+  /* ---------- 搜索 ---------- */
+  .searchbox{position:relative;margin-top:10px}
+  .searchbox svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);opacity:.42}
+  .searchbox input{width:100%;height:42px;border-radius:var(--r-ctrl);border:1px solid var(--line);
+        background:#fff;padding:0 38px 0 38px;font-size:15px;transition:.15s}
+  .searchbox input:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px rgba(15,110,86,.1)}
+  .searchbox .clear{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:30px;height:30px;
+        border-radius:50%;display:none;align-items:center;justify-content:center;color:var(--sub);font-size:16px}
+  .searchbox .clear.show{display:flex}
+
+  /* ---------- 工具条 ---------- */
+  .toolbar{display:flex;align-items:center;gap:10px;padding:12px 16px 4px}
+  .chips-row{display:flex;gap:7px;flex:1;overflow-x:auto;scrollbar-width:none}
+  .chips-row::-webkit-scrollbar{display:none}
+  .chip-btn{flex:none;font-size:13px;padding:7px 13px;border-radius:99px;background:#fff;
+        border:1px solid var(--line);color:var(--sub);white-space:nowrap;transition:.15s}
+  .chip-btn.on{background:var(--ink);border-color:var(--ink);color:#fff;font-weight:500}
+  .viewtoggle{display:flex;background:#EBE8E1;border-radius:9px;padding:3px;flex:none}
+  .viewtoggle button{padding:5px 10px;border-radius:7px;font-size:12px;color:var(--sub);
+        display:flex;align-items:center;gap:4px;transition:.15s}
+  .viewtoggle button.on{background:#fff;color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.08)}
+
+  /* ---------- 内容区 ---------- */
+  .wrap{padding:8px 16px 20px}
+  .sec-label{font-size:12px;color:var(--sub);letter-spacing:1px;margin:14px 2px 8px;
+        display:flex;align-items:center;gap:6px}
+  .sec-label b{font-weight:500;color:var(--ink)}
+
+  .card{position:relative;background:var(--card);border:1px solid var(--line);border-radius:var(--r-card);
+        padding:14px 48px 14px 14px;margin-bottom:10px;box-shadow:var(--shadow);
+        transition:transform .12s ease,box-shadow .12s ease}
+  .card:active{transform:scale(.988)}
+  .card h3{font-size:16px;font-weight:600;display:flex;align-items:center;gap:7px;
+        overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .card .sub{font-size:12.5px;color:var(--sub);margin-top:4px;
+        overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .tagline{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
+  .tag{font-size:11.5px;padding:3px 8px;border-radius:6px;background:#F2F0EA;color:#55524B}
+  .tag .p{color:var(--amber);margin-left:4px}
+  .badge{font-size:10.5px;padding:2px 7px;border-radius:99px;background:var(--teal-soft);
+         color:var(--teal);font-weight:500;flex:none}
+  .badge.mine{background:var(--blue-soft);color:var(--blue)}
+  .badge.rider{background:var(--blue-soft);color:var(--blue)}
+  .star{position:absolute;right:8px;top:10px;width:36px;height:36px;border-radius:50%;
+        display:flex;align-items:center;justify-content:center;color:#C6C1B6;transition:.15s}
+  .star.on{color:#E0A020}
+  .star:active{background:#F2F0EA}
+  .empty{text-align:center;padding:52px 24px;color:var(--sub)}
+  .empty .big{font-size:15px;color:var(--ink);margin-bottom:6px;font-weight:500}
+  .empty .sm{font-size:13px;line-height:1.7}
+  .empty .btn{margin:18px auto 0;max-width:220px}
+
+  /* ---------- 地图 ---------- */
+  .mapwrap{position:relative;border-radius:var(--r-card);overflow:hidden;background:#E4E2DA;
+        box-shadow:var(--shadow);border:1px solid var(--line)}
+  .mapwrap.fill{height:calc(100dvh - 262px);min-height:300px}
+  .mapwrap canvas{display:block;width:100%;height:100%;touch-action:none}
+  .mapctl{position:absolute;right:10px;bottom:14px;display:flex;flex-direction:column;gap:8px}
+  .mapctl button{width:38px;height:38px;border-radius:11px;background:rgba(255,255,255,.96);
+        box-shadow:0 2px 6px rgba(0,0,0,.14);font-size:17px;color:var(--ink);
+        display:flex;align-items:center;justify-content:center}
+  .mapctl button:active{background:#EFEDE6}
+  .attrib{position:absolute;left:8px;bottom:5px;font-size:9.5px;color:#6B675F;
+        background:rgba(255,255,255,.78);padding:1px 5px;border-radius:4px}
+  .loadbar{position:absolute;left:0;right:0;top:0;height:2.5px;background:var(--amber);
+        width:0;transition:width .25s;z-index:5}
+  .pin-hint{position:absolute;left:50%;bottom:14px;transform:translateX(-50%);
+        background:rgba(28,27,25,.82);color:#fff;font-size:12px;padding:7px 14px;border-radius:99px;
+        pointer-events:none;transition:.2s;white-space:nowrap}
+  .pin-hint.hide{opacity:0}
+
+  /* ---------- 表单 ---------- */
+  .form-card{background:var(--card);border:1px solid var(--line);border-radius:var(--r-card);
+        padding:16px;box-shadow:var(--shadow)}
+  .field{margin-top:14px}
+  .field:first-child{margin-top:0}
+  .field label{display:block;font-size:12.5px;color:var(--sub);margin-bottom:6px}
+  .field input,.field textarea{width:100%;border:1px solid var(--line);border-radius:var(--r-ctrl);
+        background:#FCFBF8;padding:11px 12px;transition:.15s}
+  .field input{height:46px}
+  .field textarea{min-height:84px;resize:vertical;font-size:14px;line-height:1.6}
+  .field input:focus,.field textarea:focus{outline:none;border-color:var(--teal);
+        background:#fff;box-shadow:0 0 0 3px rgba(15,110,86,.1)}
+  .field .help{font-size:11.5px;color:var(--sub);margin-top:6px;line-height:1.6}
+  .field2{display:flex;gap:10px}
+  .field2>*{flex:1;min-width:0}
+  .btn{width:100%;height:48px;border-radius:12px;background:var(--teal);color:#fff;
+        font-size:15.5px;font-weight:600;letter-spacing:.5px;transition:.15s;
+        box-shadow:0 2px 8px rgba(15,110,86,.22)}
+  .btn:active{background:var(--teal-2);transform:scale(.99)}
+  .btn.ghost{background:#fff;color:var(--teal);border:1px solid var(--teal);box-shadow:none}
+  .btn.danger{background:#fff;color:#A32D2D;border:1px solid #E7C9C9;box-shadow:none}
+  .btn.sm{height:38px;font-size:13.5px;border-radius:10px;font-weight:500}
+
+  /* ---------- 我的 ---------- */
+  .list-item{display:flex;align-items:center;gap:12px;padding:13px 0;border-bottom:1px solid var(--line)}
+  .list-item:last-child{border-bottom:0}
+  .list-item .grow{flex:1;min-width:0}
+  .list-item .t{font-size:14.5px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .list-item .s{font-size:12px;color:var(--sub);margin-top:2px;
+        overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .kv{display:flex;justify-content:space-between;align-items:center;padding:12px 0;
+        border-bottom:1px solid var(--line);font-size:14px}
+  .kv:last-child{border-bottom:0}
+  .kv .v{color:var(--sub);font-size:13px}
+
+  /* ---------- 底部导航 ---------- */
+  nav{position:fixed;left:0;right:0;bottom:0;z-index:60;background:rgba(255,255,255,.96);
+      backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+      border-top:1px solid var(--line);display:flex;
+      padding:6px 0 calc(6px + env(safe-area-inset-bottom))}
+  nav button{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;
+        font-size:11px;color:var(--sub);padding:5px 0;transition:.15s}
   nav button.on{color:var(--teal);font-weight:600}
-  nav button span{display:block;font-size:19px;line-height:1.2}
-  .tab{display:none}.tab.on{display:block}
-  .mask{position:fixed;inset:0;background:rgba(31,41,55,.42);display:none;z-index:90}
-  .mask.show{display:block}
-  .sheet{position:fixed;left:0;right:0;bottom:0;background:#fff;border-radius:16px 16px 0 0;
-         z-index:91;padding:18px 16px 26px;max-height:78vh;overflow:auto;transform:translateY(100%);transition:.22s}
+  nav button svg{opacity:.55}
+  nav button.on svg{opacity:1}
+
+  /* ---------- 底部弹层 ---------- */
+  .mask{position:fixed;inset:0;background:rgba(28,27,25,.4);opacity:0;pointer-events:none;
+        transition:.22s;z-index:90}
+  .mask.show{opacity:1;pointer-events:auto}
+  .sheet{position:fixed;left:0;right:0;bottom:0;z-index:91;background:#fff;
+        border-radius:20px 20px 0 0;padding:8px 16px calc(24px + env(safe-area-inset-bottom));
+        max-height:80vh;overflow:auto;transform:translateY(102%);transition:transform .26s cubic-bezier(.32,.72,0,1)}
   .sheet.show{transform:translateY(0)}
-  .sheet .close{position:absolute;right:14px;top:12px;border:0;background:none;font-size:20px;color:var(--sub)}
-  .empty{color:var(--sub);font-size:13px;padding:6px 0}
-  .code{background:#F4F3EE;border:1px dashed var(--line);border-radius:8px;padding:10px;font-size:11px;
-        font-family:ui-monospace,monospace;word-break:break-all;max-height:120px;overflow:auto}
-  .checkline{display:flex;align-items:center;gap:8px;margin-top:14px;font-size:14px;color:var(--ink)}
-  .checkline input{width:18px;height:18px;accent-color:var(--teal)}
-  details{margin-top:10px}
-  summary{font-size:12px;color:var(--sub);cursor:pointer}
-  .line{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid var(--line)}
-  .line:last-child{border-bottom:0}
+  .sheet .grab{width:38px;height:4px;border-radius:99px;background:#DED9CE;margin:6px auto 14px}
+  .sheet h2{font-size:19px;font-weight:600;margin-bottom:4px}
+  .sheet .sheet-close{position:absolute;right:12px;top:12px;width:32px;height:32px;border-radius:50%;
+        display:flex;align-items:center;justify-content:center;color:var(--sub);background:#F4F2EC}
+  .sheet .itemrow{display:flex;justify-content:space-between;gap:12px;padding:11px 0;
+        border-bottom:1px solid var(--line);font-size:14.5px}
+  .sheet .itemrow:last-of-type{border-bottom:0}
+  .sheet .itemrow .nt{color:var(--sub);font-size:12.5px;text-align:right;flex:none}
+  .sheet .act{display:flex;gap:10px;margin-top:16px}
+  .sheet .act .btn{flex:1}
+
+  .hidden{display:none!important}
 </style>
 </head>
 <body>
-<header>
-  <div class="hrow">
+
+<header class="appbar">
+  <div class="row1">
     <h1>门牌</h1>
-    <span class="pill" id="syncpill">同步中…</span>
+    <span class="pill" id="syncpill">同步中</span>
+  </div>
+  <div class="searchbox" id="searchbox">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+      <circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5" stroke-linecap="round"/></svg>
+    <input id="q" type="search" placeholder="搜店名、货品、街道" autocomplete="off">
+    <button class="clear" id="q-clear" aria-label="清空">✕</button>
   </div>
 </header>
 
-<div class="wrap">
-  <!-- ============ 逛街 ============ -->
-  <div class="tab on" id="tab-street">
-    <div class="card" style="padding:11px 14px"><div class="meta" id="summary">准备中…</div></div>
-    <div class="sec-title">商店</div>
-    <div id="list-shop"></div>
-    <div class="sec-title">谁有空捎货</div>
-    <div id="list-rider"></div>
+<!-- ============ 逛逛 ============ -->
+<section id="page-browse">
+  <div class="toolbar">
+    <div class="chips-row">
+      <button class="chip-btn on" data-filter="all">全部</button>
+      <button class="chip-btn" data-filter="fav">收藏 <span id="favcount">0</span></button>
+      <button class="chip-btn" data-filter="shop">商店</button>
+      <button class="chip-btn" data-filter="rider">运力</button>
+    </div>
+    <div class="viewtoggle">
+      <button data-mode="list" class="on">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4">
+          <path d="M4 6h16M4 12h16M4 18h16" stroke-linecap="round"/></svg>列表
+      </button>
+      <button data-mode="map">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <path d="M9 4L4 6v14l5-2 6 2 5-2V4l-5 2-6-2z" stroke-linejoin="round"/></svg>地图
+      </button>
+    </div>
   </div>
 
-  <!-- ============ 标注 ============ -->
-  <div class="tab" id="tab-mark">
-    <div class="card">
-      <div class="seg">
-        <button class="on" data-kind="shop">挂商店门牌</button>
-        <button data-kind="rider">挂运力牌</button>
-      </div>
+  <div class="wrap" id="browse-list"></div>
 
-      <!-- 商店 -->
-      <div id="form-shop">
-        <div class="meta">只写「有什么」，不写价钱。</div>
+  <div class="wrap hidden" id="browse-map-wrap">
+    <div class="mapwrap fill">
+      <canvas id="browse-map"></canvas>
+      <div class="mapctl">
+        <button id="bz-in" aria-label="放大">＋</button>
+        <button id="bz-out" aria-label="缩小">−</button>
+        <button id="bz-me" aria-label="定位" style="font-size:13px">定</button>
+      </div>
+      <div class="attrib">© OpenStreetMap</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 发布 ============ -->
+<section id="page-publish" class="hidden">
+  <div class="wrap">
+    <div class="chips-row" style="margin-bottom:14px">
+      <button class="chip-btn on" data-pub="shop">挂商店</button>
+      <button class="chip-btn" data-pub="rider">挂运力</button>
+    </div>
+
+    <div class="form-card" id="form-shop">
+      <div class="field">
         <label>店名</label>
         <input id="f-name" placeholder="好又多超市">
+      </div>
+      <div class="field">
         <label>地址</label>
         <input id="f-addr" placeholder="解放路 12 号">
-        <div class="row">
-          <div><label>电话</label><input id="f-phone" placeholder="138…"></div>
-          <div><label>营业时间</label><input id="f-hours" placeholder="07:00-22:00"></div>
-        </div>
-        <label>在地图上点一下定位</label>
-        <div class="mapbox">
-          <canvas id="map" width="640" height="440"></canvas>
-          <div class="loadbar" id="loadbar"></div>
-          <div class="mapctl">
-            <button id="zin">＋</button>
-            <button id="zout">−</button>
-            <button id="here" style="font-size:13px">定</button>
-          </div>
-          <div class="attr">© OpenStreetMap</div>
-        </div>
-        <button class="btn ghost sm" id="prefetch" style="width:100%;margin-top:8px">下载这片地图（离线用）</button>
-        <label>今日有什么（一行一样：名称/单位/备注）</label>
-        <textarea id="f-items" placeholder="本地鸡蛋/斤/今早到货
-大米/袋/25kg"></textarea>
-        <label class="checkline"><input type="checkbox" id="f-mine" checked>这是我的店（会自动发出认领，等邻居作保）</label>
       </div>
-
-      <!-- 运力 -->
-      <div id="form-rider" style="display:none">
-        <div class="meta">只挂运力，不报价、不接单。价钱你们自己谈。</div>
-        <div class="row">
-          <div><label>称呼</label><input id="r-name" placeholder="老王"></div>
-          <div><label>电话</label><input id="r-phone" placeholder="138…"></div>
+      <div class="field2">
+        <div class="field"><label>电话</label><input id="f-phone" inputmode="tel" placeholder="138…"></div>
+        <div class="field"><label>营业时间</label><input id="f-hours" placeholder="07:00-22:00"></div>
+      </div>
+      <div class="field">
+        <label>位置 <span id="f-pos" style="color:var(--teal)"></span></label>
+        <div class="mapwrap">
+          <canvas id="pick-shop"></canvas>
+          <div class="mapctl">
+            <button data-pick="shop" data-act="in">＋</button>
+            <button data-pick="shop" data-act="out">−</button>
+            <button data-pick="shop" data-act="me" style="font-size:13px">定</button>
+          </div>
+          <div class="pin-hint" id="hint-shop">在地图上点一下，标出店的位置</div>
+          <div class="attrib">© OpenStreetMap</div>
         </div>
-        <label>什么车</label>
-        <input id="r-vehicle" placeholder="电动三轮">
-        <label>能带多少</label>
-        <input id="r-capacity" placeholder="约 200 斤 / 一趟">
-        <label>常跑哪几条街（逗号分隔）</label>
-        <input id="r-areas" placeholder="解放路,菜市场">
+      </div>
+      <div class="field">
+        <label>今日有什么</label>
+        <textarea id="f-items" placeholder="一行一样，格式：名称/单位/备注&#10;本地鸡蛋/斤/今早到货&#10;大米/袋/25kg"></textarea>
+        <div class="help">只写有什么，不写价钱 —— 多少钱是老板和客人之间的事。</div>
+      </div>
+    </div>
+
+    <div class="form-card hidden" id="form-rider">
+      <div class="field2">
+        <div class="field"><label>称呼</label><input id="r-name" placeholder="老王"></div>
+        <div class="field"><label>电话</label><input id="r-phone" inputmode="tel" placeholder="138…"></div>
+      </div>
+      <div class="field2">
+        <div class="field"><label>什么车</label><input id="r-vehicle" placeholder="电动三轮"></div>
+        <div class="field"><label>能带多少</label><input id="r-capacity" placeholder="约200斤"></div>
+      </div>
+      <div class="field">
         <label>今天什么时候有空</label>
         <input id="r-window" placeholder="14:00-18:00">
+      </div>
+      <div class="field">
+        <label>常在哪一带跑 <span id="r-pos" style="color:var(--teal)"></span></label>
+        <div class="mapwrap">
+          <canvas id="pick-rider"></canvas>
+          <div class="mapctl">
+            <button data-pick="rider" data-act="in">＋</button>
+            <button data-pick="rider" data-act="out">−</button>
+            <button data-pick="rider" data-act="me" style="font-size:13px">定</button>
+          </div>
+          <div class="pin-hint" id="hint-rider">点一下你常在的位置</div>
+          <div class="attrib">© OpenStreetMap</div>
+        </div>
+        <div class="help">选在常跑的那片就行，方便邻居在地图上找到你。</div>
+      </div>
+      <div class="field">
         <label>一句话（可空）</label>
         <input id="r-note" placeholder="熟人捎带，油钱随意">
-        <p class="hint">运力牌由你自己发布，天然归你，不需要任何人作保。
-          本工具仅用于熟人之间非营利的顺路捎带。</p>
       </div>
+    </div>
 
-      <button class="btn" id="btn-save">挂上去</button>
-      <button class="btn ghost" id="btn-start">重新开始计时</button>
-      <div class="meta" id="timing" style="margin-top:8px">未计时</div>
+    <button class="btn" id="btn-save" style="margin-top:18px">挂上去</button>
+    <p style="font-size:11.5px;color:var(--sub);line-height:1.7;margin-top:12px;text-align:center">
+      标注只存在你和邻居的设备上，不经过任何平台。</p>
+  </div>
+</section>
+
+<!-- ============ 我的 ============ -->
+<section id="page-mine" class="hidden">
+  <div class="wrap">
+    <div class="sec-label"><b>我发布的</b></div>
+    <div class="form-card" id="mine-list"></div>
+
+    <div class="sec-label"><b>收藏</b></div>
+    <div class="form-card" id="fav-list"></div>
+
+    <div class="sec-label"><b>这台设备</b></div>
+    <div class="form-card">
+      <div class="kv"><span>设备指纹</span><span class="v" id="devid">—</span></div>
+      <div class="kv"><span>本地记录</span><span class="v" id="evcount">0 条</span></div>
+      <div class="kv"><span>同步节点</span><span class="v" id="nodeinfo">—</span></div>
+      <button class="btn ghost sm" id="btn-sync" style="margin-top:14px">立刻同步</button>
+    </div>
+
+    <div class="sec-label"><b>数据</b></div>
+    <div class="form-card">
+      <div class="itemrow" style="display:flex;gap:10px">
+        <button class="btn ghost sm" id="btn-export" style="flex:1">导出</button>
+        <button class="btn ghost sm" id="btn-import" style="flex:1">导入</button>
+      </div>
+      <div class="help" style="font-size:11.5px;color:var(--sub);margin-top:10px;line-height:1.7">
+        没有网络时，可以把数据导出成文字发给另一台手机。</div>
+      <button class="btn danger sm" id="btn-reset" style="margin-top:14px">清空本地数据后重新同步</button>
     </div>
   </div>
-
-  <!-- ============ 我的 ============ -->
-  <div class="tab" id="tab-mine">
-    <div class="card">
-      <h3>待我作保 <span class="badge wait" id="pend-count">0</span></h3>
-      <div class="meta">邻居说某家店是他的，你点一下作保。凑够 2 位他就正式是店主。</div>
-      <div id="pend-list"></div>
-    </div>
-
-    <div class="card">
-      <h3>我挂的标注</h3>
-      <div class="meta">只有作者能认领自己的标注，别人的店你认领不了。</div>
-      <div id="mine-list"></div>
-    </div>
-
-    <div class="card">
-      <h3>这台设备</h3>
-      <div class="meta">指纹 <b id="devid">—</b>　私钥只在这台机器上</div>
-      <div class="meta" id="nodeinfo" style="margin-top:6px"></div>
-      <button class="btn ghost" id="btn-sync" style="margin-top:10px">立刻同步</button>
-    </div>
-
-    <div class="card">
-      <h3>计时报告</h3>
-      <div id="report" class="meta">还没有记录</div>
-    </div>
-
-    <div class="card">
-      <details>
-        <summary>高级：没网时用文字交换数据</summary>
-        <div class="row">
-          <button class="btn ghost sm" id="btn-export" style="flex:1">导出</button>
-          <button class="btn ghost sm" id="btn-import" style="flex:1">导入</button>
-        </div>
-        <button class="btn ghost sm" id="btn-reset" style="width:100%;margin-top:10px;color:var(--red);border-color:var(--red)">清空本地数据后重新同步</button>
-      </details>
-    </div>
-  </div>
-</div>
+</section>
 
 <nav>
-  <button class="on" data-tab="street"><span>◉</span>逛街</button>
-  <button data-tab="mark"><span>✎</span>标注</button>
-  <button data-tab="mine"><span>◎</span>我的</button>
+  <button class="on" data-page="browse">
+    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
+      <circle cx="11" cy="11" r="7"/><path d="M20 20l-3.8-3.8" stroke-linecap="round"/></svg>
+    逛逛
+  </button>
+  <button data-page="publish">
+    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
+      <path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg>
+    发布
+  </button>
+  <button data-page="mine">
+    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9">
+      <circle cx="12" cy="8.5" r="3.6"/><path d="M4.5 20c1.2-3.8 4-5.6 7.5-5.6s6.3 1.8 7.5 5.6" stroke-linecap="round"/></svg>
+    我的
+  </button>
 </nav>
 
 <div class="mask" id="mask"></div>
-<div class="sheet" id="sheet"><button class="close" id="sheet-close">✕</button><div id="sheet-body"></div></div>
+<div class="sheet" id="sheet">
+  <div class="grab"></div>
+  <button class="sheet-close" id="sheet-close" aria-label="关闭">✕</button>
+  <div id="sheet-body"></div>
+</div>
 
 <script src="core.js"></script>
 <script>
+/* =========================================================
+   门牌 · 本地商圈
+   三个页面：逛逛 / 发布 / 我的
+   没有担保流程 —— 谁标注的就算谁的
+   ========================================================= */
 const $ = id => document.getElementById(id);
-const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
-const ID_KEY = "dp_identity", EV_KEY = "dp_events", T_KEY = "dp_timing", PUSH_KEY = "dp_last_push";
+const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+const K_ID = "dp_identity", K_EV = "dp_events", K_PUSH = "dp_last_push", K_FAV = "dp_favs";
 
 let identity = null, store = null, rootId = null;
-let view = { lat: 29.84, lon: 112.90, z: 16 };
-let picked = null, timerStart = null, dragging = false, moved = false;
-let curKind = "shop", pendingRedraw = false;
+let ui = { page: "browse", filter: "all", mode: "list", q: "", pub: "shop" };
+let favs = new Set();
+let pickedShop = null, pickedRider = null;
+let geo = { lat: 29.84, lon: 112.90, z: 16 };
 
-// ================= 瓦片 =================
+/* ---------------- 瓦片与投影 ---------------- */
 const tiles = new Map(), loading = new Set();
-const TILE_URL = (z, x, y) => `/tiles/${z}/${x}/${y}.png`;
-const tileKey = (z, x, y) => z + "/" + x + "/" + y;
+const tkey = (z,x,y) => z+"/"+x+"/"+y;
+const turl = (z,x,y) => `/tiles/${z}/${x}/${y}.png`;
 
-function ensureTile(z, x, y) {
-  const key = tileKey(z, x, y);
-  if (tiles.has(key) || loading.has(key)) return;
-  loading.add(key);
+function ensureTile(z,x,y){
+  const k = tkey(z,x,y);
+  if (tiles.has(k) || loading.has(k)) return;
+  loading.add(k);
   const img = new Image();
-  img.onload = () => { loading.delete(key); tiles.set(key, img); draw(); };
-  img.onerror = () => { loading.delete(key); tiles.set(key, null); draw(); };
-  img.src = TILE_URL(z, x, y);
+  img.onload = () => { loading.delete(k); tiles.set(k,img); redrawAll(); };
+  img.onerror = () => { loading.delete(k); tiles.set(k,null); redrawAll(); };
+  img.src = turl(z,x,y);
+}
+function project(lat,lon,z){
+  const s = 256 * Math.pow(2,z), r = lat*Math.PI/180;
+  return { x:(lon+180)/360*s, y:(1-Math.log(Math.tan(r)+1/Math.cos(r))/Math.PI)/2*s };
+}
+function unproject(x,y,z){
+  const s = 256*Math.pow(2,z), n = Math.PI - 2*Math.PI*y/s;
+  return { lon:x/s*360-180, lat:180/Math.PI*Math.atan(.5*(Math.exp(n)-Math.exp(-n))) };
 }
 
-function project(lat, lon, z) {
-  const scale = 256 * Math.pow(2, z);
-  const r = lat * Math.PI / 180;
-  return { x: (lon + 180) / 360 * scale,
-           y: (1 - Math.log(Math.tan(r) + 1 / Math.cos(r)) / Math.PI) / 2 * scale };
-}
-function unproject(x, y, z) {
-  const scale = 256 * Math.pow(2, z);
-  const n = Math.PI - 2 * Math.PI * y / scale;
-  return { lon: x / scale * 360 - 180,
-           lat: 180 / Math.PI * Math.atan(0.5 * (Math.exp(n) - Math.exp(-n))) };
-}
+/* ---------------- 地图组件 ---------------- */
+function createMap(canvas, opts){
+  const ctx = canvas.getContext("2d");
+  const map = { cv: canvas, ctx, lat: geo.lat, lon: geo.lon, z: 16, pin: null, opts };
+  let dragging = false, moved = false, sx = 0, sy = 0, c0 = null;
 
-function scheduleDraw() {
-  if (pendingRedraw) return;
-  pendingRedraw = true;
-  setTimeout(() => { pendingRedraw = false; draw(); }, 16);
-}
+  function fit(){
+    const w = canvas.parentElement.clientWidth;
+    if (!w) return;                       // 页面还没显示，等可见时再量
+    const h = opts.fill ? canvas.parentElement.clientHeight : (opts.height || 260);
+    if (!h) return;
+    canvas.width = w * 2; canvas.height = h * 2;   // 2x 抗锯齿
+    canvas.style.height = h + "px";
+  }
 
-let cv, ctx;
-function draw() {
-  if (!ctx) return;
-  const W = cv.width, H = cv.height;
-  const c = project(view.lat, view.lon, view.z);
-  const left = c.x - W / 2, top = c.y - H / 2;
-  const n = Math.pow(2, view.z);
-
-  ctx.fillStyle = "#E4E2DA"; ctx.fillRect(0, 0, W, H);
-  for (let ty = Math.floor(top / 256); ty <= Math.floor((top + H) / 256); ty++) {
-    for (let tx = Math.floor(left / 256); tx <= Math.floor((left + W) / 256); tx++) {
-      if (tx < 0 || ty < 0 || tx >= n || ty >= n) continue;
-      const key = tileKey(view.z, tx, ty), px = tx * 256 - left, py = ty * 256 - top;
-      if (tiles.has(key)) {
-        const img = tiles.get(key);
-        if (img) ctx.drawImage(img, px, py, 256, 256);
-        else { ctx.fillStyle = "#EDEBE4"; ctx.fillRect(px, py, 256, 256); }
-      } else {
-        ctx.fillStyle = "#EDEBE4"; ctx.fillRect(px, py, 256, 256);
-        ensureTile(view.z, tx, ty);
+  function draw(){
+    const W = canvas.width, H = canvas.height, c = project(map.lat, map.lon, map.z);
+    const left = c.x - W/2, top = c.y - H/2, n = Math.pow(2, map.z);
+    ctx.fillStyle = "#E7E5DD"; ctx.fillRect(0,0,W,H);
+    for (let ty = Math.floor(top/256); ty <= Math.floor((top+H)/256); ty++){
+      for (let tx = Math.floor(left/256); tx <= Math.floor((left+W)/256); tx++){
+        if (tx<0||ty<0||tx>=n||ty>=n) continue;
+        const k = tkey(map.z,tx,ty), px = tx*256-left, py = ty*256-top;
+        if (tiles.has(k)){
+          const img = tiles.get(k);
+          if (img) ctx.drawImage(img,px,py,256,256);
+          else { ctx.fillStyle="#EFEDE6"; ctx.fillRect(px,py,256,256); }
+        } else { ctx.fillStyle="#EFEDE6"; ctx.fillRect(px,py,256,256); ensureTile(map.z,tx,ty); }
       }
     }
-  }
-
-  Object.values(stateAll())
-    .filter(s => !(s.kind === "rider" || s.vehicle || s.capacity) && s.lat && s.lon)
-    .forEach(s => {
-    const p = project(s.lat, s.lon, view.z), x = p.x - left, y = p.y - top;
-    if (x < -30 || y < -30 || x > W + 30 || y > H + 30) return;
-    ctx.beginPath(); ctx.arc(x, y, 9, 0, Math.PI * 2);
-    ctx.fillStyle = s.open === false ? "#B4B2A9" : "#0F6E56"; ctx.fill();
-    ctx.strokeStyle = "#fff"; ctx.lineWidth = 2; ctx.stroke();
-    ctx.fillStyle = "#1F2937"; ctx.font = "bold 20px system-ui";
-    ctx.fillText(String(s.name || "").slice(0, 6), x + 12, y + 7);
-  });
-
-  const mx = W / 2, my = H / 2;
-  ctx.beginPath(); ctx.arc(mx, my, 8, 0, Math.PI * 2); ctx.fillStyle = "#185FA5"; ctx.fill();
-  ctx.strokeStyle = "#fff"; ctx.lineWidth = 2; ctx.stroke();
-
-  if (picked) {
-    const p = project(picked.lat, picked.lon, view.z), x = p.x - left, y = p.y - top;
-    ctx.beginPath(); ctx.arc(x, y, 12, 0, Math.PI * 2); ctx.fillStyle = "rgba(180,83,9,.22)"; ctx.fill();
-    ctx.beginPath(); ctx.arc(x, y, 7, 0, Math.PI * 2); ctx.fillStyle = "#B45309"; ctx.fill();
-    ctx.strokeStyle = "#fff"; ctx.lineWidth = 2; ctx.stroke();
-  }
-}
-
-function bindMap() {
-  cv = $("map"); ctx = cv.getContext("2d");
-  let sx = 0, sy = 0, c0 = null;
-  cv.addEventListener("pointerdown", e => {
-    dragging = true; moved = false; sx = e.clientX; sy = e.clientY;
-    c0 = project(view.lat, view.lon, view.z); cv.setPointerCapture(e.pointerId);
-  });
-  cv.addEventListener("pointermove", e => {
-    if (!dragging) return;
-    const dx = e.clientX - sx, dy = e.clientY - sy;
-    if (Math.abs(dx) + Math.abs(dy) > 6) moved = true;
-    const r = cv.getBoundingClientRect();
-    const ll = unproject(c0.x - dx / r.width * cv.width, c0.y - dy / r.height * cv.height, view.z);
-    view.lat = ll.lat; view.lon = ll.lon; scheduleDraw();
-  });
-  cv.addEventListener("pointerup", e => {
-    if (!dragging) return;
-    dragging = false;
-    if (!moved) {
-      const r = cv.getBoundingClientRect();
-      const c = project(view.lat, view.lon, view.z);
-      picked = unproject(c.x - cv.width / 2 + (e.clientX - r.left) / r.width * cv.width,
-                         c.y - cv.height / 2 + (e.clientY - r.top) / r.height * cv.height, view.z);
-      scheduleDraw();
+    if (opts.markers) opts.markers(map, { W, H, left, top });
+    if (map.pin){
+      const p = project(map.pin.lat, map.pin.lon, map.z), x = p.x-left, y = p.y-top;
+      ctx.beginPath(); ctx.arc(x,y,17,0,Math.PI*2); ctx.fillStyle="rgba(180,83,9,.16)"; ctx.fill();
+      ctx.beginPath(); ctx.arc(x,y,9,0,Math.PI*2); ctx.fillStyle="#B45309"; ctx.fill();
+      ctx.strokeStyle="#fff"; ctx.lineWidth=3; ctx.stroke();
     }
-  });
-  $("zin").onclick = () => { view.z = Math.min(18, view.z + 1); scheduleDraw(); };
-  $("zout").onclick = () => { view.z = Math.max(12, view.z - 1); scheduleDraw(); };
-  $("here").onclick = () => {
-    if (!navigator.geolocation) { alert("这台设备不支持定位，直接在地图上点选"); return; }
-    navigator.geolocation.getCurrentPosition(p => {
-      view.lat = p.coords.latitude; view.lon = p.coords.longitude;
-      picked = { lat: view.lat, lon: view.lon }; scheduleDraw();
-    }, () => alert("取不到定位，直接在地图上点选"), { timeout: 8000 });
-  };
-  $("prefetch").onclick = prefetch;
+    if (opts.centerDot !== false){
+      ctx.beginPath(); ctx.arc(W/2,H/2,7,0,Math.PI*2); ctx.fillStyle="#1D5FA8"; ctx.fill();
+      ctx.strokeStyle="#fff"; ctx.lineWidth=3; ctx.stroke();
+    }
+  }
+
+  function bind(){
+    canvas.addEventListener("pointerdown", e=>{
+      dragging=true; moved=false; sx=e.clientX; sy=e.clientY;
+      c0 = project(map.lat, map.lon, map.z);
+      canvas.setPointerCapture(e.pointerId);
+    });
+    canvas.addEventListener("pointermove", e=>{
+      if(!dragging) return;
+      const dx=e.clientX-sx, dy=e.clientY-sy;
+      if (Math.abs(dx)+Math.abs(dy)>6) moved=true;
+      const r = canvas.getBoundingClientRect();
+      const ll = unproject(c0.x - dx/r.width*canvas.width, c0.y - dy/r.height*canvas.height, map.z);
+      map.lat=ll.lat; map.lon=ll.lon; draw();
+    });
+    canvas.addEventListener("pointerup", e=>{
+      if(!dragging) return; dragging=false;
+      if (moved) return;
+      const r = canvas.getBoundingClientRect();
+      const c = project(map.lat, map.lon, map.z);
+      const ll = unproject(c.x - canvas.width/2 + (e.clientX-r.left)/r.width*canvas.width,
+                           c.y - canvas.height/2 + (e.clientY-r.top)/r.height*canvas.height, map.z);
+      if (opts.onTap) opts.onTap(map, ll, e);
+    });
+    window.addEventListener("resize", ()=>{ fit(); draw(); });
+    window.addEventListener("orientationchange", ()=>{ setTimeout(()=>{ fit(); draw(); }, 260); });
+  }
+
+  map.fit = fit; map.draw = draw; map.bind = bind;
+  map.zoom = d => { map.z = Math.max(11, Math.min(18, map.z+d)); draw(); };
+  map.centerOn = (lat,lon) => { map.lat=lat; map.lon=lon; draw(); };
+  return map;
 }
 
-async function prefetch() {
-  const bar = $("loadbar"), list = [];
-  for (let dz = -1; dz <= 1; dz++) {
-    const z = view.z + dz;
-    if (z < 10 || z > 18) continue;
-    const c = project(view.lat, view.lon, z);
-    const W = cv.width * Math.pow(2, dz), H = cv.height * Math.pow(2, dz);
-    const left = c.x - W / 2, top = c.y - H / 2;
-    for (let tx = Math.floor(left / 256); tx <= Math.floor((left + W) / 256); tx++)
-      for (let ty = Math.floor(top / 256); ty <= Math.floor((top + H) / 256); ty++)
-        list.push([z, tx, ty]);
-  }
-  let done = 0;
-  for (const [z, x, y] of list) {
-    await new Promise(res => { const i = new Image(); i.onload = i.onerror = res; i.src = TILE_URL(z, x, y); });
-    bar.style.width = (++done / list.length * 100) + "%";
-  }
-  setTimeout(() => { bar.style.width = "0%"; }, 600);
-  alert("已缓存 " + list.length + " 张瓦片，这一片现在断网也能看。");
+let browseMap = null, shopMap = null, riderMap = null;
+let pendingDraw = false;
+function redrawAll(){
+  if (pendingDraw) return;
+  pendingDraw = true;
+  setTimeout(()=>{
+    pendingDraw = false;
+    if (browseMap && ui.page==="browse" && ui.mode==="map" && browseMap.cv.offsetParent) browseMap.draw();
+    if (shopMap && shopMap.cv.offsetParent) shopMap.draw();
+    if (riderMap && riderMap.cv.offsetParent) riderMap.draw();
+  }, 16);
 }
 
-// ================= 初始化 =================
-function loadIdentity() {
-  const raw = localStorage.getItem(ID_KEY);
+/* ---------------- 初始化 ---------------- */
+function loadIdentity(){
+  const raw = localStorage.getItem(K_ID);
   if (raw) return DP.Identity.fromJSON(JSON.parse(raw));
   const id = DP.Identity.generate();
-  localStorage.setItem(ID_KEY, JSON.stringify(id.toJSON()));
+  localStorage.setItem(K_ID, JSON.stringify(id.toJSON()));
   return id;
 }
 
-function boot() {
-  setTimeout(() => {
-    const q = new URLSearchParams(location.search);
-    if (q.get("lat") && q.get("lon")) {
-      view.lat = parseFloat(q.get("lat")); view.lon = parseFloat(q.get("lon"));
-    }
-    if (q.get("z")) view.z = Math.max(10, Math.min(18, parseInt(q.get("z"), 10)));
+function boot(){
+  setTimeout(()=>{
     identity = loadIdentity();
     rootId = localStorage.getItem("dp_root") || null;
-    store = new DP.Store(identity, rootId, EV_KEY);
+    store = new DP.Store(identity, rootId, K_EV);
+    favs = new Set(JSON.parse(localStorage.getItem(K_FAV) || "[]"));
+
     $("devid").textContent = identity.deviceId;
-    bindMap();
-    if (!q.get("lat")) {
-      const s = Object.values(stateAll()).filter(x => x.lat && x.lon && x.kind !== "rider")[0];
-      if (s) { view.lat = s.lat; view.lon = s.lon; }
-    }
-    scheduleDraw(); render(); syncNow();
-    setInterval(syncNow, 6000);
-    const h = (location.hash || "").replace("#", "");
-    if (["street", "mark", "mine"].includes(h)) switchTab(h);
-    if (q.get("kind") === "rider") {
-      const b = document.querySelector('.seg button[data-kind="rider"]');
-      if (b) b.click();
-    }
+
+    // 地图
+    const C = "#0F6E56", B = "#1D5FA8";
+    browseMap = createMap($("browse-map"), {
+      fill: true,
+      centerDot: true,
+      markers: (m, g) => {
+        const list = filtered().filter(isShop);
+        list.forEach(s=>{
+          if (!s.lat) return;
+          const p = project(s.lat,s.lon,m.z), x=p.x-g.left, y=p.y-g.top;
+          if (x<-40||y<-40||x>g.W+40||y>g.H+40) return;
+          m.ctx.beginPath(); m.ctx.arc(x,y,11,0,Math.PI*2);
+          m.ctx.fillStyle = C; m.ctx.fill();
+          m.ctx.strokeStyle="#fff"; m.ctx.lineWidth=3; m.ctx.stroke();
+          m.ctx.fillStyle="#1C1B19"; m.ctx.font="600 24px -apple-system,sans-serif";
+          m.ctx.fillText(String(s.name||"").slice(0,6), x+15, y+8);
+        });
+        list.filter(isRider).forEach(s=>{
+          if (!s.lat) return;
+          const p = project(s.lat,s.lon,m.z), x=p.x-g.left, y=p.y-g.top;
+          if (x<-40||y<-40||x>g.W+40||y>g.H+40) return;
+          const sz=9;
+          m.ctx.beginPath();
+          m.ctx.moveTo(x,y-sz); m.ctx.lineTo(x+sz,y+sz); m.ctx.lineTo(x-sz,y+sz); m.ctx.closePath();
+          m.ctx.fillStyle=B; m.ctx.fill();
+          m.ctx.strokeStyle="#fff"; m.ctx.lineWidth=3; m.ctx.stroke();
+          m.ctx.fillStyle="#1C1B19"; m.ctx.font="500 22px -apple-system,sans-serif";
+          m.ctx.fillText(String(s.name||"").slice(0,5), x+14, y+7);
+        });
+      },
+      onTap: (m, ll, e) => {
+        // 找点击位置最近的标记，28 CSS px 内算命中
+        const r = m.cv.getBoundingClientRect();
+        const px = (e.clientX - r.left) / r.width * m.cv.width;
+        const py = (e.clientY - r.top) / r.height * m.cv.height;
+        const c = project(m.lat, m.lon, m.z);
+        const left = c.x - m.cv.width / 2, top = c.y - m.cv.height / 2;
+        let best = null, bd = 1e9;
+        filtered().forEach(s => {
+          if (!s.lat) return;
+          const p = project(s.lat, s.lon, m.z);
+          const d = Math.hypot(p.x - left - px, p.y - top - py);
+          if (d < bd) { bd = d; best = s; }
+        });
+        if (best && bd < 56) showDetail(best);
+      }
+    });
+
+    shopMap = createMap($("pick-shop"), {
+      height: 220,
+      onTap: (m, ll) => { pickedShop = { lat:+ll.lat.toFixed(6), lon:+ll.lon.toFixed(6) };
+        $("f-pos").textContent = "✓ 已选"; $("hint-shop").classList.add("hide"); m.draw(); }
+    });
+    riderMap = createMap($("pick-rider"), {
+      height: 220,
+      onTap: (m, ll) => { pickedRider = { lat:+ll.lat.toFixed(6), lon:+ll.lon.toFixed(6) };
+        $("r-pos").textContent = "✓ 已选"; $("hint-rider").classList.add("hide"); m.draw(); }
+    });
+
+    browseMap.bind(); shopMap.bind(); riderMap.bind();
+    fitMaps();
+
+    // 支持 ?page=&mode=&pub=&q= 直接打开某个状态，方便分享与自测
+    const qs = new URLSearchParams(location.search);
+    if (qs.get("mode") === "map"){ ui.mode = "map"; markActive("[data-mode]", "mode"); }
+    if (qs.get("pub") === "rider"){ ui.pub = "rider"; markActive("[data-pub]", "pub");
+      $("form-shop").classList.add("hidden"); $("form-rider").classList.remove("hidden");
+      $("btn-save").textContent = "挂上运力牌"; }
+    if (qs.get("q")){ ui.q = qs.get("q"); $("q").value = ui.q; $("q-clear").classList.add("show"); }
+
+    render(); syncNow();
+    if (qs.get("page")) go(qs.get("page"));
+    setInterval(()=>{ if (document.visibilityState === "visible") syncNow(); }, 6000);
+    if (navigator.geolocation) tryGeolocate();
   }, 30);
 }
 
-// ================= 同步（增量） =================
-function latestTs() {
-  let m = "";
-  for (const e of store.events.values()) if (e.ts > m) m = e.ts;
-  return m;
-}
-function shiftMin(ts, min) {
-  const d = new Date(ts); d.setMinutes(d.getMinutes() - min); return DP.nowTs(d);
+function markActive(sel, key){
+  document.querySelectorAll(sel).forEach(x=>x.classList.toggle("on", x.dataset[key] === ui[key]));
 }
 
-async function syncNow() {
-  if (!store) return;
-  const pill = $("syncpill");
-  try {
-    // 拉：只要比自己最新事件稍早一点的（容忍时钟误差）
-    const since = latestTs();
-    const url = "/api/p2p/pull" + (since ? "?since=" + encodeURIComponent(shiftMin(since, 5)) : "");
-    const d1 = await (await fetch(url, { cache: "no-store" })).json();
-    if (d1.events && d1.events.length) {
-      const n = store.merge(d1.events);
-      if (n) { render(); scheduleDraw(); }
-    }
+function fitMaps(){
+  [browseMap, shopMap, riderMap].forEach(m=>{ if (m){ m.fit(); m.draw(); } });
+}
 
-    // 推：只推上次之后新增的，不再每次发全量
-    const lastPush = localStorage.getItem(PUSH_KEY) || "";
-    const batch = [...store.events.values()].filter(e => !lastPush || e.ts >= shiftMin(lastPush, 10));
-    let total = d1.total;
-    if (batch.length) {
-      const d2 = await (await fetch("/api/p2p/push", {
-        method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ events: batch })
-      })).json();
-      total = d2.total;
-      const maxTs = batch.reduce((m, e) => (e.ts > m ? e.ts : m), lastPush);
-      localStorage.setItem(PUSH_KEY, maxTs);
-    }
-    pill.className = "pill ok";
-    pill.textContent = "已同步 · 节点 " + (total ?? "?") + " 条";
-    $("nodeinfo").textContent = `局域网节点 ${location.origin}　本地 ${store.events.size} 条 · 本次上传 ${batch.length} 条`;
-  } catch (e) {
-    pill.className = "pill err";
-    pill.textContent = "未连接节点";
-    $("nodeinfo").textContent = "连不上局域网节点，数据只在这台设备上（仍可离线标注）";
+let geoDone = false;
+function tryGeolocate(){
+  navigator.geolocation.getCurrentPosition(p=>{
+    geoDone = true;
+    const lat=p.coords.latitude, lon=p.coords.longitude;
+    geo = { lat, lon, z:16 };
+    [browseMap, shopMap, riderMap].forEach(m=>{ if(!m) return;
+      if (!m.pin) { m.lat=lat; m.lon=lon; } m.draw(); });
+    // 店和骑手默认也放到当前位置附近，省得自己找
+    if (!pickedShop) pickedShop = { lat:+lat.toFixed(6), lon:+lon.toFixed(6) };
+    if (!pickedRider) pickedRider = { lat:+lat.toFixed(6), lon:+lon.toFixed(6) };
+    shopMap.pin = pickedShop; riderMap.pin = pickedRider;
+    shopMap.centerOn(lat,lon); riderMap.centerOn(lat,lon);
+    $("f-pos").textContent = "✓ 已定位"; $("r-pos").textContent = "✓ 已定位";
+    $("hint-shop").classList.add("hide"); $("hint-rider").classList.add("hide");
+  }, ()=>{ /* 用户拒绝也无所谓，手点地图即可 */ }, { timeout: 8000, maximumAge: 600000 });
+}
+
+/* ---------------- 数据 ---------------- */
+function stateAll(){ return store ? store.state(new Date()) : {}; }
+function isRider(s){ return s.kind === "rider" || !!s.vehicle || !!s.capacity; }
+function isShop(s){ return !isRider(s); }
+
+function anchorAuthor(shopId){
+  for (const e of store.events.values()){
+    if (e.target === shopId && e.type === "anchor") return e.author;
   }
+  return null;
+}
+function isMine(s){ return anchorAuthor(s.id) === identity.deviceId; }
+
+function allItems(){
+  return Object.values(stateAll()).map(s=>({ ...s, _mine: isMine(s), _rider: isRider(s) }))
+    .filter(s => s.name);   // 没名字的孤儿不显示
 }
 
-// ================= 渲染 =================
-function stateAll() { return store ? store.state(new Date()) : {}; }
-
-// 老数据没有 kind 字段，用有没有车型/载量来推断
-const isRiderItem = s => s.kind === "rider" || !!s.vehicle || !!s.capacity;
-const shortId = id => String(id || "").slice(-4);
-const sponsorLine = (s, need) => {
-  const sp = s.sponsors || [];
-  if (!sp.length) return "";
-  const txt = sp.map(shortId).join("、");
-  return `<div class="meta" style="margin-top:6px;color:var(--teal)">已担保：${esc(txt)}（${sp.length}/${need}）</div>`;
-};
-
-function render() {
-  const all = Object.values(stateAll());
-  const shops = all.filter(s => !isRiderItem(s));
-  const riders = all.filter(isRiderItem);
-  const openCount = shops.filter(s => s.open !== false).length;
-  $("summary").innerHTML = `商店 <b style="color:var(--teal)">${openCount}</b>/${shops.length} 家营业中 · 运力牌 ${riders.length} 块`;
-
-  $("list-shop").innerHTML = shops.length ? shops.map(s => {
-    const items = (s.items || []).slice(0, 4).map(i =>
-      `<span class="chip">${esc(i.name)}${i.unit ? " / " + esc(i.unit) : ""}<i>${esc(i.tag || "可议")}</i></span>`).join("");
-    const tv = s.trust === "L2" ? '<span class="badge">店主认领</span>'
-      : s.trust === "L1" ? '<span class="badge l1">多人确认</span>' : '<span class="badge l0">路人标注</span>';
-    const pend = (s.claim_pending && s.claim_pending.length) ? '<span class="badge wait">待担保</span>' : "";
-    return `<div class="card" data-id="${esc(s.id)}">
-      <h3>${esc(s.name || s.id)} ${tv}${pend}</h3>
-      <div class="meta">${esc(s.address || "—")}${s.hours ? " · " + esc(s.hours) : ""} · ${s.open === false ? "已打烊" : "营业中"}</div>
-      ${sponsorLine(s, 2)}
-      <div class="chips">${items || '<span class="chip">今日未上货</span>'}</div></div>`;
-  }).join("") : '<p class="empty">还没有商店挂门牌</p>';
-
-  $("list-rider").innerHTML = riders.length ? riders.map(r => `
-    <div class="card" data-id="${esc(r.id)}">
-      <h3>${esc(r.name || r.id)} <span class="badge rider">运力</span></h3>
-      <div class="meta">${esc(r.vehicle || "—")} · ${esc(r.capacity || "运力未写")}
-        ${r.window ? " · 今天 " + esc(r.window) + " 有空" : ""}</div>
-      <div class="chips">${(r.areas || []).map(a => `<span class="chip">${esc(a)}</span>`).join("")}</div>
-    </div>`).join("") : '<p class="empty">今天还没有人挂运力牌</p>';
-
-  document.querySelectorAll("#list-shop .card, #list-rider .card")
-    .forEach(el => el.onclick = () => showItem(all.find(s => s.id === el.dataset.id)));
-
-  renderPending(all);
-  renderMine(all);
-  renderReport();
+function filtered(){
+  const q = ui.q.trim().toLowerCase();
+  let list = allItems();
+  if (ui.filter === "fav") list = list.filter(s=>favs.has(s.id));
+  if (ui.filter === "shop") list = list.filter(s=>!s._rider);
+  if (ui.filter === "rider") list = list.filter(s=>s._rider);
+  if (q){
+    list = list.filter(s=>{
+      const hay = [s.name, s.address, s.hours, s.note, s.vehicle, s.capacity,
+        ...(s.tags||[]), ...(s.areas||[]), ...((s.items||[]).map(i=>i.name))]
+        .filter(Boolean).join(" ").toLowerCase();
+      return hay.includes(q);
+    });
+  }
+  return list.sort((a,b)=>{
+    const af = favs.has(a.id) ? 0 : 1, bf = favs.has(b.id) ? 0 : 1;
+    if (af !== bf) return af - bf;
+    return String(a.name||"").localeCompare(String(b.name||""), "zh");
+  });
 }
 
-function showItem(s) {
-  if (!s) return;
-  const isRider = isRiderItem(s);
-  const rows = isRider ? '' : (s.items || []).map(i =>
-    `<div class="meta" style="display:flex;justify-content:space-between;border-bottom:1px dashed var(--line);padding:8px 0">
-      <span>${esc(i.name)}${i.unit ? " / " + esc(i.unit) : ""}</span>
-      <span>${esc(i.note || "")} ${esc(i.tag || "可议")}</span></div>`).join("");
+/* ---------------- 渲染：逛逛 ---------------- */
+function render(){
+  const list = filtered();
+  $("favcount").textContent = favs.size;
+
+  if (ui.mode === "map"){
+    $("browse-list").classList.add("hidden");
+    $("browse-map-wrap").classList.remove("hidden");
+    requestAnimationFrame(()=>{ browseMap.fit(); browseMap.draw(); });
+  } else {
+    $("browse-map-wrap").classList.add("hidden");
+    $("browse-list").classList.remove("hidden");
+    renderList(list);
+  }
+  renderMine();
+}
+
+function renderList(list){
+  const box = $("browse-list");
+  if (!list.length){
+    const isFav = ui.filter === "fav", hasQ = !!ui.q.trim();
+    box.innerHTML = `<div class="empty">
+      <div class="big">${hasQ ? "没找到匹配的" : isFav ? "还没有收藏" : "这条街还是空的"}</div>
+      <div class="sm">${hasQ ? "换个词试试，比如店名或货品" :
+        isFav ? "逛街时点卡片右上角的星标，就能收藏常去的店" :
+        "去「发布」挂一块门牌，邻居就能看到你店里有啥"}</div>
+      ${hasQ ? '<button class="btn ghost sm" id="empty-clear" style="margin-top:18px;width:auto;padding:0 20px">清空搜索</button>' : ""}
+    </div>`;
+    const c = $("empty-clear");
+    if (c) c.onclick = ()=>{ $("q").value=""; ui.q=""; $("q-clear").classList.remove("show"); render(); };
+    return;
+  }
+
+  const shops = list.filter(s=>!s._rider), riders = list.filter(s=>s._rider);
+  let html = "";
+  if (shops.length){
+    html += `<div class="sec-label">商店 <b>${shops.length}</b></div>`;
+    html += shops.map(cardHtml).join("");
+  }
+  if (riders.length){
+    html += `<div class="sec-label" style="margin-top:18px">谁有空捎货 <b>${riders.length}</b></div>`;
+    html += riders.map(cardHtml).join("");
+  }
+  box.innerHTML = html;
+
+  box.querySelectorAll("[data-open]").forEach(el=>{
+    el.onclick = e=>{
+      if (e.target.closest("[data-star]")) return;
+      const s = list.find(x=>x.id===el.dataset.open);
+      if (s) showDetail(s);
+    };
+  });
+  box.querySelectorAll("[data-star]").forEach(b=>{
+    b.onclick = e=>{ e.stopPropagation(); toggleFav(b.dataset.star); };
+  });
+}
+
+function cardHtml(s){
+  const on = favs.has(s.id);
+  const tags = s._rider
+    ? [...(s.areas||[]).map(a=>`<span class="tag">${esc(a)}</span>`)]
+    : (s.items||[]).slice(0,4).map(i=>
+        `<span class="tag">${esc(i.name)}${i.unit?" / "+esc(i.unit):""}${i.tag?`<span class="p">${esc(i.tag)}</span>`:""}</span>`);
+  const sub = s._rider
+    ? [s.vehicle, s.capacity, s.window ? "今天 "+s.window : ""].filter(Boolean).join(" · ")
+    : [s.address, s.hours].filter(Boolean).join(" · ");
+
+  return `<div class="card" data-open="${esc(s.id)}">
+    <button class="star ${on?"on":""}" data-star="${esc(s.id)}" aria-label="收藏">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="${on?"currentColor":"none"}"
+           stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
+        <path d="M12 3.6l2.6 5.3 5.8.8-4.2 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8L3.6 9.7l5.8-.8z"/></svg>
+    </button>
+    <h3>${esc(s.name)}
+      ${s._mine?'<span class="badge mine">我发布的</span>':""}
+      ${s._rider?'<span class="badge rider">运力</span>':""}
+    </h3>
+    <div class="sub">${esc(sub)||"&nbsp;"}</div>
+    ${tags.length?`<div class="tagline">${tags.join("")}</div>`:""}
+  </div>`;
+}
+
+function toggleFav(id){
+  if (favs.has(id)) favs.delete(id); else favs.add(id);
+  localStorage.setItem(K_FAV, JSON.stringify([...favs]));
+  render();
+}
+
+function showDetail(s){
+  const rows = s._rider ? `
+    <div class="itemrow"><span>${esc(s.vehicle)||"—"}</span><span class="nt">${esc(s.capacity)||""}</span></div>
+    ${s.window?`<div class="itemrow"><span>今天有空</span><span class="nt">${esc(s.window)}</span></div>`:""}
+    ${(s.areas||[]).length?`<div class="itemrow"><span>常跑</span><span class="nt">${s.areas.map(esc).join("、")}</span></div>`:""}
+  ` : (s.items||[]).map(i=>`
+    <div class="itemrow"><span>${esc(i.name)}${i.unit?" / "+esc(i.unit):""}</span>
+      <span class="nt">${esc(i.note||"")}${i.tag?" "+esc(i.tag):""}</span></div>`).join("");
+
+  const on = favs.has(s.id);
   $("sheet-body").innerHTML = `
-    <h3 style="font-size:18px">${esc(s.name)}</h3>
-    <div class="meta" style="margin-bottom:8px">
-      ${isRider ? `${esc(s.vehicle || "")} · ${esc(s.capacity || "")}${s.window ? " · 今天 " + esc(s.window) : ""}`
-                : `${esc(s.address || "—")}${s.hours ? " · " + esc(s.hours) : ""}`}</div>
-    ${rows}
-    ${s.note ? `<p class="meta" style="margin-top:8px">${esc(s.note)}</p>` : ""}
-    ${sponsorLine(s, 2)}
-    <p class="meta" style="margin-top:12px;border-top:1px solid var(--line);padding-top:10px">
-      ${isRider ? "运力牌 · 由本人发布" : `${esc(s.trust)} — ${esc(s.trust_reason)}`}</p>
-    ${s.phone ? `<a class="btn" href="tel:${esc(s.phone)}" style="display:block;text-align:center;text-decoration:none;background:var(--teal-l);color:var(--teal)">打电话 ${esc(s.phone)}</a>` : ""}`;
+    <h2>${esc(s.name)}</h2>
+    <div class="sub" style="font-size:13px;color:var(--sub);margin-bottom:10px">
+      ${esc(s._rider ? [s.vehicle,s.capacity].filter(Boolean).join(" · ") : [s.address,s.hours].filter(Boolean).join(" · "))}</div>
+    ${rows || '<div class="itemrow"><span style="color:var(--sub)">今天还没上货</span></div>'}
+    ${s.note?`<div class="itemrow"><span style="color:var(--sub);font-size:13px">${esc(s.note)}</span></div>`:""}
+    <div class="act">
+      <button class="btn ghost sm" id="d-star">${on?"★ 已收藏":"☆ 收藏"}</button>
+      ${s.phone?`<a class="btn sm" href="tel:${esc(s.phone)}" style="display:flex;align-items:center;justify-content:center;text-decoration:none;height:38px;border-radius:10px;background:var(--teal);color:#fff;font-size:13.5px;font-weight:500">打电话</a>`:""}
+    </div>`;
+  $("d-star").onclick = ()=>{ toggleFav(s.id); closeSheet(); };
   openSheet();
 }
 
-function renderPending(all) {
-  const list = all.filter(s => !isRiderItem(s) && s.owner !== identity.deviceId &&
-    s.claim_pending && s.claim_pending.some(w => w !== identity.deviceId));
-  $("pend-count").textContent = list.length;
-  $("pend-list").innerHTML = list.length ? list.map(s => {
-    const who = s.claim_pending.filter(w => w !== identity.deviceId);
-    const mine = (s.sponsors || []).includes(identity.deviceId);
-    return `<div style="padding:9px 0;border-bottom:1px solid var(--line)">
-      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
-        <div style="min-width:0">
-          <div style="font-size:14px">${esc(s.name || s.id)}</div>
-          <div class="meta">${who.map(w => shortId(w)).map(esc).join("、")} 说这是他的店</div>
-        </div>
-        ${mine ? '<span class="badge">你已作保</span>'
-               : `<button class="btn sm" data-endorse="${esc(s.id)}" data-who="${esc(who[0] || "")}">作保</button>`}
-      </div>
-      ${sponsorLine(s, 2)}
-    </div>`;
-  }).join("") : '<p class="empty">暂时没人需要你作保</p>';
+/* ---------------- 渲染：我的 ---------------- */
+function renderMine(){
+  const all = allItems();
+  const mine = all.filter(s=>s._mine);
+  const fav = all.filter(s=>favs.has(s.id));
 
-  document.querySelectorAll("[data-endorse]").forEach(b => b.onclick = () => {
-    const shop = b.dataset.endorse, who = b.dataset.who;
-    const already = [...store.events.values()].some(e => e.type === "endorse" &&
-      e.target === shop && e.author === identity.deviceId && (e.payload || {}).claimer === who);
-    if (already) { alert("你已经给这家店作过保了"); return; }
-    store.add("endorse", shop, { shop, claimer: who, sig: identity.sign(DP.sponsorMessage(shop, who)) });
-    render(); syncNow();
-    setTimeout(() => alert("已作保。页面上的「已担保」会多一个名字，凑够 2 位他就正式是店主。"), 100);
+  $("evcount").textContent = store.events.size + " 条";
+
+  $("mine-list").innerHTML = mine.length ? mine.map(s=>`
+    <div class="list-item">
+      <div class="grow">
+        <div class="t">${esc(s.name)}</div>
+        <div class="s">${s._rider?"运力牌":"商店"} · ${esc(s._rider?(s.vehicle||""):(s.address||""))||"—"}</div>
+      </div>
+      <button class="btn ghost sm" data-edit="${esc(s.id)}" style="width:auto;padding:0 14px">查看</button>
+    </div>`).join("")
+    : '<div class="empty" style="padding:26px 10px"><div class="sm">还没发布过。去「发布」挂一块门牌试试。</div></div>';
+
+  $("fav-list").innerHTML = fav.length ? fav.map(s=>`
+    <div class="list-item">
+      <div class="grow">
+        <div class="t">${esc(s.name)}</div>
+        <div class="s">${s._rider?"运力":"商店"} · ${esc(s.address||s.vehicle||"")||"—"}</div>
+      </div>
+      <button class="btn ghost sm" data-open2="${esc(s.id)}" style="width:auto;padding:0 14px">查看</button>
+    </div>`).join("")
+    : '<div class="empty" style="padding:26px 10px"><div class="sm">还没有收藏。逛街时点卡片上的星标即可。</div></div>';
+
+  document.querySelectorAll("[data-edit],[data-open2]").forEach(b=>{
+    b.onclick = ()=>{
+      const id = b.dataset.edit || b.dataset.open2;
+      const s = all.find(x=>x.id===id);
+      if (s) showDetail(s);
+    };
   });
 }
 
-// 只列"我创建或我已认领"的标注 —— 别人的店认领不了
-function renderMine(all) {
-  const mine = all.filter(s => {
-    const anchor = [...store.events.values()].find(e => e.target === s.id && e.type === "anchor" && e.author === identity.deviceId);
-    return !!anchor || s.owner === identity.deviceId;
-  });
-  $("mine-list").innerHTML = mine.length ? mine.map(s => {
-    const isRider = isRiderItem(s);
-    const st = s.owner === identity.deviceId ? '<span class="badge">店主</span>'
-      : (s.claim_pending || []).includes(identity.deviceId) ? '<span class="badge wait">等邻居作保</span>'
-      : '<span class="badge l0">未认领</span>';
-    return `<div style="padding:9px 0;border-bottom:1px solid var(--line)">
-      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
-        <div style="min-width:0">
-          <div style="font-size:14px">${esc(s.name || s.id)} ${isRider ? '<span class="badge rider">运力</span>' : ""}</div>
-          <div class="meta">${isRider ? "本人发布" : esc(s.trust_reason || "")}</div>
-        </div>${isRider ? "" : st}
-      </div>
-      ${isRider ? "" : sponsorLine(s, 2)}
-    </div>`;
-  }).join("") : '<p class="empty">你还没挂过标注</p>';
-}
-
-function renderReport() {
-  const t = JSON.parse(localStorage.getItem(T_KEY) || "[]");
-  if (!t.length) { $("report").textContent = "还没有记录"; return; }
-  const total = t.reduce((a, x) => a + x.sec, 0), avg = Math.round(total / t.length);
-  $("report").innerHTML = `已标注 <b>${t.length}</b> 条 · 总耗时 <b>${fmt(total)}</b> · 平均 <b>${fmt(avg)}</b>/条<br>
-    <span style="font-size:11px">按此速度，20 条约需 <b>${fmt(avg * 20)}</b></span>`;
-}
-function fmt(sec) {
-  if (sec < 60) return sec + " 秒";
-  const m = Math.floor(sec / 60), s = sec % 60;
-  return m + " 分" + (s ? " " + s + " 秒" : "");
-}
-
-// ================= 标注表单 =================
-document.querySelectorAll(".seg button").forEach(b => b.onclick = () => {
-  curKind = b.dataset.kind;
-  document.querySelectorAll(".seg button").forEach(x => x.classList.toggle("on", x === b));
-  $("form-shop").style.display = curKind === "shop" ? "" : "none";
-  $("form-rider").style.display = curKind === "rider" ? "" : "none";
-  $("btn-save").textContent = curKind === "shop" ? "挂上门牌" : "挂上运力牌";
-  if (curKind === "shop") scheduleDraw();
-});
-
-function parseItems(text) {
-  return text.split("\n").map(l => l.trim()).filter(Boolean).slice(0, 40).map(line => {
-    const p = line.split("/").map(s => s.trim());
-    return { name: p[0] || "", unit: p[1] || "", note: p[2] || "", tag: "可议" };
-  }).filter(x => x.name);
-}
-
-function markTiming(label) {
-  if (timerStart) {
-    const sec = Math.round((Date.now() - timerStart) / 1000);
-    const t = JSON.parse(localStorage.getItem(T_KEY) || "[]");
-    t.push({ sec, at: new Date().toISOString() });
-    localStorage.setItem(T_KEY, JSON.stringify(t));
-    $("timing").textContent = "上一条 " + fmt(sec);
-  } else { timerStart = Date.now(); $("timing").textContent = "计时中…"; }
-}
-
-$("btn-save").onclick = () => {
+/* ---------------- 发布 ---------------- */
+$("btn-save").onclick = ()=>{
   const id = "n-" + Date.now().toString(36);
-  if (curKind === "shop") {
+  if (ui.pub === "shop"){
     const name = $("f-name").value.trim();
-    if (!name) { alert("店名不能空"); return; }
-    const loc = picked || { lat: view.lat, lon: view.lon };
+    if (!name) return toast("先填个店名");
+    const loc = pickedShop || { lat: geo.lat, lon: geo.lon };
     store.add("anchor", id, { fields: {
-      kind: "shop", name, address: $("f-addr").value.trim(),
-      phone: $("f-phone").value.trim(), hours: $("f-hours").value.trim(),
-      lat: Number(loc.lat.toFixed(6)), lon: Number(loc.lon.toFixed(6)),
+      kind:"shop", name,
+      address: $("f-addr").value.trim(),
+      phone: $("f-phone").value.trim(),
+      hours: $("f-hours").value.trim(),
+      lat: +loc.lat.toFixed(6), lon: +loc.lon.toFixed(6),
       items: parseItems($("f-items").value), open: true
     }});
-    // 勾了"这是我的店"才发认领；没勾就是纯路人标注
-    if ($("f-mine").checked) store.add("claim", id, { sponsors: [] });
-    $("f-name").value = ""; $("f-addr").value = ""; $("f-items").value = ""; $("f-phone").value = "";
-    picked = null;
+    ["f-name","f-addr","f-phone","f-hours","f-items"].forEach(k=>$(k).value="");
+    pickedShop = null; shopMap.pin = null; shopMap.draw();
+    $("f-pos").textContent = ""; $("hint-shop").classList.remove("hide");
   } else {
     const name = $("r-name").value.trim();
-    if (!name) { alert("先填个称呼"); return; }
+    if (!name) return toast("先填个称呼");
+    const loc = pickedRider || { lat: geo.lat, lon: geo.lon };
     store.add("anchor", id, { fields: {
-      kind: "rider", name,
+      kind:"rider", name,
       phone: $("r-phone").value.trim(),
       vehicle: $("r-vehicle").value.trim(),
       capacity: $("r-capacity").value.trim(),
-      areas: $("r-areas").value.split(/[,，]/).map(s => s.trim()).filter(Boolean),
       window: $("r-window").value.trim(),
-      note: $("r-note").value.trim()
+      note: $("r-note").value.trim(),
+      lat: +loc.lat.toFixed(6), lon: +loc.lon.toFixed(6),
+      open: true
     }});
-    $("r-name").value = ""; $("r-phone").value = ""; $("r-vehicle").value = "";
-    $("r-capacity").value = ""; $("r-areas").value = ""; $("r-window").value = ""; $("r-note").value = "";
+    ["r-name","r-phone","r-vehicle","r-capacity","r-window","r-note"].forEach(k=>$(k).value="");
+    pickedRider = null; riderMap.pin = null; riderMap.draw();
+    $("r-pos").textContent = ""; $("hint-rider").classList.remove("hide");
   }
-  markTiming();
-  scheduleDraw(); render(); syncNow(); switchTab("street");
+  syncNow();
+  render();
+  go("browse");
+  toast("已挂上，邻居马上能看到");
 };
-$("btn-start").onclick = () => { timerStart = Date.now(); $("timing").textContent = "计时中…"; };
 
-// ================= 导出导入（兜底） =================
+function parseItems(text){
+  return text.split("\n").map(l=>l.trim()).filter(Boolean).slice(0,40).map(line=>{
+    const p = line.split("/").map(s=>s.trim());
+    return { name:p[0]||"", unit:p[1]||"", note:p[2]||"", tag:"可议" };
+  }).filter(x=>x.name);
+}
+
+/* ---------------- 同步 ---------------- */
+function latestTs(){
+  let m="";
+  for (const e of store.events.values()) if (e.ts>m) m=e.ts;
+  return m;
+}
+function shiftMin(ts,min){ const d=new Date(ts); d.setMinutes(d.getMinutes()-min); return DP.nowTs(d); }
+
+async function syncNow(){
+  if (!store) return;
+  const pill = $("syncpill");
+  try{
+    const since = latestTs();
+    const url = "/api/p2p/pull" + (since ? "?since=" + encodeURIComponent(shiftMin(since,5)) : "");
+    const d1 = await (await fetch(url,{cache:"no-store"})).json();
+    let changed = false;
+    if (d1.events && d1.events.length){
+      if (store.merge(d1.events)) changed = true;
+    }
+    const last = localStorage.getItem(K_PUSH) || "";
+    const batch = [...store.events.values()].filter(e=>!last || e.ts >= shiftMin(last,10));
+    let total = d1.total;
+    if (batch.length){
+      const d2 = await (await fetch("/api/p2p/push",{
+        method:"POST", headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({ events: batch })
+      })).json();
+      total = d2.total;
+      localStorage.setItem(K_PUSH, batch.reduce((m,e)=>e.ts>m?e.ts:m, last));
+    }
+    pill.className = "pill ok";
+    pill.textContent = "已同步 · " + (total ?? "?") + " 条";
+    $("nodeinfo").textContent = "已连接（" + (total??"?") + " 条）";
+    if (changed){ render(); redrawAll(); }
+  } catch(e){
+    pill.className = "pill err";
+    pill.textContent = "离线";
+    $("nodeinfo").textContent = "连不上节点，数据只在本机";
+  }
+}
+
+/* ---------------- 交互 ---------------- */
+function go(page){
+  ui.page = page;
+  ["browse","publish","mine"].forEach(p=>{
+    $("page-"+p).classList.toggle("hidden", p!==page);
+  });
+  document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on", b.dataset.page===page));
+  $("searchbox").classList.toggle("hidden", page!=="browse");
+  if (page==="publish") requestAnimationFrame(fitMaps);
+  if (page==="browse" && ui.mode==="map") requestAnimationFrame(()=>{browseMap.fit();browseMap.draw();});
+  window.scrollTo({top:0});
+}
+document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>go(b.dataset.page));
+
+document.querySelectorAll("[data-filter]").forEach(b=>b.onclick=()=>{
+  ui.filter = b.dataset.filter;
+  document.querySelectorAll("[data-filter]").forEach(x=>x.classList.toggle("on", x===b));
+  render();
+});
+document.querySelectorAll("[data-mode]").forEach(b=>b.onclick=()=>{
+  ui.mode = b.dataset.mode;
+  document.querySelectorAll("[data-mode]").forEach(x=>x.classList.toggle("on", x===b));
+  render();
+});
+document.querySelectorAll("[data-pub]").forEach(b=>b.onclick=()=>{
+  ui.pub = b.dataset.pub;
+  document.querySelectorAll("[data-pub]").forEach(x=>x.classList.toggle("on", x===b));
+  $("form-shop").classList.toggle("hidden", ui.pub!=="shop");
+  $("form-rider").classList.toggle("hidden", ui.pub!=="rider");
+  $("btn-save").textContent = ui.pub==="shop" ? "挂上门牌" : "挂上运力牌";
+  requestAnimationFrame(fitMaps);
+});
+
+$("q").addEventListener("input", e=>{
+  ui.q = e.target.value;
+  $("q-clear").classList.toggle("show", !!ui.q);
+  render();
+});
+$("q-clear").onclick = ()=>{ $("q").value=""; ui.q=""; $("q-clear").classList.remove("show"); render(); };
+
+document.querySelectorAll("[data-pick]").forEach(b=>b.onclick=()=>{
+  const m = b.dataset.pick==="shop" ? shopMap : riderMap;
+  const act = b.dataset.act;
+  if (act==="in") m.zoom(1);
+  else if (act==="out") m.zoom(-1);
+  else tryGeolocate();
+});
+$("bz-in").onclick = ()=>browseMap.zoom(1);
+$("bz-out").onclick = ()=>browseMap.zoom(-1);
+$("bz-me").onclick = ()=>tryGeolocate();
+
+function openSheet(){ $("mask").classList.add("show"); $("sheet").classList.add("show"); }
+function closeSheet(){ $("mask").classList.remove("show"); $("sheet").classList.remove("show"); }
+$("mask").onclick = closeSheet;
+$("sheet-close").onclick = closeSheet;
+
+let toastTimer = null;
+function toast(msg){
+  let el = document.getElementById("toast");
+  if (!el){
+    el = document.createElement("div");
+    el.id = "toast";
+    el.style.cssText = "position:fixed;left:50%;bottom:86px;transform:translateX(-50%);"+
+      "background:rgba(28,27,25,.92);color:#fff;font-size:13.5px;padding:11px 18px;"+
+      "border-radius:12px;z-index:200;opacity:0;transition:.25s;pointer-events:none;max-width:80vw;text-align:center";
+    document.body.appendChild(el);
+  }
+  el.textContent = msg;
+  requestAnimationFrame(()=>{ el.style.opacity="1"; });
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>{ el.style.opacity="0"; }, 1900);
+}
+
+$("btn-sync").onclick = ()=>{ syncNow(); toast("正在同步…"); };
+
 const b64 = o => btoa(unescape(encodeURIComponent(JSON.stringify(o))));
 const unb64 = s => JSON.parse(decodeURIComponent(escape(atob(s.trim()))));
-$("btn-export").onclick = () => {
-  $("sheet-body").innerHTML = `<h3 style="font-size:17px">全部数据</h3>
-    <div class="code" style="max-height:220px">${esc(b64({ t: "events", events: [...store.events.values()] }))}</div>`;
+$("btn-export").onclick = ()=>{
+  $("sheet-body").innerHTML = `<h2>导出数据</h2>
+    <p style="font-size:13px;color:var(--sub);margin:8px 0 12px">复制这段发给另一台手机，在「导入」里粘贴。</p>
+    <div style="background:#F4F2EC;border:1px dashed var(--line);border-radius:10px;padding:12px;
+      font-size:11px;font-family:monospace;word-break:break-all;max-height:200px;overflow:auto">
+      ${esc(b64({t:"events",events:[...store.events.values()]}))}</div>`;
   openSheet();
 };
-$("btn-import").onclick = () => {
-  $("sheet-body").innerHTML = `<h3 style="font-size:17px">导入</h3>
-    <textarea id="imp" placeholder="粘贴对方的数据"></textarea><button class="btn" id="imp-go">导入</button>`;
+$("btn-import").onclick = ()=>{
+  $("sheet-body").innerHTML = `<h2>导入数据</h2>
+    <textarea id="imp" style="width:100%;min-height:120px;border:1px solid var(--line);
+      border-radius:10px;padding:12px;font-size:12px;font-family:monospace;margin-top:10px"
+      placeholder="粘贴对方导出的内容"></textarea>
+    <button class="btn" id="imp-go" style="margin-top:16px">导入</button>`;
   openSheet();
-  $("imp-go").onclick = () => {
-    try { const n = store.merge(unb64($("imp").value).events || []); closeSheet(); render(); scheduleDraw(); alert("导入 " + n + " 条"); }
-    catch (e) { alert("格式不对"); }
+  $("imp-go").onclick = ()=>{
+    try{
+      const n = store.merge(unb64($("imp").value).events || []);
+      closeSheet(); render(); redrawAll(); toast("导入 " + n + " 条");
+    }catch(e){ toast("数据格式不对"); }
   };
 };
-
-$("btn-reset").onclick = () => {
+$("btn-reset").onclick = ()=>{
   if (!confirm("会清空这台设备上的标注缓存（密钥保留），然后重新从节点拉取。确定？")) return;
-  localStorage.removeItem(EV_KEY);
-  localStorage.removeItem(PUSH_KEY);
+  localStorage.removeItem(K_EV);
+  localStorage.removeItem(K_PUSH);
   location.reload();
 };
 
-// ================= 交互 =================
-function openSheet() { $("mask").classList.add("show"); $("sheet").classList.add("show"); }
-function closeSheet() { $("mask").classList.remove("show"); $("sheet").classList.remove("show"); }
-$("mask").onclick = closeSheet; $("sheet-close").onclick = closeSheet;
-$("btn-sync").onclick = syncNow;
-function switchTab(name) {
-  document.querySelectorAll(".tab").forEach(t => t.classList.toggle("on", t.id === "tab-" + name));
-  document.querySelectorAll("nav button").forEach(b => b.classList.toggle("on", b.dataset.tab === name));
-  if (name === "street") render();
-  if (name === "mark") scheduleDraw();
-}
-document.querySelectorAll("nav button").forEach(b => b.onclick = () => switchTab(b.dataset.tab));
-document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") syncNow(); });
+document.addEventListener("visibilitychange", ()=>{
+  if (document.visibilityState === "visible"){
+    fitMaps(); syncNow();
+  }
+});
 
 boot();
 </script>

@@ -110,6 +110,22 @@ def resolve_claims(events: list, pubkeys: dict, root_id: str = None) -> dict:
     if not claims:
         return {}
 
+    # 背书事件（endorse）：任何人可以独立给某人的认领作保，不用等对方重发
+    endorse_map = {}
+    for e in events:
+        if e.get("type") != "endorse":
+            continue
+        p = e.get("payload") or {}
+        shop, claimer = p.get("shop"), p.get("claimer")
+        if not shop or not claimer:
+            continue
+        pub = pubkeys.get(e["author"]) or e.get("pubkey")
+        if not pub:
+            continue
+        if not Identity.verify(pub, sponsor_message(shop, claimer), p.get("sig", "")):
+            continue
+        endorse_map.setdefault((shop, claimer), set()).add(e["author"])
+
     # 每条认领的担保人（先验签名，再谈可信）
     sponsors = {}
     for c in claims:
@@ -125,6 +141,7 @@ def resolve_claims(events: list, pubkeys: dict, root_id: str = None) -> dict:
                 continue
             pubkeys[by] = pub          # 顺手登记，后续事件也能验
             got.add(by)
+        got |= endorse_map.get((c["target"], c["author"]), set())
         sponsors[c["id"]] = got
 
     trusted = {root_id} if root_id else set()

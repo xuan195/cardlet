@@ -258,6 +258,20 @@
   function resolveClaims(events, pubkeys, rootId) {
     const claims = events.filter(e => e.type === "claim");
     if (!claims.length) return {};
+
+    // 背书事件（endorse）：任何人可以独立给某人的认领作保，
+    // 不用等对方重发认领 —— 这正是"一键作保"能成立的原因。
+    const endorseMap = {};
+    for (const e of events) {
+      if (e.type !== "endorse") continue;
+      const p = e.payload || {};
+      if (!p.shop || !p.claimer) continue;
+      const pub = pubkeys[e.author] || e.pubkey;
+      if (!pub || !Identity.verify(pub, sponsorMessage(p.shop, p.claimer), p.sig || "")) continue;
+      const k = p.shop + "|" + p.claimer;
+      (endorseMap[k] = endorseMap[k] || new Set()).add(e.author);
+    }
+
     const sponsors = {};
     for (const c of claims) {
       const msg = sponsorMessage(c.target, c.author);
@@ -269,6 +283,7 @@
         pubkeys[sp.by] = pub;
         got.add(sp.by);
       }
+      for (const by of (endorseMap[c.target + "|" + c.author] || [])) got.add(by);
       sponsors[c.id] = got;
     }
 

@@ -8,76 +8,87 @@
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
   :root{--paper:#F7F6F2;--card:#FFF;--ink:#1F2937;--sub:#6B7280;--line:#E5E3DC;
         --teal:#0F6E56;--teal-l:#E1F5EE;--amber:#B45309;--amber-l:#FAEEDA;--red:#A32D2D}
+  html,body{overflow-x:hidden;max-width:100vw}
   body{font-family:system-ui,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--paper);
-       color:var(--ink);padding-bottom:70px;overflow-x:hidden}
-  header{position:sticky;top:0;z-index:50;background:var(--paper);padding:12px 16px 10px;
+       color:var(--ink);padding-bottom:68px}
+  header{position:sticky;top:0;z-index:50;background:var(--paper);padding:10px 16px 8px;
          border-bottom:1px solid var(--line)}
-  header h1{font-size:18px;letter-spacing:2px;display:flex;align-items:baseline;gap:8px}
-  header h1 small{font-size:11px;color:var(--sub);font-weight:400;letter-spacing:0}
-  .wrap{padding:12px}
+  .hrow{display:flex;align-items:center;justify-content:space-between;gap:8px}
+  header h1{font-size:17px;letter-spacing:2px}
+  .pill{font-size:11px;padding:3px 9px;border-radius:99px;background:#EFEEE8;color:var(--sub)}
+  .pill.ok{background:var(--teal-l);color:var(--teal)}
+  .pill.err{background:#FCEBEB;color:var(--red)}
+  .wrap{padding:10px 12px}
   .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:10px}
   .card h3{font-size:15px;display:flex;align-items:center;gap:8px;margin-bottom:6px}
-  .badge{font-size:11px;padding:2px 8px;border-radius:99px;background:var(--teal-l);
-         color:var(--teal);font-weight:500;flex:none}
+  .badge{font-size:11px;padding:2px 8px;border-radius:99px;background:var(--teal-l);color:var(--teal);font-weight:500;flex:none}
   .badge.l0{background:#F1EFE8;color:#6B6A63}
   .badge.l1{background:#E6F1FB;color:#0C447C}
+  .badge.wait{background:var(--amber-l);color:#633806}
   .meta{font-size:12px;color:var(--sub);line-height:1.7}
   .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
   .chip{font-size:12px;background:#F2F1EC;border-radius:6px;padding:4px 8px;color:#3F3D37}
   .chip i{font-style:normal;color:var(--amber);margin-left:4px;font-size:11px}
   label{display:block;font-size:12px;color:var(--sub);margin:10px 0 4px}
-  input,textarea,select{width:100%;border:1px solid var(--line);border-radius:8px;padding:10px;
-        font-size:15px;font-family:inherit;background:#FCFCFA;color:var(--ink)}
-  textarea{min-height:88px;resize:vertical;font-size:12px;font-family:ui-monospace,monospace}
-  .btn{width:100%;border:0;border-radius:10px;padding:14px;font-size:15px;font-weight:600;
+  input,textarea{border:1px solid var(--line);border-radius:8px;padding:10px;font-size:15px;
+        font-family:inherit;background:#FCFCFA;color:var(--ink);width:100%}
+  textarea{min-height:80px;font-size:12px;font-family:ui-monospace,monospace}
+  .btn{width:100%;border:0;border-radius:10px;padding:13px;font-size:15px;font-weight:600;
        background:var(--teal);color:#fff;margin-top:10px;cursor:pointer}
   .btn.ghost{background:#fff;color:var(--teal);border:1px solid var(--teal)}
-  .btn.warn{background:var(--amber)}
-  .btn:disabled{opacity:.45}
+  .btn.sm{padding:7px 12px;font-size:13px;width:auto;margin:0}
   .row{display:flex;gap:8px;margin-top:10px}
   .row>*{flex:1}
   .hint{font-size:11px;color:var(--sub);line-height:1.7;margin-top:8px}
-  #map{width:100%;height:190px;background:#E8E6DF;border-radius:10px;margin-top:8px;display:block}
+  .mapbox{position:relative;margin-top:8px;border-radius:10px;overflow:hidden;background:#E8E6DF}
+  #map{display:block;width:100%;height:230px;touch-action:none}
+  .mapctl{position:absolute;right:8px;top:8px;display:flex;flex-direction:column;gap:6px}
+  .mapctl button{width:34px;height:34px;border:0;border-radius:8px;background:rgba(255,255,255,.94);
+       font-size:17px;color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.14);cursor:pointer}
+  .attr{position:absolute;left:6px;bottom:4px;font-size:9px;color:#5F5E5A;background:rgba(255,255,255,.72);
+        padding:1px 4px;border-radius:3px}
+  .loadbar{position:absolute;left:0;right:0;top:0;height:2px;background:var(--amber);width:0;transition:width .2s}
   nav{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);
-      display:flex;padding:8px 0 calc(8px + env(safe-area-inset-bottom));z-index:60}
+      display:flex;padding:7px 0 calc(7px + env(safe-area-inset-bottom));z-index:60}
   nav button{flex:1;background:none;border:0;font-size:12px;color:var(--sub);font-family:inherit;cursor:pointer}
   nav button.on{color:var(--teal);font-weight:600}
-  nav button span{display:block;font-size:19px;line-height:1.25}
+  nav button span{display:block;font-size:19px;line-height:1.2}
   .tab{display:none}.tab.on{display:block}
   .mask{position:fixed;inset:0;background:rgba(31,41,55,.42);display:none;z-index:90}
   .mask.show{display:block}
   .sheet{position:fixed;left:0;right:0;bottom:0;background:#fff;border-radius:16px 16px 0 0;
-         z-index:91;padding:18px 16px 26px;max-height:78vh;overflow:auto;transform:translateY(100%);
-         transition:.22s}
+         z-index:91;padding:18px 16px 26px;max-height:78vh;overflow:auto;transform:translateY(100%);transition:.22s}
   .sheet.show{transform:translateY(0)}
   .sheet .close{position:absolute;right:14px;top:12px;border:0;background:none;font-size:20px;color:var(--sub)}
-  .timer{background:var(--teal-l);border-radius:10px;padding:12px;margin-bottom:10px;font-size:13px}
-  .timer b{font-size:20px;color:var(--teal);font-variant-numeric:tabular-nums}
+  .timer{background:var(--teal-l);border-radius:10px;padding:11px;margin-bottom:10px;font-size:13px}
+  .timer b{font-size:19px;color:var(--teal);font-variant-numeric:tabular-nums}
   .empty{color:var(--sub);font-size:13px;padding:6px 0}
-  .code{background:#F4F3EE;border:1px dashed var(--line);border-radius:8px;padding:10px;
-        font-size:11px;font-family:ui-monospace,monospace;word-break:break-all;max-height:120px;overflow:auto}
-  .tag-pending{background:var(--amber-l);color:#633806;font-size:11px;padding:2px 8px;border-radius:99px}
+  .code{background:#F4F3EE;border:1px dashed var(--line);border-radius:8px;padding:10px;font-size:11px;
+        font-family:ui-monospace,monospace;word-break:break-all;max-height:120px;overflow:auto}
+  details{margin-top:10px}
+  summary{font-size:12px;color:var(--sub);cursor:pointer}
 </style>
 </head>
 <body>
 <header>
-  <h1>门牌 <small id="devid">初始化中…</small></h1>
+  <div class="hrow">
+    <h1>门牌</h1>
+    <span class="pill" id="syncpill">同步中…</span>
+  </div>
 </header>
 
 <div class="wrap">
   <!-- ============ 逛街 ============ -->
   <div class="tab on" id="tab-street">
-    <div class="card" style="padding:12px 14px">
-      <div class="meta" id="summary">还没有店</div>
-    </div>
+    <div class="card" style="padding:11px 14px"><div class="meta" id="summary">准备中…</div></div>
     <div id="list"></div>
   </div>
 
   <!-- ============ 标注 ============ -->
   <div class="tab" id="tab-mark">
     <div class="card">
-      <h3>这条街上有什么 <span class="badge l0" id="timing">未计时</span></h3>
-      <div class="meta">只写「有什么」，不写价钱 —— 多少钱是老板和客人之间的事。</div>
+      <h3>挂一块门牌 <span class="badge l0" id="timing">未计时</span></h3>
+      <div class="meta">只写「有什么」，不写价钱。</div>
 
       <label>店名</label>
       <input id="f-name" placeholder="好又多超市">
@@ -88,62 +99,64 @@
         <div><label>营业时间</label><input id="f-hours" placeholder="07:00-22:00"></div>
       </div>
 
-      <label>点一下地图定位（或按下面按钮取当前位置）</label>
-      <canvas id="map" width="600" height="380"></canvas>
+      <label>在地图上点一下定位（可拖动、可缩放）</label>
+      <div class="mapbox">
+        <canvas id="map" width="640" height="460"></canvas>
+        <div class="loadbar" id="loadbar"></div>
+        <div class="mapctl">
+          <button id="zin">＋</button>
+          <button id="zout">−</button>
+          <button id="here" style="font-size:13px">定</button>
+        </div>
+        <div class="attr">© OpenStreetMap</div>
+      </div>
       <div class="row">
-        <button class="btn ghost" id="btn-here">用当前位置</button>
-        <button class="btn ghost" id="btn-clear">清除选点</button>
+        <button class="btn ghost sm" id="prefetch" style="flex:1">下载这片地图（离线用）</button>
       </div>
 
-      <label>今日有什么（一行一样，格式：名称/单位/备注）</label>
+      <label>今日有什么（一行一样：名称/单位/备注）</label>
       <textarea id="f-items" placeholder="本地鸡蛋/斤/今早到货
-大米/袋/25kg
-散装酱油/斤/"></textarea>
+大米/袋/25kg"></textarea>
 
       <button class="btn" id="btn-save">挂上门牌</button>
       <button class="btn ghost" id="btn-start">重新开始计时</button>
-      <p class="hint">计时用于回答一个关键问题：<b>标一家店要多久</b>。
-        如果二十家要两小时，这个产品从第一天就没人维护。</p>
     </div>
   </div>
 
   <!-- ============ 我的 ============ -->
   <div class="tab" id="tab-mine">
     <div class="card">
-      <h3>这台设备</h3>
-      <div class="meta">指纹 <b id="devid2">—</b>　（私钥只在这台机器上，永不出门）</div>
-      <div class="row">
-        <button class="btn ghost" id="btn-export">导出全部数据</button>
-        <button class="btn ghost" id="btn-import">导入别人数据</button>
-      </div>
-      <p class="hint">两台手机之间：A 点导出 → 把文字发给 B → B 点导入。
-        事件会自动补齐，不需要任何服务器。</p>
+      <h3>待我作保 <span class="badge wait" id="pend-count">0</span></h3>
+      <div class="meta">邻居认领了店，你点一下就能作保。凑够 2 位，他就正式是店主。</div>
+      <div id="pend-list"></div>
     </div>
 
     <div class="card">
-      <h3>认领我的店</h3>
-      <div class="meta" id="claim-hint">还没选店</div>
+      <h3>我认领的店</h3>
       <div id="claim-list"></div>
     </div>
 
     <div class="card">
-      <h3>给人作保</h3>
-      <div class="meta">收到别人的认领请求码，贴在这里，我来作保（需 2 位邻居）。</div>
-      <textarea id="in-claimreq" placeholder="粘贴认领请求码"></textarea>
-      <button class="btn" id="btn-sponsor">我来作保</button>
-      <div id="sponsor-out"></div>
-    </div>
-
-    <div class="card">
-      <h3>接收担保</h3>
-      <div class="meta">别人给我作保后，把担保码贴在这里。</div>
-      <textarea id="in-sponsor" placeholder="粘贴担保码"></textarea>
-      <button class="btn" id="btn-accept-sponsor">提交担保</button>
+      <h3>这台设备</h3>
+      <div class="meta">指纹 <b id="devid">—</b>　私钥只在这台机器上</div>
+      <div class="meta" id="nodeinfo" style="margin-top:6px"></div>
+      <button class="btn ghost" id="btn-sync" style="margin-top:10px">立刻同步</button>
     </div>
 
     <div class="card">
       <h3>计时报告</h3>
       <div id="report" class="meta">还没有记录</div>
+    </div>
+
+    <div class="card">
+      <details>
+        <summary>高级：没网时用文字交换数据</summary>
+        <div class="row">
+          <button class="btn ghost sm" id="btn-export" style="flex:1">导出</button>
+          <button class="btn ghost sm" id="btn-import" style="flex:1">导入</button>
+        </div>
+        <p class="hint">同一 WiFi 下一般用不到，网络不通时兜底。</p>
+      </details>
     </div>
   </div>
 </div>
@@ -161,18 +174,209 @@
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
-
-const ROOT_KEY = "dp_root";       // 发起人（根信任）
-const ID_KEY = "dp_identity";
-const EV_KEY = "dp_events";
-const T_KEY = "dp_timing";
+const ID_KEY = "dp_identity", EV_KEY = "dp_events", T_KEY = "dp_timing", ROOT_KEY = "dp_root";
 
 let identity = null, store = null, rootId = null;
-let picked = null;                // 地图上选的点 {lat, lon}
-let timerStart = null;
-let geo = { lat: 29.840, lon: 112.900 };
+let view = { lat: 29.84, lon: 112.90, z: 16 };
+let picked = null, timerStart = null, dragging = false, moved = false, last = null;
+let syncTimer = null, pendingRedraw = false;
 
-// ---------------- 初始化 ----------------
+// ================= 离线瓦片缓存（IndexedDB） =================
+const DB_NAME = "doorplate-tiles-v1";
+let dbPromise = null;
+function db() {
+  if (dbPromise) return dbPromise;
+  dbPromise = new Promise(res => {
+    const r = indexedDB.open(DB_NAME, 1);
+    r.onupgradeneeded = () => r.result.createObjectStore("t");
+    r.onsuccess = () => res(r.result);
+    r.onerror = () => res(null);
+  });
+  return dbPromise;
+}
+async function idbGet(k) {
+  const d = await db(); if (!d) return null;
+  return new Promise(res => { try { const q = d.transaction("t").objectStore("t").get(k); q.onsuccess = () => res(q.result || null); q.onerror = () => res(null); } catch (e) { res(null); } });
+}
+async function idbPut(k, v) {
+  const d = await db(); if (!d) return;
+  try { d.transaction("t", "readwrite").objectStore("t").put(v, k); } catch (e) {}
+}
+
+const tiles = new Map();       // key -> Image
+const loading = new Set();
+// 走本机服务端的瓦片代理：同源、无跨域，服务端落盘缓存就是离线源
+const TILE_URL = (z, x, y) => `/tiles/${z}/${x}/${y}.png`;
+
+function tileKey(z, x, y) { return z + "/" + x + "/" + y; }
+
+function ensureTile(z, x, y) {
+  const key = tileKey(z, x, y);
+  if (tiles.has(key) || loading.has(key)) return;
+  loading.add(key);
+  const img = new Image();
+  img.onload = () => { loading.delete(key); tiles.set(key, img); draw(); };
+  img.onerror = () => { loading.delete(key); tiles.set(key, null); draw(); };  // 记成"空白"，不再问
+  img.src = TILE_URL(z, x, y);
+}
+
+// ================= 投影 =================
+function project(lat, lon, z) {
+  const scale = 256 * Math.pow(2, z);
+  const x = (lon + 180) / 360 * scale;
+  const r = lat * Math.PI / 180;
+  const y = (1 - Math.log(Math.tan(r) + 1 / Math.cos(r)) / Math.PI) / 2 * scale;
+  return { x, y };
+}
+function unproject(x, y, z) {
+  const scale = 256 * Math.pow(2, z);
+  const lon = x / scale * 360 - 180;
+  const n = Math.PI - 2 * Math.PI * y / scale;
+  const lat = 180 / Math.PI * Math.atan(0.5 * (Math.exp(n) - Math.exp(-n)));
+  return { lat, lon };
+}
+
+// ================= 画地图 =================
+let cv, ctx;
+function scheduleDraw() {
+  if (pendingRedraw) return;
+  pendingRedraw = true;
+  setTimeout(() => { pendingRedraw = false; draw(); }, 16);
+}
+
+function draw() {
+  if (!ctx) return;
+  const W = cv.width, H = cv.height;
+  const c = project(view.lat, view.lon, view.z);
+  const left = c.x - W / 2, top = c.y - H / 2;
+  const n = Math.pow(2, view.z);
+  const t0x = Math.floor(left / 256), t1x = Math.floor((left + W) / 256);
+  const t0y = Math.floor(top / 256), t1y = Math.floor((top + H) / 256);
+
+  ctx.fillStyle = "#E4E2DA"; ctx.fillRect(0, 0, W, H);
+  for (let ty = t0y; ty <= t1y; ty++) {
+    for (let tx = t0x; tx <= t1x; tx++) {
+      if (tx < 0 || ty < 0 || tx >= n || ty >= n) continue;
+      const key = tileKey(view.z, tx, ty);
+      const px = tx * 256 - left, py = ty * 256 - top;
+      if (tiles.has(key)) {
+        const img = tiles.get(key);
+        if (img) ctx.drawImage(img, px, py, 256, 256);
+        else { ctx.fillStyle = "#EDEBE4"; ctx.fillRect(px, py, 256, 256); }  // 上游没有数据
+      } else {
+        ctx.fillStyle = "#EDEBE4"; ctx.fillRect(px, py, 256, 256);
+        ensureTile(view.z, tx, ty);
+      }
+    }
+  }
+
+  // 已有店铺
+  const st = stateAll();
+  Object.values(st).forEach(s => {
+    if (!s.lat || !s.lon) return;
+    const p = project(s.lat, s.lon, view.z);
+    const x = p.x - left, y = p.y - top;
+    if (x < -30 || y < -30 || x > W + 30 || y > H + 30) return;
+    ctx.beginPath(); ctx.arc(x, y, 9, 0, Math.PI * 2);
+    ctx.fillStyle = s.open ? "#0F6E56" : "#B4B2A9"; ctx.fill();
+    ctx.strokeStyle = "#fff"; ctx.lineWidth = 2; ctx.stroke();
+    ctx.fillStyle = "#1F2937"; ctx.font = "bold 20px system-ui";
+    ctx.fillText(String(s.name || "").slice(0, 6), x + 12, y + 7);
+  });
+
+  // 我
+  const me = project(view.lat, view.lon, view.z);
+  ctx.beginPath(); ctx.arc(W / 2, H / 2, 8, 0, Math.PI * 2);
+  ctx.fillStyle = "#185FA5"; ctx.fill();
+  ctx.strokeStyle = "#fff"; ctx.lineWidth = 2; ctx.stroke();
+
+  // 选点
+  if (picked) {
+    const p = project(picked.lat, picked.lon, view.z);
+    const x = p.x - left, y = p.y - top;
+    ctx.beginPath(); ctx.arc(x, y, 12, 0, Math.PI * 2);
+    ctx.fillStyle = "rgba(180,83,9,.22)"; ctx.fill();
+    ctx.beginPath(); ctx.arc(x, y, 7, 0, Math.PI * 2);
+    ctx.fillStyle = "#B45309"; ctx.fill();
+    ctx.strokeStyle = "#fff"; ctx.lineWidth = 2; ctx.stroke();
+  }
+}
+
+function screenToLatLon(clientX, clientY) {
+  const r = cv.getBoundingClientRect();
+  const c = project(view.lat, view.lon, view.z);
+  const left = c.x - cv.width / 2, top = c.y - cv.height / 2;
+  const px = left + (clientX - r.left) / r.width * cv.width;
+  const py = top + (clientY - r.top) / r.height * cv.height;
+  return unproject(px, py, view.z);
+}
+
+function bindMap() {
+  cv = $("map"); ctx = cv.getContext("2d");
+  let startX = 0, startY = 0, c0 = null;
+
+  cv.addEventListener("pointerdown", e => {
+    dragging = true; moved = false;
+    startX = e.clientX; startY = e.clientY;
+    c0 = project(view.lat, view.lon, view.z);
+    cv.setPointerCapture(e.pointerId);
+  });
+  cv.addEventListener("pointermove", e => {
+    if (!dragging) return;
+    const dx = e.clientX - startX, dy = e.clientY - startY;
+    if (Math.abs(dx) + Math.abs(dy) > 6) moved = true;
+    const r = cv.getBoundingClientRect();
+    const ll = unproject(c0.x - dx / r.width * cv.width, c0.y - dy / r.height * cv.height, view.z);
+    view.lat = ll.lat; view.lon = ll.lon;
+    scheduleDraw();
+  });
+  cv.addEventListener("pointerup", e => {
+    if (!dragging) return;
+    dragging = false;
+    if (!moved) { picked = screenToLatLon(e.clientX, e.clientY); scheduleDraw(); }
+  });
+
+  $("zin").onclick = () => { view.z = Math.min(18, view.z + 1); scheduleDraw(); };
+  $("zout").onclick = () => { view.z = Math.max(12, view.z - 1); scheduleDraw(); };
+  $("here").onclick = () => {
+    if (!navigator.geolocation) { alert("这台设备不支持定位，直接在地图上点选"); return; }
+    navigator.geolocation.getCurrentPosition(p => {
+      view.lat = p.coords.latitude; view.lon = p.coords.longitude;
+      picked = { lat: view.lat, lon: view.lon };
+      scheduleDraw();
+    }, () => alert("取不到定位，直接在地图上点选即可"), { timeout: 8000 });
+  };
+  $("prefetch").onclick = prefetch;
+}
+
+// 把当前视野及上下各一级的瓦片全部下下来，断网也能看
+async function prefetch() {
+  const bar = $("loadbar");
+  const list = [];
+  for (let dz = -1; dz <= 1; dz++) {
+    const z = view.z + dz;
+    if (z < 10 || z > 18) continue;
+    const c = project(view.lat, view.lon, z);
+    const W = cv.width * Math.pow(2, dz), H = cv.height * Math.pow(2, dz);
+    const left = c.x - W / 2, top = c.y - H / 2;
+    for (let tx = Math.floor(left / 256); tx <= Math.floor((left + W) / 256); tx++) {
+      for (let ty = Math.floor(top / 256); ty <= Math.floor((top + H) / 256); ty++) {
+        list.push([z, tx, ty]);
+      }
+    }
+  }
+  bar.style.width = "0%";
+  let done = 0;
+  for (const [z, x, y] of list) {
+    await ensureTile(z, x, y);
+    done++;
+    bar.style.width = (done / list.length * 100) + "%";
+  }
+  setTimeout(() => { bar.style.width = "0%"; }, 600);
+  alert("已缓存 " + list.length + " 张瓦片，这一片现在断网也能看。");
+}
+
+// ================= 初始化 =================
 function loadIdentity() {
   const raw = localStorage.getItem(ID_KEY);
   if (raw) return DP.Identity.fromJSON(JSON.parse(raw));
@@ -182,52 +386,102 @@ function loadIdentity() {
 }
 
 function boot() {
-  $("summary").textContent = "正在准备密钥（首次约 1-2 秒）…";
   setTimeout(() => {
+    // 支持 ?lat=&lon=&z= 指定初始视野，方便测试和分享
+    const q = new URLSearchParams(location.search);
+    if (q.get("lat") && q.get("lon")) {
+      view.lat = parseFloat(q.get("lat")); view.lon = parseFloat(q.get("lon"));
+    }
+    if (q.get("z")) view.z = Math.max(10, Math.min(18, parseInt(q.get("z"), 10)));
     identity = loadIdentity();
     rootId = localStorage.getItem(ROOT_KEY) || null;
     store = new DP.Store(identity, rootId, EV_KEY);
     $("devid").textContent = identity.deviceId;
-    $("devid2").textContent = identity.deviceId;
+    bindMap();
+    // 没有显式坐标时，用已有店铺的位置做初始视野
+    if (!q.get("lat")) {
+      const shops = Object.values(stateAll()).filter(s => s.lat && s.lon);
+      if (shops.length) { view.lat = shops[0].lat; view.lon = shops[0].lon; }
+    }
+    scheduleDraw();
     render();
-    initMap();
+    syncNow();
+    syncTimer = setInterval(syncNow, 6000);
     const h = (location.hash || "").replace("#", "");
     if (["street", "mark", "mine"].includes(h)) switchTab(h);
   }, 30);
 }
 
-// ---------------- 渲染 ----------------
-function state() { return store.state(new Date()); }
+// ================= 同步（局域网节点） =================
+function latestTs() {
+  let m = "";
+  for (const e of store.events.values()) if (e.ts > m) m = e.ts;
+  return m;
+}
+
+async function syncNow() {
+  if (!store) return;
+  const pill = $("syncpill");
+  try {
+    // 拉：带一个略早的时间（本地时间格式，和事件里的 ts 同一口径），容忍时钟误差
+    const since = latestTs();
+    let from = "";
+    if (since) {
+      const d = new Date(since);
+      d.setMinutes(d.getMinutes() - 5);
+      from = DP.nowTs(d);
+    }
+    const url = "/api/p2p/pull" + (from ? "?since=" + encodeURIComponent(from) : "");
+    const r1 = await fetch(url, { cache: "no-store" });
+    const d1 = await r1.json();
+    if (d1.events && d1.events.length) {
+      const n = store.merge(d1.events);
+      if (n) { render(); scheduleDraw(); }
+    }
+    // 推：把自己独有的发上去
+    const r2 = await fetch("/api/p2p/push", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ events: [...store.events.values()] })
+    });
+    const d2 = await r2.json();
+    pill.className = "pill ok";
+    pill.textContent = "已同步 · 节点 " + (d2.total ?? "?") + " 条";
+    $("nodeinfo").textContent = "局域网节点：" + location.origin + "　本地 " + store.events.size + " 条事件";
+  } catch (e) {
+    pill.className = "pill err";
+    pill.textContent = "未连接节点";
+    $("nodeinfo").textContent = "连不上局域网节点，数据只在这台设备上（仍可离线标注）";
+  }
+}
+
+// ================= 渲染 =================
+function stateAll() { return store ? store.state(new Date()) : {}; }
 
 function render() {
-  const st = state();
+  const st = stateAll();
   const shops = Object.values(st).sort((a, b) => (a.open === b.open ? 0 : (a.open ? -1 : 1)));
   const openCount = shops.filter(s => s.open).length;
   $("summary").innerHTML = shops.length
-    ? `开门做生意 <b style="color:var(--teal)">${openCount}</b> 家 · 共 ${shops.length} 家 · 设备 <b>${identity.deviceId}</b>`
-    : "这条街还没有店挂上门牌，去「标注」加一个。";
+    ? `开门做生意 <b style="color:var(--teal)">${openCount}</b> 家 · 共 ${shops.length} 家`
+    : "这条街还没有店，去「标注」挂一块门牌。";
 
-  $("list").innerHTML = shops.length ? shops.map(s => {
+  $("list").innerHTML = shops.map(s => {
     const items = (s.items || []).slice(0, 4).map(i =>
       `<span class="chip">${esc(i.name)}${i.unit ? " / " + esc(i.unit) : ""}<i>${esc(i.tag || "可议")}</i></span>`).join("");
     const tv = s.trust === "L2" ? '<span class="badge">店主认领</span>'
       : s.trust === "L1" ? '<span class="badge l1">多人确认</span>'
       : '<span class="badge l0">路人标注</span>';
-    const pend = (s.claim_pending && s.claim_pending.length)
-      ? '<span class="tag-pending">待担保</span>' : "";
+    const pend = (s.claim_pending && s.claim_pending.length) ? '<span class="badge wait">待担保</span>' : "";
     return `<div class="card" data-id="${esc(s.id)}">
-      <h3>${esc(s.name || s.id)} ${tv} ${pend}</h3>
-      <div class="meta">${esc(s.address || "—")}${s.hours ? " · " + esc(s.hours) : ""}
-        ${s.open ? " · 营业中" : " · 已打烊"}</div>
+      <h3>${esc(s.name || s.id)} ${tv}${pend}</h3>
+      <div class="meta">${esc(s.address || "—")}${s.hours ? " · " + esc(s.hours) : ""} · ${s.open ? "营业中" : "已打烊"}</div>
       <div class="chips">${items || '<span class="chip">今日未上货</span>'}</div>
     </div>`;
-  }).join("") : "";
+  }).join("");
 
-  document.querySelectorAll("#list .card").forEach(el => {
-    el.onclick = () => showShop(st[el.dataset.id]);
-  });
-
-  renderClaimList(st);
+  document.querySelectorAll("#list .card").forEach(el => el.onclick = () => showShop(st[el.dataset.id]));
+  renderPending(st);
+  renderMine(st);
   renderReport();
 }
 
@@ -236,107 +490,88 @@ function showShop(s) {
   const rows = (s.items || []).map(i =>
     `<div class="meta" style="display:flex;justify-content:space-between;border-bottom:1px dashed var(--line);padding:8px 0">
       <span>${esc(i.name)}${i.unit ? " / " + esc(i.unit) : ""}</span>
-      <span>${esc(i.note || "")} · ${esc(i.tag || "可议")}</span></div>`).join("");
+      <span>${esc(i.note || "")} ${esc(i.tag || "可议")}</span></div>`).join("");
   $("sheet-body").innerHTML = `
     <h3 style="font-size:18px">${esc(s.name)}</h3>
-    <div class="meta" style="margin-bottom:10px">${esc(s.address || "—")}${s.hours ? " · " + esc(s.hours) : ""}</div>
+    <div class="meta" style="margin-bottom:8px">${esc(s.address || "—")}${s.hours ? " · " + esc(s.hours) : ""}</div>
     ${rows || '<p class="empty">今日未上货</p>'}
-    ${s.note ? `<p class="meta" style="margin-top:10px">${esc(s.note)}</p>` : ""}
-    <p class="meta" style="margin-top:14px;border-top:1px solid var(--line);padding-top:10px">
-      可信度：${esc(s.trust)} — ${esc(s.trust_reason)}<br>
-      事件数：${s.events}${s.conflicts && Object.keys(s.conflicts).length ? " · 存在分歧：" + Object.keys(s.conflicts).join("、") : ""}
-    </p>
+    <p class="meta" style="margin-top:12px;border-top:1px solid var(--line);padding-top:10px">
+      ${esc(s.trust)} — ${esc(s.trust_reason)}<br>共 ${s.events} 条事件</p>
     ${s.phone ? `<a class="btn" href="tel:${esc(s.phone)}" style="display:block;text-align:center;text-decoration:none;background:var(--teal-l);color:var(--teal)">打电话 ${esc(s.phone)}</a>` : ""}`;
-  $("mask").classList.add("show"); $("sheet").classList.add("show");
+  openSheet();
 }
 
-function renderClaimList(st) {
+// 待我作保：别人认领了但我还没作保的
+function renderPending(st) {
+  const list = Object.values(st).filter(s =>
+    s.claim_pending && s.claim_pending.includes && s.claim_pending.length &&
+    s.claim_pending.some(who => who !== identity.deviceId) &&
+    s.owner !== identity.deviceId);
+  $("pend-count").textContent = list.length;
+  $("pend-list").innerHTML = list.length ? list.map(s => {
+    const who = s.claim_pending.filter(w => w !== identity.deviceId);
+    const already = who.length ? "" : "";
+    return `<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;
+        padding:9px 0;border-bottom:1px solid var(--line)">
+      <div style="min-width:0">
+        <div style="font-size:14px">${esc(s.name || s.id)}</div>
+        <div class="meta">${who.map(w => esc(w)).join("、")} 说这是他的店</div>
+      </div>
+      <button class="btn sm" data-endorse="${esc(s.id)}" data-who="${esc(who[0] || "")}">作保</button>
+    </div>`;
+  }).join("") : '<p class="empty">暂时没人需要你作保</p>';
+
+  document.querySelectorAll("[data-endorse]").forEach(b => {
+    b.onclick = () => {
+      const shop = b.dataset.endorse, who = b.dataset.who;
+      const sig = identity.sign(DP.sponsorMessage(shop, who));
+      store.add("endorse", shop, { shop, claimer: who, sig });
+      render(); syncNow();
+      alert("已作保。满 2 位后他自动成为店主。");
+    };
+  });
+}
+
+function renderMine(st) {
   const mine = Object.values(st).filter(s => !s.owner || s.owner === identity.deviceId);
-  $("claim-list").innerHTML = mine.length ? mine.map(s => `
-    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)">
-      <span>${esc(s.name || s.id)}${s.owner === identity.deviceId ? ' <span class="badge">已认领</span>' : ""}</span>
-      <button class="btn ghost" style="width:auto;padding:6px 12px;margin:0;font-size:13px"
-        data-claim="${esc(s.id)}">${s.owner === identity.deviceId ? "生成请求码" : "认领"}</button>
-    </div>`).join("") : '<p class="empty">这里会列出你能认领的店</p>';
+  $("claim-list").innerHTML = mine.length ? mine.map(s => {
+    const done = s.owner === identity.deviceId;
+    const waiting = s.claim_pending && s.claim_pending.includes(identity.deviceId);
+    return `<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;
+        padding:9px 0;border-bottom:1px solid var(--line)">
+      <div style="min-width:0">
+        <div style="font-size:14px">${esc(s.name || s.id)}</div>
+        <div class="meta">${done ? "你是店主" : waiting ? "已认领，等邻居作保" : "尚未认领"}</div>
+      </div>
+      ${done ? '<span class="badge">已认领</span>'
+        : waiting ? '<span class="badge wait">待担保</span>'
+        : `<button class="btn sm" data-claim="${esc(s.id)}">这是我的店</button>`}
+    </div>`;
+  }).join("") : '<p class="empty">没有可认领的店</p>';
 
   document.querySelectorAll("[data-claim]").forEach(b => {
-    b.onclick = () => claimShop(b.dataset.claim);
+    b.onclick = () => {
+      store.add("claim", b.dataset.claim, { sponsors: [] });
+      render(); syncNow();
+      alert("已认领。等两位邻居在「待我作保」里点一下，你就正式是店主了。");
+    };
   });
 }
 
 function renderReport() {
   const t = JSON.parse(localStorage.getItem(T_KEY) || "[]");
-  if (!t.length) { $("report").textContent = "还没有记录"; return; }
-  const total = t.reduce((a, x) => a + x.sec, 0);
-  const avg = Math.round(total / t.length);
+  if (!t.length) { $("report").textContent = "还没有记录，去「标注」挂一块门牌试试"; return; }
+  const total = t.reduce((a, x) => a + x.sec, 0), avg = Math.round(total / t.length);
   $("report").innerHTML = `已标注 <b>${t.length}</b> 家 · 总耗时 <b>${fmt(total)}</b> · 平均 <b>${fmt(avg)}</b>/家<br>
-    <span style="font-size:11px">按此速度，20 家需要约 <b>${fmt(avg * 20)}</b></span>`;
+    <span style="font-size:11px">按此速度，20 家约需 <b>${fmt(avg * 20)}</b></span>`;
 }
-
 function fmt(sec) {
   if (sec < 60) return sec + " 秒";
   const m = Math.floor(sec / 60), s = sec % 60;
   return m + " 分" + (s ? " " + s + " 秒" : "");
 }
 
-// ---------------- 地图（离线段） ----------------
-let cv, ctx;
-function initMap() {
-  cv = $("map"); ctx = cv.getContext("2d");
-  drawMap();
-  cv.addEventListener("click", e => {
-    const r = cv.getBoundingClientRect();
-    const x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height;
-    picked = { lat: geo.lat + (0.5 - y) * 0.012, lon: geo.lon + (x - 0.5) * 0.012 };
-    drawMap();
-  });
-}
-
-function pos2xy(lat, lon) {
-  return [((lon - geo.lon) / 0.012 + 0.5) * cv.width,
-          (0.5 - (lat - geo.lat) / 0.012) * cv.height];
-}
-
-function drawMap() {
-  if (!ctx) return;
-  const W = cv.width, H = cv.height;
-  ctx.clearRect(0, 0, W, H);
-  ctx.fillStyle = "#E8E6DF"; ctx.fillRect(0, 0, W, H);
-  // 网格（每格约 100 米）
-  ctx.strokeStyle = "#D5D2C8"; ctx.lineWidth = 1;
-  for (let i = 1; i < 6; i++) {
-    ctx.beginPath(); ctx.moveTo(W * i / 6, 0); ctx.lineTo(W * i / 6, H); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(0, H * i / 6); ctx.lineTo(W, H * i / 6); ctx.stroke();
-  }
-  // 距离环
-  ctx.strokeStyle = "#C9C5B8"; ctx.setLineDash([6, 6]);
-  [80, 160].forEach(r => { ctx.beginPath(); ctx.arc(W / 2, H / 2, r, 0, Math.PI * 2); ctx.stroke(); });
-  ctx.setLineDash([]);
-  // 我
-  ctx.fillStyle = "#185FA5";
-  ctx.beginPath(); ctx.arc(W / 2, H / 2, 7, 0, Math.PI * 2); ctx.fill();
-  ctx.fillStyle = "#0C447C"; ctx.font = "22px system-ui";
-  ctx.fillText("我", W / 2 + 10, H / 2 + 7);
-  // 已有店铺
-  const st = state();
-  Object.values(st).forEach(s => {
-    if (!s.lat || !s.lon) return;
-    const [x, y] = pos2xy(s.lat, s.lon);
-    ctx.fillStyle = s.open ? "#0F6E56" : "#B4B2A9";
-    ctx.beginPath(); ctx.arc(x, y, 8, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = "#3F3D37"; ctx.font = "20px system-ui";
-    ctx.fillText(s.name.slice(0, 5), x + 11, y + 6);
-  });
-  // 选点
-  if (picked) {
-    const [x, y] = pos2xy(picked.lat, picked.lon);
-    ctx.fillStyle = "#B45309";
-    ctx.beginPath(); ctx.arc(x, y, 9, 0, Math.PI * 2); ctx.fill();
-    ctx.strokeStyle = "#fff"; ctx.lineWidth = 2; ctx.stroke();
-  }
-}
-
-// ---------------- 标注 ----------------
+// ================= 标注 =================
 function parseItems(text) {
   return text.split("\n").map(l => l.trim()).filter(Boolean).slice(0, 40).map(line => {
     const p = line.split("/").map(s => s.trim());
@@ -347,141 +582,63 @@ function parseItems(text) {
 $("btn-save").onclick = () => {
   const name = $("f-name").value.trim();
   if (!name) { alert("店名不能空"); return; }
+  const loc = picked || { lat: view.lat, lon: view.lon };
   const id = "shop-" + Date.now().toString(36);
-  const loc = picked || { lat: geo.lat, lon: geo.lon };
-  store.add("anchor", id, {
-    fields: {
-      name, address: $("f-addr").value.trim(),
-      phone: $("f-phone").value.trim(), hours: $("f-hours").value.trim(),
-      lat: Number(loc.lat.toFixed(6)), lon: Number(loc.lon.toFixed(6)),
-      items: parseItems($("f-items").value), open: true
-    }
-  });
-
-  // 计时
+  store.add("anchor", id, { fields: {
+    name, address: $("f-addr").value.trim(),
+    phone: $("f-phone").value.trim(), hours: $("f-hours").value.trim(),
+    lat: Number(loc.lat.toFixed(6)), lon: Number(loc.lon.toFixed(6)),
+    items: parseItems($("f-items").value), open: true
+  }});
   if (timerStart) {
     const sec = Math.round((Date.now() - timerStart) / 1000);
     const t = JSON.parse(localStorage.getItem(T_KEY) || "[]");
     t.push({ sec, at: new Date().toISOString() });
     localStorage.setItem(T_KEY, JSON.stringify(t));
     $("timing").textContent = "上一家 " + fmt(sec);
-  } else {
-    timerStart = Date.now();
-    $("timing").textContent = "计时中…";
-  }
-
-  $("f-name").value = ""; $("f-addr").value = ""; $("f-items").value = "";
-  picked = null;
-  render(); drawMap();
-  switchTab("street");
+  } else { timerStart = Date.now(); $("timing").textContent = "计时中…"; }
+  $("f-name").value = ""; $("f-addr").value = ""; $("f-items").value = ""; $("f-phone").value = "";
+  picked = null; scheduleDraw(); render(); syncNow(); switchTab("street");
 };
+$("btn-start").onclick = () => { timerStart = Date.now(); $("timing").textContent = "计时中…"; };
 
-$("btn-start").onclick = () => {
-  timerStart = Date.now();
-  $("timing").textContent = "计时中…";
-};
-
-$("btn-here").onclick = () => {
-  if (!navigator.geolocation) { alert("这台设备不支持定位，直接在地图上点选"); return; }
-  navigator.geolocation.getCurrentPosition(p => {
-    geo = { lat: p.coords.latitude, lon: p.coords.longitude };
-    picked = { ...geo };
-    drawMap();
-  }, () => alert("取不到定位（或未授权），直接在地图上点选即可"));
-};
-
-$("btn-clear").onclick = () => { picked = null; drawMap(); };
-
-// ---------------- 认领 / 担保 ----------------
+// ================= 导出导入（兜底） =================
 function b64(o) { return btoa(unescape(encodeURIComponent(JSON.stringify(o)))); }
 function unb64(s) { return JSON.parse(decodeURIComponent(escape(atob(s.trim())))); }
-
-function claimShop(shopId) {
-  const st = state()[shopId];
-  const isOwner = st && st.owner === identity.deviceId;
-  const pending = st && st.claim_pending && st.claim_pending.includes(identity.deviceId);
-
-  if (isOwner || pending) {
-    const code = b64({ t: "claimreq", shop: shopId, claimer: identity.deviceId, pub: identity.pubkeyStr });
-    $("sheet-body").innerHTML = `
-      <h3 style="font-size:17px">认领请求码</h3>
-      <p class="meta">把这段发给两位已认领的邻居，他们各自给你回一个担保码。</p>
-      <div class="code">${esc(code)}</div>
-      <p class="meta" style="margin-top:10px">${isOwner ? "你已经是店主。" : "目前状态：待担保（需要 2 位）。"}</p>`;
-  } else {
-    store.add("claim", shopId, { sponsors: [] });
-    $("sheet-body").innerHTML = `
-      <h3 style="font-size:17px">已提交认领</h3>
-      <p class="meta">现在需要 2 位已认领的店主作保，才能升级为「店主认领」。</p>`;
-    render();
-  }
-  $("mask").classList.add("show"); $("sheet").classList.add("show");
-}
-
-$("btn-sponsor").onclick = () => {
-  let req;
-  try { req = unb64($("in-claimreq").value); } catch (e) { alert("请求码格式不对"); return; }
-  if (req.t !== "claimreq") { alert("这不是认领请求码"); return; }
-  const sp = DP.sponsorSign(identity, req.shop, req.claimer);
-  const code = b64({ t: "sponsor", shop: req.shop, claimer: req.claimer, sponsor: sp });
-  $("sponsor-out").innerHTML = `<div class="code" style="margin-top:10px">${esc(code)}</div>
-    <p class="hint">把这段回给对方。</p>`;
-};
-
-$("btn-accept-sponsor").onclick = () => {
-  let pack;
-  try { pack = unb64($("in-sponsor").value); } catch (e) { alert("担保码格式不对"); return; }
-  if (pack.t !== "sponsor" || pack.claimer !== identity.deviceId) { alert("这个担保码不是给你的"); return; }
-  const st = state()[pack.shop];
-  const old = (st && store.events) ? [] : [];
-  // 取出自己的最近一条认领，追加担保人
-  const mine = [...store.events.values()]
-    .filter(e => e.type === "claim" && e.target === pack.shop && e.author === identity.deviceId)
-    .sort((a, b) => (a.ts < b.ts ? 1 : -1))[0];
-  const sponsors = mine ? (mine.payload.sponsors || []).slice() : [];
-  if (sponsors.some(s => s.by === pack.sponsor.by)) { alert("这位已经作保过了"); return; }
-  sponsors.push(pack.sponsor);
-  store.add("claim", pack.shop, { sponsors });
-  render();
-  alert("担保已接收，当前 " + sponsors.length + " 位作保" + (sponsors.length >= 2 ? "，已生效" : "，还差 " + (2 - sponsors.length) + " 位"));
-};
-
-// ---------------- 导入导出 ----------------
 $("btn-export").onclick = () => {
-  const data = { t: "events", events: [...store.events.values()] };
-  const code = b64(data);
   $("sheet-body").innerHTML = `<h3 style="font-size:17px">全部数据</h3>
-    <p class="meta">把这段发给另一台手机，让对方点「导入别人数据」。</p>
-    <div class="code" style="max-height:220px">${esc(code)}</div>`;
-  $("mask").classList.add("show"); $("sheet").classList.add("show");
+    <p class="meta">复制这段发给另一台手机。</p>
+    <div class="code" style="max-height:220px">${esc(b64({ t: "events", events: [...store.events.values()] }))}</div>`;
+  openSheet();
 };
-
 $("btn-import").onclick = () => {
-  $("sheet-body").innerHTML = `<h3 style="font-size:17px">导入别人的数据</h3>
-    <p class="meta">粘贴对方导出的那段文字。</p>
-    <textarea id="import-code" placeholder="粘贴"></textarea>
-    <button class="btn" id="import-go">导入</button>`;
-  $("mask").classList.add("show"); $("sheet").classList.add("show");
-  $("import-go").onclick = () => {
+  $("sheet-body").innerHTML = `<h3 style="font-size:17px">导入</h3>
+    <textarea id="imp" placeholder="粘贴对方的数据"></textarea>
+    <button class="btn" id="imp-go">导入</button>`;
+  openSheet();
+  $("imp-go").onclick = () => {
     try {
-      const data = unb64($("import-code").value);
-      const n = store.merge(data.events || []);
-      $("mask").classList.remove("show"); $("sheet").classList.remove("show");
-      alert("导入了 " + n + " 条新记录");
-      render(); drawMap();
-    } catch (e) { alert("数据格式不对：" + e.message); }
+      const n = store.merge(unb64($("imp").value).events || []);
+      closeSheet(); render(); scheduleDraw();
+      alert("导入 " + n + " 条新记录");
+    } catch (e) { alert("格式不对"); }
   };
 };
 
-// ---------------- 交互 ----------------
+// ================= 交互 =================
+function openSheet() { $("mask").classList.add("show"); $("sheet").classList.add("show"); }
+function closeSheet() { $("mask").classList.remove("show"); $("sheet").classList.remove("show"); }
+$("mask").onclick = closeSheet; $("sheet-close").onclick = closeSheet;
+$("btn-sync").onclick = syncNow;
+
 function switchTab(name) {
   document.querySelectorAll(".tab").forEach(t => t.classList.toggle("on", t.id === "tab-" + name));
   document.querySelectorAll("nav button").forEach(b => b.classList.toggle("on", b.dataset.tab === name));
-  if (name === "street") { render(); }
+  if (name === "street") render();
+  if (name === "mark") scheduleDraw();
 }
 document.querySelectorAll("nav button").forEach(b => b.onclick = () => switchTab(b.dataset.tab));
-$("mask").onclick = () => { $("mask").classList.remove("show"); $("sheet").classList.remove("show"); };
-$("sheet-close").onclick = () => { $("mask").classList.remove("show"); $("sheet").classList.remove("show"); };
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") syncNow(); });
 
 boot();
 </script>

@@ -24,6 +24,9 @@ import socket
 import string
 import sys
 import threading
+import time
+import urllib.error
+import urllib.request
 from datetime import datetime
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -34,6 +37,11 @@ DATA = ROOT / "data"
 SHOPS = DATA / "shops"
 RIDERS = DATA / "riders"
 WEB = ROOT / "web"
+EVENTS_FILE = DATA / "events.jsonl"      # 事件流：局域网节点存转发的日志
+TILES = DATA / "tiles"                   # 离线瓦片缓存（服务端代理下载后落盘）
+
+# 瓦片上游：OSM 德国镜像（实测国内可通，坐标是 WGS-84，和手机 GPS 一致）
+TILE_UPSTREAM = "https://tile.openstreetmap.de/{z}/{x}/{y}.png"
 
 # 价签枚举：只表达"什么价位的档"，绝不承载具体数字
 PRICE_TAGS = ["可议", "批发价", "零售价", "面谈"]
@@ -42,6 +50,61 @@ PRICE_TAGS = ["可议", "批发价", "零售价", "面谈"]
 PRIVATE_FIELDS = ("token",)
 
 _lock = threading.Lock()
+
+
+# ----------------------------------------------------------------- 事件节点
+# 这台机器不只是"顾客看店"的服务端，还是局域网里的**存转发节点**：
+# 手机 A 把事件推上来，手机 B 拉下去 —— 两台手机因此不用再复制粘贴。
+# 它不验证业务、不做裁决，只按 id 去重存盘，谁都能再起一个。
+
+def load_events() -> dict:
+    out = {}
+    if EVENTS_FILE.exists():
+        for line in EVENTS_FILE.read_text(encoding="utf-8").splitlines():
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                ev = json.loads(line)
+                if ev.get("id"):
+                    out[ev["id"]] = ev
+            except Exception:
+                continue
+    return out
+
+
+EVENTS = load_events()
+_ev_lock = threading.Lock()
+
+# 瓦片上游节流：并发太猛会被 OSM 镜像限流（表现为 502/超时），
+# 这里串行化并保持最小间隔，失败重试两次。
+_tile_lock = threading.Lock()
+_last_fetch = [0.0]
+TILE_MIN_INTERVAL = 0.09
+TILE_EMPTY = b""          # 空瓦片标记：上游 404（水域/无数据）也要落盘，免得反复请求
+
+
+def fetch_upstream_tile(z: str, x: str, y: str):
+    url = TILE_UPSTREAM.format(z=z, x=x, y=y)
+    for attempt in range(3):
+        with _tile_lock:
+            gap = TILE_MIN_INTERVAL - (time.time() - _last_fetch[0])
+            if gap > 0:
+                time.sleep(gap)
+            _last_fetch[0] = time.time()
+            try:
+                req = urllib.request.Request(
+                    url, headers={"User-Agent": "doorplate/0.1 (local trial)"})
+                with urllib.request.urlopen(req, timeout=12) as r:
+                    data = r.read()
+                return data if len(data) > 100 else TILE_EMPTY
+            except urllib.error.HTTPError as e:
+                if e.code == 404:
+                    return TILE_EMPTY        # 无数据就是无数据，不重试
+            except Exception:
+                pass
+        time.sleep(0.25 * (attempt + 1))
+    return None
 
 
 # ----------------------------------------------------------------- 工具函数
@@ -152,6 +215,49 @@ class Handler(SimpleHTTPRequestHandler):
         except Exception:
             return {}
 
+    def send_bytes(self, data: bytes, ctype: str, code: int = 200):
+        self.send_response(code)
+        self.send_header("Content-Type", ctype)
+        self.send_header("Content-Length", str(len(data)))
+        self.send_header("Cache-Control", "public, max-age=86400")
+        self.end_headers()
+        self.wfile.write(data)
+
+    def _serve_tile(self, rel: str):
+        """瓦片代理：本地有就发本地，没有就向上游拉一次并落盘。
+
+        这样手机端全是同源请求（没有跨域问题），而且服务端攒下的瓦片
+        就是一份真·离线地图 —— 断网也能看。
+        """
+        parts = rel.split("/")
+        if len(parts) != 3 or not parts[2].endswith(".png"):
+            return self.send_json({"error": "bad tile"}, 400)
+        z, x, y = parts[0], parts[1], parts[2][:-4]
+        if not (z.isdigit() and x.isdigit() and y.isdigit()):
+            return self.send_json({"error": "bad tile"}, 400)
+
+        f = TILES / z / x / f"{y}.png"
+        try:
+            if f.exists():
+                data = f.read_bytes()
+                if data:
+                    return self.send_bytes(data, "image/png")
+                return self.send_bytes(b"", "image/png", 204)   # 已知空白
+        except Exception:
+            pass
+
+        data = fetch_upstream_tile(z, x, y)
+        if data is None:
+            return self.send_json({"error": "tile unavailable"}, 502)
+        try:
+            f.parent.mkdir(parents=True, exist_ok=True)
+            f.write_bytes(data)
+        except Exception:
+            pass
+        if not data:
+            return self.send_bytes(b"", "image/png", 204)
+        return self.send_bytes(data, "image/png")
+
     # ---------- GET ----------
     def do_GET(self):
         parsed = urlparse(self.path)
@@ -214,6 +320,27 @@ class Handler(SimpleHTTPRequestHandler):
             }
             return self.send_json(payload)
 
+        if path.startswith("/tiles/"):
+            return self._serve_tile(path[len("/tiles/"):])
+
+        # ---- 事件节点：手机来拉 ----
+        if path == "/api/p2p/pull":
+            since = (qs.get("since", [""])[0] or "").strip()
+            have = set(x for x in (qs.get("ids", [""])[0] or "").split(",") if x)
+            with _ev_lock:
+                if since:
+                    # 按时间增量：客户端带一个略早于自己最新事件的时间，留出时钟误差
+                    out = [e for e in EVENTS.values() if (e.get("ts") or "") > since]
+                else:
+                    out = [e for k, e in EVENTS.items() if k not in have]
+            return self.send_json({"events": out, "count": len(out), "total": len(EVENTS)})
+
+        if path == "/api/p2p/stats":
+            port = self.server.server_address[1]
+            with _ev_lock:
+                total = len(EVENTS)
+            return self.send_json({"total": total, "node": f"http://{lan_ip()}:{port}"})
+
         return super().do_GET()
 
     # ---------- POST ----------
@@ -273,6 +400,26 @@ class Handler(SimpleHTTPRequestHandler):
                 }
                 write_json(RIDERS / f"{rid}.json", record)
             return self.send_json({"ok": True, "rider": record, "token": record["token"]})
+
+        # ---- 事件节点：手机来推 ----
+        if path == "/api/p2p/push":
+            incoming = data.get("events") or []
+            fresh = []
+            with _ev_lock:
+                for ev in incoming:
+                    eid = ev.get("id")
+                    if not eid or eid in EVENTS:
+                        continue
+                    if not ev.get("sig") or not ev.get("author"):
+                        continue          # 没签名的一律不收
+                    EVENTS[eid] = ev
+                    fresh.append(ev)
+                if fresh:
+                    EVENTS_FILE.parent.mkdir(parents=True, exist_ok=True)
+                    with EVENTS_FILE.open("a", encoding="utf-8") as f:
+                        for ev in fresh:
+                            f.write(json.dumps(ev, ensure_ascii=False) + "\n")
+            return self.send_json({"ok": True, "added": len(fresh), "total": len(EVENTS)})
 
         # ---- 同步：拉取对方新增/更新的文件 ----
         if path == "/api/sync/pull":

@@ -22,10 +22,12 @@ SS = 4  # 每像素 4x4 子采样
 # ---------------------------------------------------------------- 配色
 INK = "#1C1B19"     # 墨黑
 TEAL = "#0F6E56"    # 应用主色（深青）
-RED = "#A32D2D"     # 印章红
+RED = "#D64343"     # 参考图取色
 WHITE = "#FFFFFF"
-TILE = TEAL
+MARK = "#FFF9F0"   # 暖白，比纯白柔和，红底上不刺眼
+TILE = RED
 CONCEPT = "cardline"
+ROT = 0.0          # 卡片摆正，不做倾斜
 
 # ---------------------------------------------------------------- 形状
 
@@ -122,18 +124,18 @@ def build(concept, tile):
 
     elif concept == "card":
         # 纯白横卡：名片比例 74:44 ≈ 1.68，撑满画面
-        s.append(Shape(WHITE, lambda x, y: _round_rect(x, y, 13, 28, 74, 44, 5.5), rot=-6))
+        s.append(Shape(MARK, lambda x, y: _round_rect(x, y, 13, 28, 74, 44, 5.5), rot=ROT))
 
     elif concept == "carddot":
         # 横卡 + 左侧头像位圆孔
-        s.append(Shape(WHITE, lambda x, y: _round_rect(x, y, 13, 28, 74, 44, 5.5), rot=-6))
-        s.append(Shape(tile, lambda x, y: _circle(x, y, 25, 50, 7.2), rot=-6))
+        s.append(Shape(MARK, lambda x, y: _round_rect(x, y, 13, 28, 74, 44, 5.5), rot=ROT))
+        s.append(Shape(tile, lambda x, y: _circle(x, y, 25, 50, 7.2), rot=ROT))
 
     elif concept == "cardline":
         # 横卡 + 两条"姓名 / 信息"横杠
-        s.append(Shape(WHITE, lambda x, y: _round_rect(x, y, 13, 28, 74, 44, 5.5), rot=-6))
-        s.append(Shape(tile, lambda x, y: _round_rect(x, y, 25, 39, 34, 6.5, 3.2), rot=-6))
-        s.append(Shape(tile, lambda x, y: _round_rect(x, y, 25, 52, 22, 5, 2.5), rot=-6))
+        s.append(Shape(MARK, lambda x, y: _round_rect(x, y, 13, 28, 74, 44, 5.5), rot=ROT))
+        s.append(Shape(tile, lambda x, y: _round_rect(x, y, 25, 39, 34, 6.5, 3.2), rot=ROT))
+        s.append(Shape(tile, lambda x, y: _round_rect(x, y, 25, 52, 22, 5, 2.5), rot=ROT))
 
     elif concept == "fold":
         s.append(Shape(WHITE, lambda x, y: _round_rect(x, y, 27.5, 27.5, 45, 45, 10.6)))

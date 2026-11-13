@@ -12,24 +12,32 @@
 四类事件
 --------
   anchor  路人标注"这儿有家店"          冷启动必需，可信度最低
-  claim   店主认领"这家店归我管"        带签名，公钥即所有权
+  claim   店主认领"这家店归我管"        带担保人签名，担保优先于先到先得
   fact    事实更新"今天开着 / 有货"      带有效期，过期自动降权
   deny    店主打假"这条不是我说的"       只能否认指向自己的店
+
+认领为什么不是"先到先得"
+------------------------
+先到先得意味着冒名者抢先就赢。改成"担保优先"：
+  · 发起人（根）签字 → 1 位即可
+  · 其他已认领店主作保 → 需要 2 位
+  · 没人作保 → 只显示"待担保"，不给 L2
+冒名者拿不到任何担保签名，抢多早都没用。
 
 归约规则
 --------
   1. 验签失败的、被店主 deny 的，直接丢弃
-  2. 认领权：最早的 claim 生效（先到先得），后来的记为"争议"
-  3. 字段权威：店主的事实永远优先；无主时取最新
-  4. 时间衰减：营业状态 / 货品 / 备注 超过 TTL 视为过期；店名地址不过期
-  5. 不裁决分歧：同一字段出现矛盾值，统计各方人数并全部呈现
+  2. 认领：担保链先算全局（担保可跨店），再落到每店选店主
+  3. 结构性字段（店名/地址/电话/坐标）：店主优先；无主时按独立作者数投票，平票取最早
+  4. 时效性字段（营业/货品/备注）：店主优先；无主时取最新观测；超过 7 天失效
+  5. 不裁决分歧：矛盾值全部呈现，只统计人数
 """
 
 import json
 from datetime import datetime, timedelta
 from pathlib import Path
 
-from identity import Identity, canonical, sha256_hex
+from identity import Identity, canonical, sha256_hex, device_id_of
 
 # 会随时间失效的字段（"今天有什么"类）
 TEMPORAL_FIELDS = {"open", "items", "note"}
@@ -39,6 +47,7 @@ STRUCTURAL_FIELDS = {"name", "address", "phone", "hours", "lat", "lon", "tags"}
 DEFAULT_TTL_DAYS = 7          # 营业状态/货品 7 天没人确认就过期
 ANCHOR_TTL_DAYS = 30          # 路人标注 30 天没人认领就淡出
 TRUST_L1_AUTHORS = 3          # ≥3 个不同设备说同一件事 → L1
+SPONSOR_NEEDED = 2            # 普通店主作保需要 2 位；发起人（根）1 位即可
 
 
 # ---------------------------------------------------------------- 事件
@@ -73,6 +82,92 @@ def verify_event(event: dict, pubkeys: dict) -> bool:
         return False
 
 
+# ---------------------------------------------------------------- 担保
+
+def sponsor_message(shop_id: str, claimer: str) -> str:
+    """担保人签的就是这句话：我认识他，这家店确实归他。"""
+    return canonical({"kind": "sponsor", "shop": shop_id, "claimer": claimer})
+
+
+def sponsor_sign(sponsor: Identity, shop_id: str, claimer_device_id: str) -> dict:
+    """一位老店主给新店主的认领作保。
+
+    公钥随签名一起走（自证明）：别人拿到这条担保就能验，
+    不需要事先认识担保人，也不需要任何中心登记。
+    """
+    return {"by": sponsor.device_id,
+            "pub": sponsor.pubkey,
+            "sig": sponsor.sign(sponsor_message(shop_id, claimer_device_id))}
+
+
+def resolve_claims(events: list, pubkeys: dict, root_id: str = None) -> dict:
+    """全局解析所有认领，返回 {shop_id: 解析结果}。
+
+    担保可跨店传播：老陈给自己的店认领后，就能替张姐作保。
+    所以必须先全局算一遍担保链，再落到每家店。
+    """
+    claims = [e for e in events if e["type"] == "claim"]
+    if not claims:
+        return {}
+
+    # 每条认领的担保人（先验签名，再谈可信）
+    sponsors = {}
+    for c in claims:
+        msg = sponsor_message(c["target"], c["author"])
+        got = set()
+        for sp in c["payload"].get("sponsors", []):
+            by = sp.get("by")
+            pub = sp.get("pub") or pubkeys.get(by)
+            # 公钥必须自证：指纹算出来要和 by 一致，否则是冒名
+            if not pub or device_id_of(pub) != by:
+                continue
+            if not Identity.verify(pub, msg, sp.get("sig", "")):
+                continue
+            pubkeys[by] = pub          # 顺手登记，后续事件也能验
+            got.add(by)
+        sponsors[c["id"]] = got
+
+    trusted = {root_id} if root_id else set()
+    valid = set()
+
+    # bootstrap：没有根时，只能让最早的认领先生效，否则永远没人能认领
+    if not root_id:
+        first = sorted(claims, key=lambda e: (e["ts"], e["id"]))[0]
+        valid.add(first["id"])
+        trusted.add(first["author"])
+
+    # 担保链传播：作保的人自己必须已经可信
+    for _ in range(10):
+        changed = False
+        for c in claims:
+            if c["id"] in valid:
+                continue
+            sp = sponsors[c["id"]]
+            ok = (root_id and root_id in sp) or len(sp & trusted) >= SPONSOR_NEEDED
+            if ok:
+                valid.add(c["id"])
+                trusted.add(c["author"])
+                changed = True
+        if not changed:
+            break
+
+    by_shop = {}
+    for c in claims:
+        by_shop.setdefault(c["target"], []).append(c)
+
+    out = {}
+    for shop, cs in by_shop.items():
+        good = sorted([c for c in cs if c["id"] in valid], key=lambda c: (c["ts"], c["id"]))
+        out[shop] = {
+            "owner": good[0]["author"] if good else None,
+            "valid": {c["id"] for c in good},
+            "pending": [c["author"] for c in cs if c["id"] not in valid],
+            "contested": [c["author"] for c in good[1:]],
+            "sponsors": {c["id"]: sorted(sponsors[c["id"]]) for c in cs},
+        }
+    return out
+
+
 # ---------------------------------------------------------------- 归约
 
 def _parse_ts(ts: str) -> datetime:
@@ -82,8 +177,12 @@ def _parse_ts(ts: str) -> datetime:
         return datetime(1970, 1, 1)
 
 
-def reduce_events(events: list, pubkeys: dict, now: datetime = None) -> dict:
-    """把一堆乱序事件归约成"这条街当前长什么样"。"""
+def reduce_events(events: list, pubkeys: dict, now: datetime = None,
+                  root_id: str = None) -> dict:
+    """把一堆乱序事件归约成"这条街当前长什么样"。
+
+    root_id：发起人（根信任）的设备指纹。传 None 则走 bootstrap 规则。
+    """
     now = now or datetime.now()
 
     # 1) 验签 + 去重
@@ -96,22 +195,23 @@ def reduce_events(events: list, pubkeys: dict, now: datetime = None) -> dict:
         seen.add(ev["id"])
         valid.append(ev)
 
-    # 2) 按店铺分组
+    # 2) 全局解析认领（担保可跨店）
+    rc_all = resolve_claims(valid, pubkeys, root_id)
+
+    # 3) 按店铺归约
     groups = {}
     for ev in valid:
         groups.setdefault(ev["target"], []).append(ev)
 
-    result = {}
-    for shop_id, group in groups.items():
-        result[shop_id] = _reduce_one(shop_id, group, now)
-    return result
+    return {shop_id: _reduce_one(shop_id, group, now,
+                                 rc_all.get(shop_id, {}))
+            for shop_id, group in groups.items()}
 
 
-def _reduce_one(shop_id: str, group: list, now: datetime) -> dict:
-    claims = [e for e in group if e["type"] == "claim"]
-    claims.sort(key=lambda e: (e["ts"], e["id"]))
-    owner = claims[0]["author"] if claims else None
-    contested = [c["author"] for c in claims[1:]] if len(claims) > 1 else []
+def _reduce_one(shop_id: str, group: list, now: datetime, rc: dict) -> dict:
+    owner = rc.get("owner")
+    contested = rc.get("contested") or []
+    pending = rc.get("pending") or []
 
     # 店主的 deny：只能否认指向自己店铺的事件
     denied = set()
@@ -122,8 +222,6 @@ def _reduce_one(shop_id: str, group: list, now: datetime) -> dict:
     alive = [e for e in group if e["id"] not in denied]
     facts = [e for e in alive if e["type"] == "fact"]
     anchors = [e for e in alive if e["type"] == "anchor"]
-
-    # anchor 只提供"店在这儿"的初始信息
     base_pool = list(anchors) + facts
 
     state = {"id": shop_id}
@@ -137,10 +235,9 @@ def _reduce_one(shop_id: str, group: list, now: datetime) -> dict:
             if not isinstance(fields, dict) or field not in fields:
                 continue
             # 时间衰减只作用于"今天有什么"
-            if field in TEMPORAL_FIELDS:
-                ttl = DEFAULT_TTL_DAYS
-                if (now - _parse_ts(e["ts"])) > timedelta(days=ttl):
-                    continue
+            if field in TEMPORAL_FIELDS and \
+                    (now - _parse_ts(e["ts"])) > timedelta(days=DEFAULT_TTL_DAYS):
+                continue
             cands.append((e["author"], e["ts"], e["lamport"], e["id"], fields[field]))
 
         if not cands:
@@ -158,12 +255,10 @@ def _reduce_one(shop_id: str, group: list, now: datetime) -> dict:
 
         owner_c = [c for c in cands if c[0] == owner]
         if owner_c:
-            # 店主说了算
             owner_c.sort(key=lambda c: (c[1], c[2], c[3]))
             state[field] = owner_c[-1][4]
         elif field in STRUCTURAL_FIELDS:
             # 店名/地址这类"事实"：路人只能投票建议，不能单方面推翻
-            # 多数优先，平票取最早 —— 一个人改不掉别人已经标好的店名
             ranked = sorted(by_value.values(), key=lambda v: (-len(v["authors"]), v["first"]))
             state[field] = ranked[0]["value"]
         else:
@@ -171,10 +266,13 @@ def _reduce_one(shop_id: str, group: list, now: datetime) -> dict:
             latest = sorted(cands, key=lambda c: (c[1], c[2], c[3]))[-1]
             state[field] = latest[4]
 
-    # 3) 可信度分级
+    # 可信度分级
     authors = {e["author"] for e in base_pool}
     if owner:
-        trust, reason = "L2", "店主已认领，修改由私钥签名"
+        trust, reason = "L2", "店主已认领并有担保人作保"
+    elif pending:
+        trust, reason = "L0", f"{len(pending)} 条认领待担保（需 2 位已认领店主作保）"
+        state["claim_pending"] = pending
     elif len(authors) >= TRUST_L1_AUTHORS and not conflicts:
         trust, reason = "L1", f"{len(authors)} 台设备各自标注且一致"
     elif anchors and (now - _parse_ts(anchors[0]["ts"])) > timedelta(days=ANCHOR_TTL_DAYS):
@@ -200,11 +298,13 @@ def _reduce_one(shop_id: str, group: list, now: datetime) -> dict:
 class Store:
     """一台设备上的事件日志。append-only，永不删除。"""
 
-    def __init__(self, path: Path = None, identity: Identity = None):
+    def __init__(self, path: Path = None, identity: Identity = None,
+                 root_id: str = None):
         self.path = Path(path) if path else None
         self.identity = identity
-        self.events = {}      # id -> event
-        self.pubkeys = {}     # device_id -> pubkey
+        self.root_id = root_id        # 发起人（根信任）的设备指纹
+        self.events = {}              # id -> event
+        self.pubkeys = {}             # device_id -> pubkey
         self.lamport = 0
         if self.path and self.path.exists():
             self._load()
@@ -263,7 +363,11 @@ class Store:
         return [self.events[i] for i in self.events if i not in other_ids]
 
     def state(self, now: datetime = None) -> dict:
-        return reduce_events(list(self.events.values()), self.pubkeys, now)
+        return reduce_events(list(self.events.values()), self.pubkeys, now, self.root_id)
+
+    def sponsor(self, shop_id: str, claimer_device_id: str) -> dict:
+        """我（已认领的店主）给某人作保。"""
+        return sponsor_sign(self.identity, shop_id, claimer_device_id)
 
 
 def sync(a: Store, b: Store) -> tuple:

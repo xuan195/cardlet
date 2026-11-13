@@ -71,6 +71,14 @@ def sha256_hex(data: str) -> str:
     return hashlib.sha256(data.encode("utf-8")).hexdigest()
 
 
+def device_id_of(pubkey: dict) -> str:
+    """公钥 → 设备指纹。任何人拿到公钥都能算出同一个指纹，无需中心登记。"""
+    try:
+        return sha256_hex(canonical({"n": int(pubkey["n"]), "e": int(pubkey["e"])}))[:12]
+    except Exception:
+        return ""
+
+
 # ---------------------------------------------------------------- 身份
 
 class Identity:
@@ -116,7 +124,7 @@ class Identity:
     @property
     def device_id(self) -> str:
         """设备指纹：公钥的短哈希，用作 author 字段。"""
-        return sha256_hex(canonical(self.pubkey))[:12]
+        return device_id_of(self.pubkey)
 
     # ---- 签名 ----
     def sign(self, message: str) -> str:

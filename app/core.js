@@ -37,7 +37,8 @@
     const H = new Uint32Array([0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a,
       0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19]);
     const l = bytes.length;
-    const withPad = new Uint8Array((((l + 9) >> 6) + 1) << 6);
+    // 补到「最小的、≥ l+9 的 64 倍数」——当天 (l+9) 正好是 64 的倍数时不能多补一块
+    const withPad = new Uint8Array(Math.ceil((l + 9) / 64) * 64);
     withPad.set(bytes);
     withPad[l] = 0x80;
     const bitLen = BigInt(l) * 8n;
@@ -290,7 +291,8 @@
 
     const trusted = new Set(rootId ? [rootId] : []);
     const valid = new Set();
-    if (!rootId) {
+    const bootstrap = !rootId;
+    if (bootstrap) {
       const first = [...claims].sort((a, b) => cmp(a, b))[0];
       valid.add(first.id);
       trusted.add(first.author);
@@ -300,8 +302,11 @@
       for (const c of claims) {
         if (valid.has(c.id)) continue;
         const sp = sponsors[c.id];
-        const ok = (rootId && sp.has(rootId)) ||
-          [...sp].filter(x => trusted.has(x)).length >= SPONSOR_NEEDED;
+        const ok = trusted.has(c.author)                       // 已受信的店主开新店，免担保
+          || (rootId && sp.has(rootId))                        // 发起人作保，一位即可
+          || (bootstrap
+              ? sp.size >= SPONSOR_NEEDED                      // 无根部署：任意 2 台设备作保
+              : [...sp].filter(x => trusted.has(x)).length >= SPONSOR_NEEDED);
         if (ok) { valid.add(c.id); trusted.add(c.author); changed = true; }
       }
       if (!changed) break;
@@ -312,11 +317,14 @@
     const out = {};
     for (const [shop, cs] of Object.entries(byShop)) {
       const good = cs.filter(c => valid.has(c.id)).sort((a, b) => cmp(a, b));
+      const primary = good[0] || cs.sort((a, b) => cmp(a, b))[0];
+      const sponsorList = primary ? [...(sponsors[primary.id] || [])].sort() : [];
       out[shop] = {
         owner: good.length ? good[0].author : null,
         valid: new Set(good.map(c => c.id)),
         pending: cs.filter(c => !valid.has(c.id)).map(c => c.author),
         contested: good.slice(1).map(c => c.author),
+        sponsor_ids: sponsorList,
       };
     }
     return out;
@@ -348,6 +356,8 @@
 
     const out = {};
     for (const [shop, group] of Object.entries(groups)) {
+      // 只有认领、没有 anchor 的孤儿不算一家店
+      if (!group.some(e => e.type === "anchor")) continue;
       out[shop] = reduceOne(shop, group, now, rcAll[shop] || {});
     }
     return out;
@@ -427,6 +437,7 @@
     state.owner = owner;
     state.contested = contested;
     state.conflicts = conflicts;
+    state.sponsors = rc.sponsor_ids || [];      // 谁作过保，用来显示"xxx、xxx 已担保"
     state.events = group.length;
     state.updated = group.reduce((m, e) => (e.ts > m ? e.ts : m), "");
     return state;

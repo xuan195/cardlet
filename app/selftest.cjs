@@ -22,7 +22,8 @@ const TMP = path.join(__dirname, "_interop");
 fs.mkdirSync(TMP, { recursive: true });
 
 console.log("\n[1] 基础件：SHA-256 / canonical");
-const samples = ["", "abc", "好又多超市", "a".repeat(1000), "😀中文混排"];
+const samples = ["", "abc", "好又多超市", "a".repeat(1000), "😀中文混排",
+  "a".repeat(55), "a".repeat(56), "a".repeat(119), "a".repeat(120), "a".repeat(247)];
 let shaOk = true;
 for (const s of samples) {
   const mine = DP.sha256Hex(s);

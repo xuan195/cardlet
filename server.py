@@ -18,6 +18,7 @@
     python server.py 9000       # 自定义端口
 """
 
+import hashlib
 import json
 import random
 import socket
@@ -57,6 +58,28 @@ _lock = threading.Lock()
 # 手机 A 把事件推上来，手机 B 拉下去 —— 两台手机因此不用再复制粘贴。
 # 它不验证业务、不做裁决，只按 id 去重存盘，谁都能再起一个。
 
+def _canonical(obj) -> str:
+    return json.dumps(obj, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+
+
+def verify_event(ev: dict) -> bool:
+    """节点也要验签：不存无法验证的东西，否则脏数据会一直传下去。"""
+    try:
+        pub = ev.get("pubkey")
+        if not pub:
+            return False
+        body = {k: ev[k] for k in ("type", "target", "author", "lamport", "ts", "payload")}
+        msg = _canonical(body)
+        if ev.get("id") != hashlib.sha256(msg.encode("utf-8")).hexdigest()[:16]:
+            return False
+        n, e = int(pub["n"]), int(pub["e"])
+        digest = int.from_bytes(
+            hashlib.sha256(b"doorplate/v1|" + msg.encode("utf-8")).digest(), "big") % n
+        return pow(int(ev["sig"], 16), e, n) == digest
+    except Exception:
+        return False
+
+
 def load_events() -> dict:
     out = {}
     if EVENTS_FILE.exists():
@@ -66,7 +89,7 @@ def load_events() -> dict:
                 continue
             try:
                 ev = json.loads(line)
-                if ev.get("id"):
+                if ev.get("id") and verify_event(ev):
                     out[ev["id"]] = ev
             except Exception:
                 continue
@@ -410,8 +433,8 @@ class Handler(SimpleHTTPRequestHandler):
                     eid = ev.get("id")
                     if not eid or eid in EVENTS:
                         continue
-                    if not ev.get("sig") or not ev.get("author"):
-                        continue          # 没签名的一律不收
+                    if not verify_event(ev):
+                        continue          # 验签不过的一律不收
                     EVENTS[eid] = ev
                     fresh.append(ev)
                 if fresh:

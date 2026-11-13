@@ -164,6 +164,7 @@ def main():
 
     print("[11] 时间衰减：8 天前的营业状态不算数")
     old = mk(passer2)
+    old.add("anchor", "laochen", {"fields": {"name": "老陈五金"}}, ts=ts(60 * 24 * 9))
     old.add("fact", "laochen", {"fields": {"open": True}}, ts=ts(60 * 24 * 8))
     st_old = reduce_events(list(old.events.values()), old.pubkeys,
                            now=NOW + timedelta(days=1), root_id=root.device_id)

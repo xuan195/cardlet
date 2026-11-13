@@ -191,6 +191,7 @@
           <button class="btn ghost sm" id="btn-export" style="flex:1">导出</button>
           <button class="btn ghost sm" id="btn-import" style="flex:1">导入</button>
         </div>
+        <button class="btn ghost sm" id="btn-reset" style="width:100%;margin-top:10px;color:var(--red);border-color:var(--red)">清空本地数据后重新同步</button>
       </details>
     </div>
   </div>
@@ -444,6 +445,13 @@ function stateAll() { return store ? store.state(new Date()) : {}; }
 
 // 老数据没有 kind 字段，用有没有车型/载量来推断
 const isRiderItem = s => s.kind === "rider" || !!s.vehicle || !!s.capacity;
+const shortId = id => String(id || "").slice(-4);
+const sponsorLine = (s, need) => {
+  const sp = s.sponsors || [];
+  if (!sp.length) return "";
+  const txt = sp.map(shortId).join("、");
+  return `<div class="meta" style="margin-top:6px;color:var(--teal)">已担保：${esc(txt)}（${sp.length}/${need}）</div>`;
+};
 
 function render() {
   const all = Object.values(stateAll());
@@ -461,6 +469,7 @@ function render() {
     return `<div class="card" data-id="${esc(s.id)}">
       <h3>${esc(s.name || s.id)} ${tv}${pend}</h3>
       <div class="meta">${esc(s.address || "—")}${s.hours ? " · " + esc(s.hours) : ""} · ${s.open === false ? "已打烊" : "营业中"}</div>
+      ${sponsorLine(s, 2)}
       <div class="chips">${items || '<span class="chip">今日未上货</span>'}</div></div>`;
   }).join("") : '<p class="empty">还没有商店挂门牌</p>';
 
@@ -494,6 +503,7 @@ function showItem(s) {
                 : `${esc(s.address || "—")}${s.hours ? " · " + esc(s.hours) : ""}`}</div>
     ${rows}
     ${s.note ? `<p class="meta" style="margin-top:8px">${esc(s.note)}</p>` : ""}
+    ${sponsorLine(s, 2)}
     <p class="meta" style="margin-top:12px;border-top:1px solid var(--line);padding-top:10px">
       ${isRider ? "运力牌 · 由本人发布" : `${esc(s.trust)} — ${esc(s.trust_reason)}`}</p>
     ${s.phone ? `<a class="btn" href="tel:${esc(s.phone)}" style="display:block;text-align:center;text-decoration:none;background:var(--teal-l);color:var(--teal)">打电话 ${esc(s.phone)}</a>` : ""}`;
@@ -506,17 +516,28 @@ function renderPending(all) {
   $("pend-count").textContent = list.length;
   $("pend-list").innerHTML = list.length ? list.map(s => {
     const who = s.claim_pending.filter(w => w !== identity.deviceId);
-    return `<div class="line"><div style="min-width:0">
-      <div style="font-size:14px">${esc(s.name || s.id)}</div>
-      <div class="meta">${who.map(esc).join("、")} 说这是他的店</div>
-    </div><button class="btn sm" data-endorse="${esc(s.id)}" data-who="${esc(who[0] || "")}">作保</button></div>`;
+    const mine = (s.sponsors || []).includes(identity.deviceId);
+    return `<div style="padding:9px 0;border-bottom:1px solid var(--line)">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+        <div style="min-width:0">
+          <div style="font-size:14px">${esc(s.name || s.id)}</div>
+          <div class="meta">${who.map(w => shortId(w)).map(esc).join("、")} 说这是他的店</div>
+        </div>
+        ${mine ? '<span class="badge">你已作保</span>'
+               : `<button class="btn sm" data-endorse="${esc(s.id)}" data-who="${esc(who[0] || "")}">作保</button>`}
+      </div>
+      ${sponsorLine(s, 2)}
+    </div>`;
   }).join("") : '<p class="empty">暂时没人需要你作保</p>';
 
   document.querySelectorAll("[data-endorse]").forEach(b => b.onclick = () => {
     const shop = b.dataset.endorse, who = b.dataset.who;
+    const already = [...store.events.values()].some(e => e.type === "endorse" &&
+      e.target === shop && e.author === identity.deviceId && (e.payload || {}).claimer === who);
+    if (already) { alert("你已经给这家店作过保了"); return; }
     store.add("endorse", shop, { shop, claimer: who, sig: identity.sign(DP.sponsorMessage(shop, who)) });
     render(); syncNow();
-    alert("已作保。满 2 位后他自动成为店主。");
+    setTimeout(() => alert("已作保。页面上的「已担保」会多一个名字，凑够 2 位他就正式是店主。"), 100);
   });
 }
 
@@ -531,10 +552,15 @@ function renderMine(all) {
     const st = s.owner === identity.deviceId ? '<span class="badge">店主</span>'
       : (s.claim_pending || []).includes(identity.deviceId) ? '<span class="badge wait">等邻居作保</span>'
       : '<span class="badge l0">未认领</span>';
-    return `<div class="line"><div style="min-width:0">
-      <div style="font-size:14px">${esc(s.name || s.id)} ${isRider ? '<span class="badge rider">运力</span>' : ""}</div>
-      <div class="meta">${isRider ? "本人发布" : esc(s.trust_reason || "")}</div>
-    </div>${isRider ? "" : st}</div>`;
+    return `<div style="padding:9px 0;border-bottom:1px solid var(--line)">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+        <div style="min-width:0">
+          <div style="font-size:14px">${esc(s.name || s.id)} ${isRider ? '<span class="badge rider">运力</span>' : ""}</div>
+          <div class="meta">${isRider ? "本人发布" : esc(s.trust_reason || "")}</div>
+        </div>${isRider ? "" : st}
+      </div>
+      ${isRider ? "" : sponsorLine(s, 2)}
+    </div>`;
   }).join("") : '<p class="empty">你还没挂过标注</p>';
 }
 
@@ -630,6 +656,13 @@ $("btn-import").onclick = () => {
     try { const n = store.merge(unb64($("imp").value).events || []); closeSheet(); render(); scheduleDraw(); alert("导入 " + n + " 条"); }
     catch (e) { alert("格式不对"); }
   };
+};
+
+$("btn-reset").onclick = () => {
+  if (!confirm("会清空这台设备上的标注缓存（密钥保留），然后重新从节点拉取。确定？")) return;
+  localStorage.removeItem(EV_KEY);
+  localStorage.removeItem(PUSH_KEY);
+  location.reload();
 };
 
 // ================= 交互 =================

@@ -147,9 +147,10 @@ def resolve_claims(events: list, pubkeys: dict, root_id: str = None) -> dict:
 
     trusted = {root_id} if root_id else set()
     valid = set()
+    bootstrap = not root_id
 
     # bootstrap：没有根时，只能让最早的认领先生效，否则永远没人能认领
-    if not root_id:
+    if bootstrap:
         first = sorted(claims, key=lambda e: (e["ts"], e["id"]))[0]
         valid.add(first["id"])
         trusted.add(first["author"])
@@ -161,7 +162,10 @@ def resolve_claims(events: list, pubkeys: dict, root_id: str = None) -> dict:
             if c["id"] in valid:
                 continue
             sp = sponsors[c["id"]]
-            ok = (root_id and root_id in sp) or len(sp & trusted) >= SPONSOR_NEEDED
+            ok = (c["author"] in trusted                         # 已受信店主开新店，免担保
+                  or (root_id and root_id in sp)                  # 发起人作保，一位即可
+                  or (len(sp) >= SPONSOR_NEEDED if bootstrap      # 无根部署：任意 2 台设备
+                      else len(sp & trusted) >= SPONSOR_NEEDED))
             if ok:
                 valid.add(c["id"])
                 trusted.add(c["author"])
@@ -176,12 +180,14 @@ def resolve_claims(events: list, pubkeys: dict, root_id: str = None) -> dict:
     out = {}
     for shop, cs in by_shop.items():
         good = sorted([c for c in cs if c["id"] in valid], key=lambda c: (c["ts"], c["id"]))
+        primary = good[0] if good else sorted(cs, key=lambda c: (c["ts"], c["id"]))[0]
+        sponsor_list = sorted(sponsors.get(primary["id"], set()))
         out[shop] = {
             "owner": good[0]["author"] if good else None,
             "valid": {c["id"] for c in good},
             "pending": [c["author"] for c in cs if c["id"] not in valid],
             "contested": [c["author"] for c in good[1:]],
-            "sponsors": {c["id"]: sorted(sponsors[c["id"]]) for c in cs},
+            "sponsor_ids": sponsor_list,
         }
     return out
 
@@ -221,9 +227,10 @@ def reduce_events(events: list, pubkeys: dict, now: datetime = None,
     for ev in valid:
         groups.setdefault(ev["target"], []).append(ev)
 
-    return {shop_id: _reduce_one(shop_id, group, now,
-                                 rc_all.get(shop_id, {}))
-            for shop_id, group in groups.items()}
+    # 只有认领、没有 anchor 的孤儿不算一家店
+    return {shop_id: _reduce_one(shop_id, group, now, rc_all.get(shop_id, {}))
+            for shop_id, group in groups.items()
+            if any(e["type"] == "anchor" for e in group)}
 
 
 def _reduce_one(shop_id: str, group: list, now: datetime, rc: dict) -> dict:
@@ -305,6 +312,7 @@ def _reduce_one(shop_id: str, group: list, now: datetime, rc: dict) -> dict:
         "owner": owner,
         "contested": contested,
         "conflicts": conflicts,
+        "sponsors": rc.get("sponsor_ids") or [],
         "events": len(group),
         "updated": max((e["ts"] for e in group), default=""),
     })

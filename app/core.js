@@ -14,7 +14,8 @@
   const DOMAIN = "doorplate/v1|";
   const KEY_BITS = 1024;
   const TEMPORAL_FIELDS = new Set(["open", "items", "note"]);
-  const STRUCTURAL_FIELDS = new Set(["name", "address", "phone", "hours", "lat", "lon", "tags"]);
+  const STRUCTURAL_FIELDS = new Set(["kind", "name", "address", "phone", "hours",
+    "lat", "lon", "tags", "vehicle", "capacity", "areas", "window"]);
   const DEFAULT_TTL_DAYS = 7;
   const ANCHOR_TTL_DAYS = 30;
   const TRUST_L1_AUTHORS = 3;

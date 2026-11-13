@@ -41,8 +41,9 @@ from identity import Identity, canonical, sha256_hex, device_id_of
 
 # 会随时间失效的字段（"今天有什么"类）
 TEMPORAL_FIELDS = {"open", "items", "note"}
-# 结构性字段（店在哪儿、叫什么，不会因为没人更新就消失）
-STRUCTURAL_FIELDS = {"name", "address", "phone", "hours", "lat", "lon", "tags"}
+# 结构性字段（店在哪儿、叫什么、运力牌上写什么，不会因为没人更新就消失）
+STRUCTURAL_FIELDS = {"kind", "name", "address", "phone", "hours",
+                     "lat", "lon", "tags", "vehicle", "capacity", "areas", "window"}
 
 DEFAULT_TTL_DAYS = 7          # 营业状态/货品 7 天没人确认就过期
 ANCHOR_TTL_DAYS = 30          # 路人标注 30 天没人认领就淡出

@@ -11,8 +11,7 @@
   html,body{overflow-x:hidden;max-width:100vw}
   body{font-family:system-ui,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--paper);
        color:var(--ink);padding-bottom:68px}
-  header{position:sticky;top:0;z-index:50;background:var(--paper);padding:10px 16px 8px;
-         border-bottom:1px solid var(--line)}
+  header{position:sticky;top:0;z-index:50;background:var(--paper);padding:10px 16px 8px;border-bottom:1px solid var(--line)}
   .hrow{display:flex;align-items:center;justify-content:space-between;gap:8px}
   header h1{font-size:17px;letter-spacing:2px}
   .pill{font-size:11px;padding:3px 9px;border-radius:99px;background:#EFEEE8;color:var(--sub)}
@@ -21,10 +20,12 @@
   .wrap{padding:10px 12px}
   .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:10px}
   .card h3{font-size:15px;display:flex;align-items:center;gap:8px;margin-bottom:6px}
+  .sec-title{font-size:13px;color:var(--sub);margin:14px 2px 8px;letter-spacing:1px}
   .badge{font-size:11px;padding:2px 8px;border-radius:99px;background:var(--teal-l);color:var(--teal);font-weight:500;flex:none}
   .badge.l0{background:#F1EFE8;color:#6B6A63}
   .badge.l1{background:#E6F1FB;color:#0C447C}
   .badge.wait{background:var(--amber-l);color:#633806}
+  .badge.rider{background:#E6F1FB;color:#0C447C}
   .meta{font-size:12px;color:var(--sub);line-height:1.7}
   .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
   .chip{font-size:12px;background:#F2F1EC;border-radius:6px;padding:4px 8px;color:#3F3D37}
@@ -32,7 +33,7 @@
   label{display:block;font-size:12px;color:var(--sub);margin:10px 0 4px}
   input,textarea{border:1px solid var(--line);border-radius:8px;padding:10px;font-size:15px;
         font-family:inherit;background:#FCFCFA;color:var(--ink);width:100%}
-  textarea{min-height:80px;font-size:12px;font-family:ui-monospace,monospace}
+  textarea{min-height:76px;font-size:12px;font-family:ui-monospace,monospace}
   .btn{width:100%;border:0;border-radius:10px;padding:13px;font-size:15px;font-weight:600;
        background:var(--teal);color:#fff;margin-top:10px;cursor:pointer}
   .btn.ghost{background:#fff;color:var(--teal);border:1px solid var(--teal)}
@@ -41,13 +42,17 @@
   .row>*{flex:1}
   .hint{font-size:11px;color:var(--sub);line-height:1.7;margin-top:8px}
   .mapbox{position:relative;margin-top:8px;border-radius:10px;overflow:hidden;background:#E8E6DF}
-  #map{display:block;width:100%;height:230px;touch-action:none}
+  #map{display:block;width:100%;height:220px;touch-action:none}
   .mapctl{position:absolute;right:8px;top:8px;display:flex;flex-direction:column;gap:6px}
   .mapctl button{width:34px;height:34px;border:0;border-radius:8px;background:rgba(255,255,255,.94);
        font-size:17px;color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.14);cursor:pointer}
   .attr{position:absolute;left:6px;bottom:4px;font-size:9px;color:#5F5E5A;background:rgba(255,255,255,.72);
         padding:1px 4px;border-radius:3px}
   .loadbar{position:absolute;left:0;right:0;top:0;height:2px;background:var(--amber);width:0;transition:width .2s}
+  .seg{display:flex;background:#EDEBE4;border-radius:10px;padding:3px;margin-bottom:12px}
+  .seg button{flex:1;border:0;background:none;padding:9px;border-radius:8px;font-size:14px;
+        color:var(--sub);font-family:inherit;cursor:pointer}
+  .seg button.on{background:#fff;color:var(--teal);font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,.08)}
   nav{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);
       display:flex;padding:7px 0 calc(7px + env(safe-area-inset-bottom));z-index:60}
   nav button{flex:1;background:none;border:0;font-size:12px;color:var(--sub);font-family:inherit;cursor:pointer}
@@ -60,13 +65,15 @@
          z-index:91;padding:18px 16px 26px;max-height:78vh;overflow:auto;transform:translateY(100%);transition:.22s}
   .sheet.show{transform:translateY(0)}
   .sheet .close{position:absolute;right:14px;top:12px;border:0;background:none;font-size:20px;color:var(--sub)}
-  .timer{background:var(--teal-l);border-radius:10px;padding:11px;margin-bottom:10px;font-size:13px}
-  .timer b{font-size:19px;color:var(--teal);font-variant-numeric:tabular-nums}
   .empty{color:var(--sub);font-size:13px;padding:6px 0}
   .code{background:#F4F3EE;border:1px dashed var(--line);border-radius:8px;padding:10px;font-size:11px;
         font-family:ui-monospace,monospace;word-break:break-all;max-height:120px;overflow:auto}
+  .checkline{display:flex;align-items:center;gap:8px;margin-top:14px;font-size:14px;color:var(--ink)}
+  .checkline input{width:18px;height:18px;accent-color:var(--teal)}
   details{margin-top:10px}
   summary{font-size:12px;color:var(--sub);cursor:pointer}
+  .line{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid var(--line)}
+  .line:last-child{border-bottom:0}
 </style>
 </head>
 <body>
@@ -81,45 +88,73 @@
   <!-- ============ 逛街 ============ -->
   <div class="tab on" id="tab-street">
     <div class="card" style="padding:11px 14px"><div class="meta" id="summary">准备中…</div></div>
-    <div id="list"></div>
+    <div class="sec-title">商店</div>
+    <div id="list-shop"></div>
+    <div class="sec-title">谁有空捎货</div>
+    <div id="list-rider"></div>
   </div>
 
   <!-- ============ 标注 ============ -->
   <div class="tab" id="tab-mark">
     <div class="card">
-      <h3>挂一块门牌 <span class="badge l0" id="timing">未计时</span></h3>
-      <div class="meta">只写「有什么」，不写价钱。</div>
-
-      <label>店名</label>
-      <input id="f-name" placeholder="好又多超市">
-      <label>地址</label>
-      <input id="f-addr" placeholder="解放路 12 号">
-      <div class="row">
-        <div><label>电话</label><input id="f-phone" placeholder="138…"></div>
-        <div><label>营业时间</label><input id="f-hours" placeholder="07:00-22:00"></div>
+      <div class="seg">
+        <button class="on" data-kind="shop">挂商店门牌</button>
+        <button data-kind="rider">挂运力牌</button>
       </div>
 
-      <label>在地图上点一下定位（可拖动、可缩放）</label>
-      <div class="mapbox">
-        <canvas id="map" width="640" height="460"></canvas>
-        <div class="loadbar" id="loadbar"></div>
-        <div class="mapctl">
-          <button id="zin">＋</button>
-          <button id="zout">−</button>
-          <button id="here" style="font-size:13px">定</button>
+      <!-- 商店 -->
+      <div id="form-shop">
+        <div class="meta">只写「有什么」，不写价钱。</div>
+        <label>店名</label>
+        <input id="f-name" placeholder="好又多超市">
+        <label>地址</label>
+        <input id="f-addr" placeholder="解放路 12 号">
+        <div class="row">
+          <div><label>电话</label><input id="f-phone" placeholder="138…"></div>
+          <div><label>营业时间</label><input id="f-hours" placeholder="07:00-22:00"></div>
         </div>
-        <div class="attr">© OpenStreetMap</div>
-      </div>
-      <div class="row">
-        <button class="btn ghost sm" id="prefetch" style="flex:1">下载这片地图（离线用）</button>
-      </div>
-
-      <label>今日有什么（一行一样：名称/单位/备注）</label>
-      <textarea id="f-items" placeholder="本地鸡蛋/斤/今早到货
+        <label>在地图上点一下定位</label>
+        <div class="mapbox">
+          <canvas id="map" width="640" height="440"></canvas>
+          <div class="loadbar" id="loadbar"></div>
+          <div class="mapctl">
+            <button id="zin">＋</button>
+            <button id="zout">−</button>
+            <button id="here" style="font-size:13px">定</button>
+          </div>
+          <div class="attr">© OpenStreetMap</div>
+        </div>
+        <button class="btn ghost sm" id="prefetch" style="width:100%;margin-top:8px">下载这片地图（离线用）</button>
+        <label>今日有什么（一行一样：名称/单位/备注）</label>
+        <textarea id="f-items" placeholder="本地鸡蛋/斤/今早到货
 大米/袋/25kg"></textarea>
+        <label class="checkline"><input type="checkbox" id="f-mine" checked>这是我的店（会自动发出认领，等邻居作保）</label>
+      </div>
 
-      <button class="btn" id="btn-save">挂上门牌</button>
+      <!-- 运力 -->
+      <div id="form-rider" style="display:none">
+        <div class="meta">只挂运力，不报价、不接单。价钱你们自己谈。</div>
+        <div class="row">
+          <div><label>称呼</label><input id="r-name" placeholder="老王"></div>
+          <div><label>电话</label><input id="r-phone" placeholder="138…"></div>
+        </div>
+        <label>什么车</label>
+        <input id="r-vehicle" placeholder="电动三轮">
+        <label>能带多少</label>
+        <input id="r-capacity" placeholder="约 200 斤 / 一趟">
+        <label>常跑哪几条街（逗号分隔）</label>
+        <input id="r-areas" placeholder="解放路,菜市场">
+        <label>今天什么时候有空</label>
+        <input id="r-window" placeholder="14:00-18:00">
+        <label>一句话（可空）</label>
+        <input id="r-note" placeholder="熟人捎带，油钱随意">
+        <p class="hint">运力牌由你自己发布，天然归你，不需要任何人作保。
+          本工具仅用于熟人之间非营利的顺路捎带。</p>
+      </div>
+
+      <button class="btn" id="btn-save">挂上去</button>
       <button class="btn ghost" id="btn-start">重新开始计时</button>
+      <div class="meta" id="timing" style="margin-top:8px">未计时</div>
     </div>
   </div>
 
@@ -127,13 +162,14 @@
   <div class="tab" id="tab-mine">
     <div class="card">
       <h3>待我作保 <span class="badge wait" id="pend-count">0</span></h3>
-      <div class="meta">邻居认领了店，你点一下就能作保。凑够 2 位，他就正式是店主。</div>
+      <div class="meta">邻居说某家店是他的，你点一下作保。凑够 2 位他就正式是店主。</div>
       <div id="pend-list"></div>
     </div>
 
     <div class="card">
-      <h3>我认领的店</h3>
-      <div id="claim-list"></div>
+      <h3>我挂的标注</h3>
+      <div class="meta">只有作者能认领自己的标注，别人的店你认领不了。</div>
+      <div id="mine-list"></div>
     </div>
 
     <div class="card">
@@ -155,7 +191,6 @@
           <button class="btn ghost sm" id="btn-export" style="flex:1">导出</button>
           <button class="btn ghost sm" id="btn-import" style="flex:1">导入</button>
         </div>
-        <p class="hint">同一 WiFi 下一般用不到，网络不通时兜底。</p>
       </details>
     </div>
   </div>
@@ -174,41 +209,17 @@
 <script>
 const $ = id => document.getElementById(id);
 const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
-const ID_KEY = "dp_identity", EV_KEY = "dp_events", T_KEY = "dp_timing", ROOT_KEY = "dp_root";
+const ID_KEY = "dp_identity", EV_KEY = "dp_events", T_KEY = "dp_timing", PUSH_KEY = "dp_last_push";
 
 let identity = null, store = null, rootId = null;
 let view = { lat: 29.84, lon: 112.90, z: 16 };
-let picked = null, timerStart = null, dragging = false, moved = false, last = null;
-let syncTimer = null, pendingRedraw = false;
+let picked = null, timerStart = null, dragging = false, moved = false;
+let curKind = "shop", pendingRedraw = false;
 
-// ================= 离线瓦片缓存（IndexedDB） =================
-const DB_NAME = "doorplate-tiles-v1";
-let dbPromise = null;
-function db() {
-  if (dbPromise) return dbPromise;
-  dbPromise = new Promise(res => {
-    const r = indexedDB.open(DB_NAME, 1);
-    r.onupgradeneeded = () => r.result.createObjectStore("t");
-    r.onsuccess = () => res(r.result);
-    r.onerror = () => res(null);
-  });
-  return dbPromise;
-}
-async function idbGet(k) {
-  const d = await db(); if (!d) return null;
-  return new Promise(res => { try { const q = d.transaction("t").objectStore("t").get(k); q.onsuccess = () => res(q.result || null); q.onerror = () => res(null); } catch (e) { res(null); } });
-}
-async function idbPut(k, v) {
-  const d = await db(); if (!d) return;
-  try { d.transaction("t", "readwrite").objectStore("t").put(v, k); } catch (e) {}
-}
-
-const tiles = new Map();       // key -> Image
-const loading = new Set();
-// 走本机服务端的瓦片代理：同源、无跨域，服务端落盘缓存就是离线源
+// ================= 瓦片 =================
+const tiles = new Map(), loading = new Set();
 const TILE_URL = (z, x, y) => `/tiles/${z}/${x}/${y}.png`;
-
-function tileKey(z, x, y) { return z + "/" + x + "/" + y; }
+const tileKey = (z, x, y) => z + "/" + x + "/" + y;
 
 function ensureTile(z, x, y) {
   const key = tileKey(z, x, y);
@@ -216,53 +227,46 @@ function ensureTile(z, x, y) {
   loading.add(key);
   const img = new Image();
   img.onload = () => { loading.delete(key); tiles.set(key, img); draw(); };
-  img.onerror = () => { loading.delete(key); tiles.set(key, null); draw(); };  // 记成"空白"，不再问
+  img.onerror = () => { loading.delete(key); tiles.set(key, null); draw(); };
   img.src = TILE_URL(z, x, y);
 }
 
-// ================= 投影 =================
 function project(lat, lon, z) {
   const scale = 256 * Math.pow(2, z);
-  const x = (lon + 180) / 360 * scale;
   const r = lat * Math.PI / 180;
-  const y = (1 - Math.log(Math.tan(r) + 1 / Math.cos(r)) / Math.PI) / 2 * scale;
-  return { x, y };
+  return { x: (lon + 180) / 360 * scale,
+           y: (1 - Math.log(Math.tan(r) + 1 / Math.cos(r)) / Math.PI) / 2 * scale };
 }
 function unproject(x, y, z) {
   const scale = 256 * Math.pow(2, z);
-  const lon = x / scale * 360 - 180;
   const n = Math.PI - 2 * Math.PI * y / scale;
-  const lat = 180 / Math.PI * Math.atan(0.5 * (Math.exp(n) - Math.exp(-n)));
-  return { lat, lon };
+  return { lon: x / scale * 360 - 180,
+           lat: 180 / Math.PI * Math.atan(0.5 * (Math.exp(n) - Math.exp(-n))) };
 }
 
-// ================= 画地图 =================
-let cv, ctx;
 function scheduleDraw() {
   if (pendingRedraw) return;
   pendingRedraw = true;
   setTimeout(() => { pendingRedraw = false; draw(); }, 16);
 }
 
+let cv, ctx;
 function draw() {
   if (!ctx) return;
   const W = cv.width, H = cv.height;
   const c = project(view.lat, view.lon, view.z);
   const left = c.x - W / 2, top = c.y - H / 2;
   const n = Math.pow(2, view.z);
-  const t0x = Math.floor(left / 256), t1x = Math.floor((left + W) / 256);
-  const t0y = Math.floor(top / 256), t1y = Math.floor((top + H) / 256);
 
   ctx.fillStyle = "#E4E2DA"; ctx.fillRect(0, 0, W, H);
-  for (let ty = t0y; ty <= t1y; ty++) {
-    for (let tx = t0x; tx <= t1x; tx++) {
+  for (let ty = Math.floor(top / 256); ty <= Math.floor((top + H) / 256); ty++) {
+    for (let tx = Math.floor(left / 256); tx <= Math.floor((left + W) / 256); tx++) {
       if (tx < 0 || ty < 0 || tx >= n || ty >= n) continue;
-      const key = tileKey(view.z, tx, ty);
-      const px = tx * 256 - left, py = ty * 256 - top;
+      const key = tileKey(view.z, tx, ty), px = tx * 256 - left, py = ty * 256 - top;
       if (tiles.has(key)) {
         const img = tiles.get(key);
         if (img) ctx.drawImage(img, px, py, 256, 256);
-        else { ctx.fillStyle = "#EDEBE4"; ctx.fillRect(px, py, 256, 256); }  // 上游没有数据
+        else { ctx.fillStyle = "#EDEBE4"; ctx.fillRect(px, py, 256, 256); }
       } else {
         ctx.fillStyle = "#EDEBE4"; ctx.fillRect(px, py, 256, 256);
         ensureTile(view.z, tx, ty);
@@ -270,107 +274,84 @@ function draw() {
     }
   }
 
-  // 已有店铺
-  const st = stateAll();
-  Object.values(st).forEach(s => {
-    if (!s.lat || !s.lon) return;
-    const p = project(s.lat, s.lon, view.z);
-    const x = p.x - left, y = p.y - top;
+  Object.values(stateAll())
+    .filter(s => !(s.kind === "rider" || s.vehicle || s.capacity) && s.lat && s.lon)
+    .forEach(s => {
+    const p = project(s.lat, s.lon, view.z), x = p.x - left, y = p.y - top;
     if (x < -30 || y < -30 || x > W + 30 || y > H + 30) return;
     ctx.beginPath(); ctx.arc(x, y, 9, 0, Math.PI * 2);
-    ctx.fillStyle = s.open ? "#0F6E56" : "#B4B2A9"; ctx.fill();
+    ctx.fillStyle = s.open === false ? "#B4B2A9" : "#0F6E56"; ctx.fill();
     ctx.strokeStyle = "#fff"; ctx.lineWidth = 2; ctx.stroke();
     ctx.fillStyle = "#1F2937"; ctx.font = "bold 20px system-ui";
     ctx.fillText(String(s.name || "").slice(0, 6), x + 12, y + 7);
   });
 
-  // 我
-  const me = project(view.lat, view.lon, view.z);
-  ctx.beginPath(); ctx.arc(W / 2, H / 2, 8, 0, Math.PI * 2);
-  ctx.fillStyle = "#185FA5"; ctx.fill();
+  const mx = W / 2, my = H / 2;
+  ctx.beginPath(); ctx.arc(mx, my, 8, 0, Math.PI * 2); ctx.fillStyle = "#185FA5"; ctx.fill();
   ctx.strokeStyle = "#fff"; ctx.lineWidth = 2; ctx.stroke();
 
-  // 选点
   if (picked) {
-    const p = project(picked.lat, picked.lon, view.z);
-    const x = p.x - left, y = p.y - top;
-    ctx.beginPath(); ctx.arc(x, y, 12, 0, Math.PI * 2);
-    ctx.fillStyle = "rgba(180,83,9,.22)"; ctx.fill();
-    ctx.beginPath(); ctx.arc(x, y, 7, 0, Math.PI * 2);
-    ctx.fillStyle = "#B45309"; ctx.fill();
+    const p = project(picked.lat, picked.lon, view.z), x = p.x - left, y = p.y - top;
+    ctx.beginPath(); ctx.arc(x, y, 12, 0, Math.PI * 2); ctx.fillStyle = "rgba(180,83,9,.22)"; ctx.fill();
+    ctx.beginPath(); ctx.arc(x, y, 7, 0, Math.PI * 2); ctx.fillStyle = "#B45309"; ctx.fill();
     ctx.strokeStyle = "#fff"; ctx.lineWidth = 2; ctx.stroke();
   }
 }
 
-function screenToLatLon(clientX, clientY) {
-  const r = cv.getBoundingClientRect();
-  const c = project(view.lat, view.lon, view.z);
-  const left = c.x - cv.width / 2, top = c.y - cv.height / 2;
-  const px = left + (clientX - r.left) / r.width * cv.width;
-  const py = top + (clientY - r.top) / r.height * cv.height;
-  return unproject(px, py, view.z);
-}
-
 function bindMap() {
   cv = $("map"); ctx = cv.getContext("2d");
-  let startX = 0, startY = 0, c0 = null;
-
+  let sx = 0, sy = 0, c0 = null;
   cv.addEventListener("pointerdown", e => {
-    dragging = true; moved = false;
-    startX = e.clientX; startY = e.clientY;
-    c0 = project(view.lat, view.lon, view.z);
-    cv.setPointerCapture(e.pointerId);
+    dragging = true; moved = false; sx = e.clientX; sy = e.clientY;
+    c0 = project(view.lat, view.lon, view.z); cv.setPointerCapture(e.pointerId);
   });
   cv.addEventListener("pointermove", e => {
     if (!dragging) return;
-    const dx = e.clientX - startX, dy = e.clientY - startY;
+    const dx = e.clientX - sx, dy = e.clientY - sy;
     if (Math.abs(dx) + Math.abs(dy) > 6) moved = true;
     const r = cv.getBoundingClientRect();
     const ll = unproject(c0.x - dx / r.width * cv.width, c0.y - dy / r.height * cv.height, view.z);
-    view.lat = ll.lat; view.lon = ll.lon;
-    scheduleDraw();
+    view.lat = ll.lat; view.lon = ll.lon; scheduleDraw();
   });
   cv.addEventListener("pointerup", e => {
     if (!dragging) return;
     dragging = false;
-    if (!moved) { picked = screenToLatLon(e.clientX, e.clientY); scheduleDraw(); }
+    if (!moved) {
+      const r = cv.getBoundingClientRect();
+      const c = project(view.lat, view.lon, view.z);
+      picked = unproject(c.x - cv.width / 2 + (e.clientX - r.left) / r.width * cv.width,
+                         c.y - cv.height / 2 + (e.clientY - r.top) / r.height * cv.height, view.z);
+      scheduleDraw();
+    }
   });
-
   $("zin").onclick = () => { view.z = Math.min(18, view.z + 1); scheduleDraw(); };
   $("zout").onclick = () => { view.z = Math.max(12, view.z - 1); scheduleDraw(); };
   $("here").onclick = () => {
     if (!navigator.geolocation) { alert("这台设备不支持定位，直接在地图上点选"); return; }
     navigator.geolocation.getCurrentPosition(p => {
       view.lat = p.coords.latitude; view.lon = p.coords.longitude;
-      picked = { lat: view.lat, lon: view.lon };
-      scheduleDraw();
-    }, () => alert("取不到定位，直接在地图上点选即可"), { timeout: 8000 });
+      picked = { lat: view.lat, lon: view.lon }; scheduleDraw();
+    }, () => alert("取不到定位，直接在地图上点选"), { timeout: 8000 });
   };
   $("prefetch").onclick = prefetch;
 }
 
-// 把当前视野及上下各一级的瓦片全部下下来，断网也能看
 async function prefetch() {
-  const bar = $("loadbar");
-  const list = [];
+  const bar = $("loadbar"), list = [];
   for (let dz = -1; dz <= 1; dz++) {
     const z = view.z + dz;
     if (z < 10 || z > 18) continue;
     const c = project(view.lat, view.lon, z);
     const W = cv.width * Math.pow(2, dz), H = cv.height * Math.pow(2, dz);
     const left = c.x - W / 2, top = c.y - H / 2;
-    for (let tx = Math.floor(left / 256); tx <= Math.floor((left + W) / 256); tx++) {
-      for (let ty = Math.floor(top / 256); ty <= Math.floor((top + H) / 256); ty++) {
+    for (let tx = Math.floor(left / 256); tx <= Math.floor((left + W) / 256); tx++)
+      for (let ty = Math.floor(top / 256); ty <= Math.floor((top + H) / 256); ty++)
         list.push([z, tx, ty]);
-      }
-    }
   }
-  bar.style.width = "0%";
   let done = 0;
   for (const [z, x, y] of list) {
-    await ensureTile(z, x, y);
-    done++;
-    bar.style.width = (done / list.length * 100) + "%";
+    await new Promise(res => { const i = new Image(); i.onload = i.onerror = res; i.src = TILE_URL(z, x, y); });
+    bar.style.width = (++done / list.length * 100) + "%";
   }
   setTimeout(() => { bar.style.width = "0%"; }, 600);
   alert("已缓存 " + list.length + " 张瓦片，这一片现在断网也能看。");
@@ -387,66 +368,70 @@ function loadIdentity() {
 
 function boot() {
   setTimeout(() => {
-    // 支持 ?lat=&lon=&z= 指定初始视野，方便测试和分享
     const q = new URLSearchParams(location.search);
     if (q.get("lat") && q.get("lon")) {
       view.lat = parseFloat(q.get("lat")); view.lon = parseFloat(q.get("lon"));
     }
     if (q.get("z")) view.z = Math.max(10, Math.min(18, parseInt(q.get("z"), 10)));
     identity = loadIdentity();
-    rootId = localStorage.getItem(ROOT_KEY) || null;
+    rootId = localStorage.getItem("dp_root") || null;
     store = new DP.Store(identity, rootId, EV_KEY);
     $("devid").textContent = identity.deviceId;
     bindMap();
-    // 没有显式坐标时，用已有店铺的位置做初始视野
     if (!q.get("lat")) {
-      const shops = Object.values(stateAll()).filter(s => s.lat && s.lon);
-      if (shops.length) { view.lat = shops[0].lat; view.lon = shops[0].lon; }
+      const s = Object.values(stateAll()).filter(x => x.lat && x.lon && x.kind !== "rider")[0];
+      if (s) { view.lat = s.lat; view.lon = s.lon; }
     }
-    scheduleDraw();
-    render();
-    syncNow();
-    syncTimer = setInterval(syncNow, 6000);
+    scheduleDraw(); render(); syncNow();
+    setInterval(syncNow, 6000);
     const h = (location.hash || "").replace("#", "");
     if (["street", "mark", "mine"].includes(h)) switchTab(h);
+    if (q.get("kind") === "rider") {
+      const b = document.querySelector('.seg button[data-kind="rider"]');
+      if (b) b.click();
+    }
   }, 30);
 }
 
-// ================= 同步（局域网节点） =================
+// ================= 同步（增量） =================
 function latestTs() {
   let m = "";
   for (const e of store.events.values()) if (e.ts > m) m = e.ts;
   return m;
+}
+function shiftMin(ts, min) {
+  const d = new Date(ts); d.setMinutes(d.getMinutes() - min); return DP.nowTs(d);
 }
 
 async function syncNow() {
   if (!store) return;
   const pill = $("syncpill");
   try {
-    // 拉：带一个略早的时间（本地时间格式，和事件里的 ts 同一口径），容忍时钟误差
+    // 拉：只要比自己最新事件稍早一点的（容忍时钟误差）
     const since = latestTs();
-    let from = "";
-    if (since) {
-      const d = new Date(since);
-      d.setMinutes(d.getMinutes() - 5);
-      from = DP.nowTs(d);
-    }
-    const url = "/api/p2p/pull" + (from ? "?since=" + encodeURIComponent(from) : "");
-    const r1 = await fetch(url, { cache: "no-store" });
-    const d1 = await r1.json();
+    const url = "/api/p2p/pull" + (since ? "?since=" + encodeURIComponent(shiftMin(since, 5)) : "");
+    const d1 = await (await fetch(url, { cache: "no-store" })).json();
     if (d1.events && d1.events.length) {
       const n = store.merge(d1.events);
       if (n) { render(); scheduleDraw(); }
     }
-    // 推：把自己独有的发上去
-    const r2 = await fetch("/api/p2p/push", {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ events: [...store.events.values()] })
-    });
-    const d2 = await r2.json();
+
+    // 推：只推上次之后新增的，不再每次发全量
+    const lastPush = localStorage.getItem(PUSH_KEY) || "";
+    const batch = [...store.events.values()].filter(e => !lastPush || e.ts >= shiftMin(lastPush, 10));
+    let total = d1.total;
+    if (batch.length) {
+      const d2 = await (await fetch("/api/p2p/push", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ events: batch })
+      })).json();
+      total = d2.total;
+      const maxTs = batch.reduce((m, e) => (e.ts > m ? e.ts : m), lastPush);
+      localStorage.setItem(PUSH_KEY, maxTs);
+    }
     pill.className = "pill ok";
-    pill.textContent = "已同步 · 节点 " + (d2.total ?? "?") + " 条";
-    $("nodeinfo").textContent = "局域网节点：" + location.origin + "　本地 " + store.events.size + " 条事件";
+    pill.textContent = "已同步 · 节点 " + (total ?? "?") + " 条";
+    $("nodeinfo").textContent = `局域网节点 ${location.origin}　本地 ${store.events.size} 条 · 本次上传 ${batch.length} 条`;
   } catch (e) {
     pill.className = "pill err";
     pill.textContent = "未连接节点";
@@ -457,113 +442,108 @@ async function syncNow() {
 // ================= 渲染 =================
 function stateAll() { return store ? store.state(new Date()) : {}; }
 
-function render() {
-  const st = stateAll();
-  const shops = Object.values(st).sort((a, b) => (a.open === b.open ? 0 : (a.open ? -1 : 1)));
-  const openCount = shops.filter(s => s.open).length;
-  $("summary").innerHTML = shops.length
-    ? `开门做生意 <b style="color:var(--teal)">${openCount}</b> 家 · 共 ${shops.length} 家`
-    : "这条街还没有店，去「标注」挂一块门牌。";
+// 老数据没有 kind 字段，用有没有车型/载量来推断
+const isRiderItem = s => s.kind === "rider" || !!s.vehicle || !!s.capacity;
 
-  $("list").innerHTML = shops.map(s => {
+function render() {
+  const all = Object.values(stateAll());
+  const shops = all.filter(s => !isRiderItem(s));
+  const riders = all.filter(isRiderItem);
+  const openCount = shops.filter(s => s.open !== false).length;
+  $("summary").innerHTML = `商店 <b style="color:var(--teal)">${openCount}</b>/${shops.length} 家营业中 · 运力牌 ${riders.length} 块`;
+
+  $("list-shop").innerHTML = shops.length ? shops.map(s => {
     const items = (s.items || []).slice(0, 4).map(i =>
       `<span class="chip">${esc(i.name)}${i.unit ? " / " + esc(i.unit) : ""}<i>${esc(i.tag || "可议")}</i></span>`).join("");
     const tv = s.trust === "L2" ? '<span class="badge">店主认领</span>'
-      : s.trust === "L1" ? '<span class="badge l1">多人确认</span>'
-      : '<span class="badge l0">路人标注</span>';
+      : s.trust === "L1" ? '<span class="badge l1">多人确认</span>' : '<span class="badge l0">路人标注</span>';
     const pend = (s.claim_pending && s.claim_pending.length) ? '<span class="badge wait">待担保</span>' : "";
     return `<div class="card" data-id="${esc(s.id)}">
       <h3>${esc(s.name || s.id)} ${tv}${pend}</h3>
-      <div class="meta">${esc(s.address || "—")}${s.hours ? " · " + esc(s.hours) : ""} · ${s.open ? "营业中" : "已打烊"}</div>
-      <div class="chips">${items || '<span class="chip">今日未上货</span>'}</div>
-    </div>`;
-  }).join("");
+      <div class="meta">${esc(s.address || "—")}${s.hours ? " · " + esc(s.hours) : ""} · ${s.open === false ? "已打烊" : "营业中"}</div>
+      <div class="chips">${items || '<span class="chip">今日未上货</span>'}</div></div>`;
+  }).join("") : '<p class="empty">还没有商店挂门牌</p>';
 
-  document.querySelectorAll("#list .card").forEach(el => el.onclick = () => showShop(st[el.dataset.id]));
-  renderPending(st);
-  renderMine(st);
+  $("list-rider").innerHTML = riders.length ? riders.map(r => `
+    <div class="card" data-id="${esc(r.id)}">
+      <h3>${esc(r.name || r.id)} <span class="badge rider">运力</span></h3>
+      <div class="meta">${esc(r.vehicle || "—")} · ${esc(r.capacity || "运力未写")}
+        ${r.window ? " · 今天 " + esc(r.window) + " 有空" : ""}</div>
+      <div class="chips">${(r.areas || []).map(a => `<span class="chip">${esc(a)}</span>`).join("")}</div>
+    </div>`).join("") : '<p class="empty">今天还没有人挂运力牌</p>';
+
+  document.querySelectorAll("#list-shop .card, #list-rider .card")
+    .forEach(el => el.onclick = () => showItem(all.find(s => s.id === el.dataset.id)));
+
+  renderPending(all);
+  renderMine(all);
   renderReport();
 }
 
-function showShop(s) {
+function showItem(s) {
   if (!s) return;
-  const rows = (s.items || []).map(i =>
+  const isRider = isRiderItem(s);
+  const rows = isRider ? '' : (s.items || []).map(i =>
     `<div class="meta" style="display:flex;justify-content:space-between;border-bottom:1px dashed var(--line);padding:8px 0">
       <span>${esc(i.name)}${i.unit ? " / " + esc(i.unit) : ""}</span>
       <span>${esc(i.note || "")} ${esc(i.tag || "可议")}</span></div>`).join("");
   $("sheet-body").innerHTML = `
     <h3 style="font-size:18px">${esc(s.name)}</h3>
-    <div class="meta" style="margin-bottom:8px">${esc(s.address || "—")}${s.hours ? " · " + esc(s.hours) : ""}</div>
-    ${rows || '<p class="empty">今日未上货</p>'}
+    <div class="meta" style="margin-bottom:8px">
+      ${isRider ? `${esc(s.vehicle || "")} · ${esc(s.capacity || "")}${s.window ? " · 今天 " + esc(s.window) : ""}`
+                : `${esc(s.address || "—")}${s.hours ? " · " + esc(s.hours) : ""}`}</div>
+    ${rows}
+    ${s.note ? `<p class="meta" style="margin-top:8px">${esc(s.note)}</p>` : ""}
     <p class="meta" style="margin-top:12px;border-top:1px solid var(--line);padding-top:10px">
-      ${esc(s.trust)} — ${esc(s.trust_reason)}<br>共 ${s.events} 条事件</p>
+      ${isRider ? "运力牌 · 由本人发布" : `${esc(s.trust)} — ${esc(s.trust_reason)}`}</p>
     ${s.phone ? `<a class="btn" href="tel:${esc(s.phone)}" style="display:block;text-align:center;text-decoration:none;background:var(--teal-l);color:var(--teal)">打电话 ${esc(s.phone)}</a>` : ""}`;
   openSheet();
 }
 
-// 待我作保：别人认领了但我还没作保的
-function renderPending(st) {
-  const list = Object.values(st).filter(s =>
-    s.claim_pending && s.claim_pending.includes && s.claim_pending.length &&
-    s.claim_pending.some(who => who !== identity.deviceId) &&
-    s.owner !== identity.deviceId);
+function renderPending(all) {
+  const list = all.filter(s => !isRiderItem(s) && s.owner !== identity.deviceId &&
+    s.claim_pending && s.claim_pending.some(w => w !== identity.deviceId));
   $("pend-count").textContent = list.length;
   $("pend-list").innerHTML = list.length ? list.map(s => {
     const who = s.claim_pending.filter(w => w !== identity.deviceId);
-    const already = who.length ? "" : "";
-    return `<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;
-        padding:9px 0;border-bottom:1px solid var(--line)">
-      <div style="min-width:0">
-        <div style="font-size:14px">${esc(s.name || s.id)}</div>
-        <div class="meta">${who.map(w => esc(w)).join("、")} 说这是他的店</div>
-      </div>
-      <button class="btn sm" data-endorse="${esc(s.id)}" data-who="${esc(who[0] || "")}">作保</button>
-    </div>`;
+    return `<div class="line"><div style="min-width:0">
+      <div style="font-size:14px">${esc(s.name || s.id)}</div>
+      <div class="meta">${who.map(esc).join("、")} 说这是他的店</div>
+    </div><button class="btn sm" data-endorse="${esc(s.id)}" data-who="${esc(who[0] || "")}">作保</button></div>`;
   }).join("") : '<p class="empty">暂时没人需要你作保</p>';
 
-  document.querySelectorAll("[data-endorse]").forEach(b => {
-    b.onclick = () => {
-      const shop = b.dataset.endorse, who = b.dataset.who;
-      const sig = identity.sign(DP.sponsorMessage(shop, who));
-      store.add("endorse", shop, { shop, claimer: who, sig });
-      render(); syncNow();
-      alert("已作保。满 2 位后他自动成为店主。");
-    };
+  document.querySelectorAll("[data-endorse]").forEach(b => b.onclick = () => {
+    const shop = b.dataset.endorse, who = b.dataset.who;
+    store.add("endorse", shop, { shop, claimer: who, sig: identity.sign(DP.sponsorMessage(shop, who)) });
+    render(); syncNow();
+    alert("已作保。满 2 位后他自动成为店主。");
   });
 }
 
-function renderMine(st) {
-  const mine = Object.values(st).filter(s => !s.owner || s.owner === identity.deviceId);
-  $("claim-list").innerHTML = mine.length ? mine.map(s => {
-    const done = s.owner === identity.deviceId;
-    const waiting = s.claim_pending && s.claim_pending.includes(identity.deviceId);
-    return `<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;
-        padding:9px 0;border-bottom:1px solid var(--line)">
-      <div style="min-width:0">
-        <div style="font-size:14px">${esc(s.name || s.id)}</div>
-        <div class="meta">${done ? "你是店主" : waiting ? "已认领，等邻居作保" : "尚未认领"}</div>
-      </div>
-      ${done ? '<span class="badge">已认领</span>'
-        : waiting ? '<span class="badge wait">待担保</span>'
-        : `<button class="btn sm" data-claim="${esc(s.id)}">这是我的店</button>`}
-    </div>`;
-  }).join("") : '<p class="empty">没有可认领的店</p>';
-
-  document.querySelectorAll("[data-claim]").forEach(b => {
-    b.onclick = () => {
-      store.add("claim", b.dataset.claim, { sponsors: [] });
-      render(); syncNow();
-      alert("已认领。等两位邻居在「待我作保」里点一下，你就正式是店主了。");
-    };
+// 只列"我创建或我已认领"的标注 —— 别人的店认领不了
+function renderMine(all) {
+  const mine = all.filter(s => {
+    const anchor = [...store.events.values()].find(e => e.target === s.id && e.type === "anchor" && e.author === identity.deviceId);
+    return !!anchor || s.owner === identity.deviceId;
   });
+  $("mine-list").innerHTML = mine.length ? mine.map(s => {
+    const isRider = isRiderItem(s);
+    const st = s.owner === identity.deviceId ? '<span class="badge">店主</span>'
+      : (s.claim_pending || []).includes(identity.deviceId) ? '<span class="badge wait">等邻居作保</span>'
+      : '<span class="badge l0">未认领</span>';
+    return `<div class="line"><div style="min-width:0">
+      <div style="font-size:14px">${esc(s.name || s.id)} ${isRider ? '<span class="badge rider">运力</span>' : ""}</div>
+      <div class="meta">${isRider ? "本人发布" : esc(s.trust_reason || "")}</div>
+    </div>${isRider ? "" : st}</div>`;
+  }).join("") : '<p class="empty">你还没挂过标注</p>';
 }
 
 function renderReport() {
   const t = JSON.parse(localStorage.getItem(T_KEY) || "[]");
-  if (!t.length) { $("report").textContent = "还没有记录，去「标注」挂一块门牌试试"; return; }
+  if (!t.length) { $("report").textContent = "还没有记录"; return; }
   const total = t.reduce((a, x) => a + x.sec, 0), avg = Math.round(total / t.length);
-  $("report").innerHTML = `已标注 <b>${t.length}</b> 家 · 总耗时 <b>${fmt(total)}</b> · 平均 <b>${fmt(avg)}</b>/家<br>
-    <span style="font-size:11px">按此速度，20 家约需 <b>${fmt(avg * 20)}</b></span>`;
+  $("report").innerHTML = `已标注 <b>${t.length}</b> 条 · 总耗时 <b>${fmt(total)}</b> · 平均 <b>${fmt(avg)}</b>/条<br>
+    <span style="font-size:11px">按此速度，20 条约需 <b>${fmt(avg * 20)}</b></span>`;
 }
 function fmt(sec) {
   if (sec < 60) return sec + " 秒";
@@ -571,7 +551,16 @@ function fmt(sec) {
   return m + " 分" + (s ? " " + s + " 秒" : "");
 }
 
-// ================= 标注 =================
+// ================= 标注表单 =================
+document.querySelectorAll(".seg button").forEach(b => b.onclick = () => {
+  curKind = b.dataset.kind;
+  document.querySelectorAll(".seg button").forEach(x => x.classList.toggle("on", x === b));
+  $("form-shop").style.display = curKind === "shop" ? "" : "none";
+  $("form-rider").style.display = curKind === "rider" ? "" : "none";
+  $("btn-save").textContent = curKind === "shop" ? "挂上门牌" : "挂上运力牌";
+  if (curKind === "shop") scheduleDraw();
+});
+
 function parseItems(text) {
   return text.split("\n").map(l => l.trim()).filter(Boolean).slice(0, 40).map(line => {
     const p = line.split("/").map(s => s.trim());
@@ -579,49 +568,67 @@ function parseItems(text) {
   }).filter(x => x.name);
 }
 
-$("btn-save").onclick = () => {
-  const name = $("f-name").value.trim();
-  if (!name) { alert("店名不能空"); return; }
-  const loc = picked || { lat: view.lat, lon: view.lon };
-  const id = "shop-" + Date.now().toString(36);
-  store.add("anchor", id, { fields: {
-    name, address: $("f-addr").value.trim(),
-    phone: $("f-phone").value.trim(), hours: $("f-hours").value.trim(),
-    lat: Number(loc.lat.toFixed(6)), lon: Number(loc.lon.toFixed(6)),
-    items: parseItems($("f-items").value), open: true
-  }});
+function markTiming(label) {
   if (timerStart) {
     const sec = Math.round((Date.now() - timerStart) / 1000);
     const t = JSON.parse(localStorage.getItem(T_KEY) || "[]");
     t.push({ sec, at: new Date().toISOString() });
     localStorage.setItem(T_KEY, JSON.stringify(t));
-    $("timing").textContent = "上一家 " + fmt(sec);
+    $("timing").textContent = "上一条 " + fmt(sec);
   } else { timerStart = Date.now(); $("timing").textContent = "计时中…"; }
-  $("f-name").value = ""; $("f-addr").value = ""; $("f-items").value = ""; $("f-phone").value = "";
-  picked = null; scheduleDraw(); render(); syncNow(); switchTab("street");
+}
+
+$("btn-save").onclick = () => {
+  const id = "n-" + Date.now().toString(36);
+  if (curKind === "shop") {
+    const name = $("f-name").value.trim();
+    if (!name) { alert("店名不能空"); return; }
+    const loc = picked || { lat: view.lat, lon: view.lon };
+    store.add("anchor", id, { fields: {
+      kind: "shop", name, address: $("f-addr").value.trim(),
+      phone: $("f-phone").value.trim(), hours: $("f-hours").value.trim(),
+      lat: Number(loc.lat.toFixed(6)), lon: Number(loc.lon.toFixed(6)),
+      items: parseItems($("f-items").value), open: true
+    }});
+    // 勾了"这是我的店"才发认领；没勾就是纯路人标注
+    if ($("f-mine").checked) store.add("claim", id, { sponsors: [] });
+    $("f-name").value = ""; $("f-addr").value = ""; $("f-items").value = ""; $("f-phone").value = "";
+    picked = null;
+  } else {
+    const name = $("r-name").value.trim();
+    if (!name) { alert("先填个称呼"); return; }
+    store.add("anchor", id, { fields: {
+      kind: "rider", name,
+      phone: $("r-phone").value.trim(),
+      vehicle: $("r-vehicle").value.trim(),
+      capacity: $("r-capacity").value.trim(),
+      areas: $("r-areas").value.split(/[,，]/).map(s => s.trim()).filter(Boolean),
+      window: $("r-window").value.trim(),
+      note: $("r-note").value.trim()
+    }});
+    $("r-name").value = ""; $("r-phone").value = ""; $("r-vehicle").value = "";
+    $("r-capacity").value = ""; $("r-areas").value = ""; $("r-window").value = ""; $("r-note").value = "";
+  }
+  markTiming();
+  scheduleDraw(); render(); syncNow(); switchTab("street");
 };
 $("btn-start").onclick = () => { timerStart = Date.now(); $("timing").textContent = "计时中…"; };
 
 // ================= 导出导入（兜底） =================
-function b64(o) { return btoa(unescape(encodeURIComponent(JSON.stringify(o)))); }
-function unb64(s) { return JSON.parse(decodeURIComponent(escape(atob(s.trim())))); }
+const b64 = o => btoa(unescape(encodeURIComponent(JSON.stringify(o))));
+const unb64 = s => JSON.parse(decodeURIComponent(escape(atob(s.trim()))));
 $("btn-export").onclick = () => {
   $("sheet-body").innerHTML = `<h3 style="font-size:17px">全部数据</h3>
-    <p class="meta">复制这段发给另一台手机。</p>
     <div class="code" style="max-height:220px">${esc(b64({ t: "events", events: [...store.events.values()] }))}</div>`;
   openSheet();
 };
 $("btn-import").onclick = () => {
   $("sheet-body").innerHTML = `<h3 style="font-size:17px">导入</h3>
-    <textarea id="imp" placeholder="粘贴对方的数据"></textarea>
-    <button class="btn" id="imp-go">导入</button>`;
+    <textarea id="imp" placeholder="粘贴对方的数据"></textarea><button class="btn" id="imp-go">导入</button>`;
   openSheet();
   $("imp-go").onclick = () => {
-    try {
-      const n = store.merge(unb64($("imp").value).events || []);
-      closeSheet(); render(); scheduleDraw();
-      alert("导入 " + n + " 条新记录");
-    } catch (e) { alert("格式不对"); }
+    try { const n = store.merge(unb64($("imp").value).events || []); closeSheet(); render(); scheduleDraw(); alert("导入 " + n + " 条"); }
+    catch (e) { alert("格式不对"); }
   };
 };
 
@@ -630,7 +637,6 @@ function openSheet() { $("mask").classList.add("show"); $("sheet").classList.add
 function closeSheet() { $("mask").classList.remove("show"); $("sheet").classList.remove("show"); }
 $("mask").onclick = closeSheet; $("sheet-close").onclick = closeSheet;
 $("btn-sync").onclick = syncNow;
-
 function switchTab(name) {
   document.querySelectorAll(".tab").forEach(t => t.classList.toggle("on", t.id === "tab-" + name));
   document.querySelectorAll("nav button").forEach(b => b.classList.toggle("on", b.dataset.tab === name));

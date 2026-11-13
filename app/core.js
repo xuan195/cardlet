@@ -13,9 +13,11 @@
 
   const DOMAIN = "doorplate/v1|";
   const KEY_BITS = 1024;
-  const TEMPORAL_FIELDS = new Set(["open", "items", "note"]);
+  // 会随时间失效的字段（"今天有什么"类）：7 天没人确认就当过期
+  const TEMPORAL_FIELDS = new Set(["items", "note"]);
+  // 结构性字段：店名、地址、营业开关…… 写一次就一直算数，直到有人改
   const STRUCTURAL_FIELDS = new Set(["kind", "name", "address", "phone", "hours",
-    "lat", "lon", "tags", "vehicle", "capacity", "areas", "window"]);
+    "lat", "lon", "tags", "vehicle", "capacity", "areas", "window", "open"]);
   const DEFAULT_TTL_DAYS = 7;
   const ANCHOR_TTL_DAYS = 30;
   const TRUST_L1_AUTHORS = 3;
@@ -379,6 +381,12 @@
     const anchors = alive.filter(e => e.type === "anchor");
     const basePool = anchors.concat(facts);
 
+    // 谁说的话算数：店主 > 标注作者 > 其他人
+    // 没有认购流程时，标注作者就是这家店的"话事人"
+    const authority = owner || (anchors.length
+      ? [...anchors].sort(byCand)[0].author
+      : null);
+
     const state = { id: shopId };
     const conflicts = {};
     const allFields = new Set([...STRUCTURAL_FIELDS, ...TEMPORAL_FIELDS]);
@@ -407,7 +415,7 @@
         for (const [k, v] of Object.entries(byValue)) conflicts[field][k] = v.authors.size;
       }
 
-      const ownerC = cands.filter(c => c.author === owner).sort(byCand);
+      const ownerC = cands.filter(c => c.author === authority).sort(byCand);
       if (ownerC.length) {
         state[field] = ownerC[ownerC.length - 1].val;
       } else if (STRUCTURAL_FIELDS.has(field)) {

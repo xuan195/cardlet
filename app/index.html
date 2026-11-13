@@ -82,6 +82,8 @@
          color:var(--teal);font-weight:500;flex:none}
   .badge.mine{background:var(--blue-soft);color:var(--blue)}
   .badge.rider{background:var(--blue-soft);color:var(--blue)}
+  .badge.off{background:#EFEDE6;color:#7A756C}
+  .card.is-closed{opacity:.62}
   .star{position:absolute;right:8px;top:10px;width:36px;height:36px;border-radius:50%;
         display:flex;align-items:center;justify-content:center;color:#C6C1B6;transition:.15s}
   .star.on{color:#E0A020}
@@ -322,8 +324,9 @@
     <div class="form-card">
       <div class="kv"><span>设备指纹</span><span class="v" id="devid">—</span></div>
       <div class="kv"><span>本地记录</span><span class="v" id="evcount">0 条</span></div>
-      <div class="kv"><span>同步节点</span><span class="v" id="nodeinfo">—</span></div>
-      <button class="btn ghost sm" id="btn-sync" style="margin-top:14px">立刻同步</button>
+      <div class="kv"><span>连线状态</span><span class="v" id="nodeinfo">—</span></div>
+      <div class="help" style="font-size:11.5px;color:var(--sub);margin-top:12px;line-height:1.7">
+        标注会自动和同网段的其他手机交换，不需要手动操作。断网时照常可用，等下次连上自动补齐。</div>
     </div>
 
     <div class="sec-label"><b>数据</b></div>
@@ -713,6 +716,7 @@ function renderList(list){
 
 function cardHtml(s){
   const on = favs.has(s.id);
+  const closed = s.open === false;
   const tags = s._rider
     ? [...(s.areas||[]).map(a=>`<span class="tag">${esc(a)}</span>`)]
     : (s.items||[]).slice(0,4).map(i=>
@@ -721,19 +725,27 @@ function cardHtml(s){
     ? [s.vehicle, s.capacity, s.window ? "今天 "+s.window : ""].filter(Boolean).join(" · ")
     : [s.address, s.hours].filter(Boolean).join(" · ");
 
-  return `<div class="card" data-open="${esc(s.id)}">
+  return `<div class="card${closed?" is-closed":""}" data-open="${esc(s.id)}">
     <button class="star ${on?"on":""}" data-star="${esc(s.id)}" aria-label="收藏">
       <svg width="19" height="19" viewBox="0 0 24 24" fill="${on?"currentColor":"none"}"
            stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">
         <path d="M12 3.6l2.6 5.3 5.8.8-4.2 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8L3.6 9.7l5.8-.8z"/></svg>
     </button>
     <h3>${esc(s.name)}
+      ${closed?`<span class="badge off">${s._rider?"已收工":"已歇业"}</span>`:""}
       ${s._mine?'<span class="badge mine">我发布的</span>':""}
       ${s._rider?'<span class="badge rider">运力</span>':""}
     </h3>
     <div class="sub">${esc(sub)||"&nbsp;"}</div>
     ${tags.length?`<div class="tagline">${tags.join("")}</div>`:""}
   </div>`;
+}
+
+/* 歇业 / 开业：写一条 fact，作者自己的话最算数 */
+function toggleOpen(id, currentlyOpen){
+  store.add("fact", id, { fields: { open: !currentlyOpen } });
+  render(); redrawAll(); syncNow();
+  toast(!currentlyOpen ? "已恢复营业" : "已标记歇业");
 }
 
 function toggleFav(id){
@@ -759,10 +771,13 @@ function showDetail(s){
     ${rows || '<div class="itemrow"><span style="color:var(--sub)">今天还没上货</span></div>'}
     ${s.note?`<div class="itemrow"><span style="color:var(--sub);font-size:13px">${esc(s.note)}</span></div>`:""}
     <div class="act">
+      ${s._mine?`<button class="btn ${s.open===false?"":"ghost"} sm" id="d-toggle">${s.open===false?"恢复营业":"标记歇业"}</button>`:""}
       <button class="btn ghost sm" id="d-star">${on?"★ 已收藏":"☆ 收藏"}</button>
       ${s.phone?`<a class="btn sm" href="tel:${esc(s.phone)}" style="display:flex;align-items:center;justify-content:center;text-decoration:none;height:38px;border-radius:10px;background:var(--teal);color:#fff;font-size:13.5px;font-weight:500">打电话</a>`:""}
     </div>`;
   $("d-star").onclick = ()=>{ toggleFav(s.id); closeSheet(); };
+  const dt = $("d-toggle");
+  if (dt) dt.onclick = ()=>{ toggleOpen(s.id, s.open !== false); closeSheet(); };
   openSheet();
 }
 
@@ -774,14 +789,17 @@ function renderMine(){
 
   $("evcount").textContent = store.events.size + " 条";
 
-  $("mine-list").innerHTML = mine.length ? mine.map(s=>`
-    <div class="list-item">
-      <div class="grow">
-        <div class="t">${esc(s.name)}</div>
+  $("mine-list").innerHTML = mine.length ? mine.map(s=>{
+    const closed = s.open === false;
+    return `<div class="list-item">
+      <div class="grow" data-edit="${esc(s.id)}">
+        <div class="t">${esc(s.name)}${closed?` <span class="badge off">${s._rider?"已收工":"已歇业"}</span>`:""}</div>
         <div class="s">${s._rider?"运力牌":"商店"} · ${esc(s._rider?(s.vehicle||""):(s.address||""))||"—"}</div>
       </div>
-      <button class="btn ghost sm" data-edit="${esc(s.id)}" style="width:auto;padding:0 14px">查看</button>
-    </div>`).join("")
+      <button class="btn ${closed?"":"ghost"} sm" data-toggleopen="${esc(s.id)}" data-cur="${closed?0:1}"
+        style="width:auto;padding:0 14px;flex:none">${closed?"开业":"歇业"}</button>
+    </div>`;
+  }).join("")
     : '<div class="empty" style="padding:26px 10px"><div class="sm">还没发布过。去「发布」挂一块门牌试试。</div></div>';
 
   $("fav-list").innerHTML = fav.length ? fav.map(s=>`
@@ -799,6 +817,12 @@ function renderMine(){
       const id = b.dataset.edit || b.dataset.open2;
       const s = all.find(x=>x.id===id);
       if (s) showDetail(s);
+    };
+  });
+  document.querySelectorAll("[data-toggleopen]").forEach(b=>{
+    b.onclick = e=>{
+      e.stopPropagation();
+      toggleOpen(b.dataset.toggleopen, b.dataset.cur === "1");
     };
   });
 }
@@ -883,13 +907,13 @@ async function syncNow(){
       localStorage.setItem(K_PUSH, batch.reduce((m,e)=>e.ts>m?e.ts:m, last));
     }
     pill.className = "pill ok";
-    pill.textContent = "已同步 · " + (total ?? "?") + " 条";
-    $("nodeinfo").textContent = "已连接（" + (total??"?") + " 条）";
+    pill.textContent = "已连线";
+    $("nodeinfo").textContent = "已连上，自动同步中";
     if (changed){ render(); redrawAll(); }
   } catch(e){
     pill.className = "pill err";
     pill.textContent = "离线";
-    $("nodeinfo").textContent = "连不上节点，数据只在本机";
+    $("nodeinfo").textContent = "未连上，数据只在本机";
   }
 }
 
@@ -966,7 +990,7 @@ function toast(msg){
   toastTimer = setTimeout(()=>{ el.style.opacity="0"; }, 1900);
 }
 
-$("btn-sync").onclick = ()=>{ syncNow(); toast("正在同步…"); };
+$("btn-sync") && ($("btn-sync").onclick = ()=>{ syncNow(); toast("正在同步…"); });
 
 const b64 = o => btoa(unescape(encodeURIComponent(JSON.stringify(o))));
 const unb64 = s => JSON.parse(decodeURIComponent(escape(atob(s.trim()))));

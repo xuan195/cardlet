@@ -162,13 +162,18 @@ def main():
     st = merged.state(NOW)["haoyouduo"]
     check("恶意货品已作废", "三无产品" not in [i["name"] for i in st.get("items", [])])
 
-    print("[11] 时间衰减：8 天前的营业状态不算数")
+    print("[11] 时间衰减：只有「今天有什么」会过期，营业开关不过期")
     old = mk(passer2)
     old.add("anchor", "laochen", {"fields": {"name": "老陈五金"}}, ts=ts(60 * 24 * 9))
-    old.add("fact", "laochen", {"fields": {"open": True}}, ts=ts(60 * 24 * 8))
+    old.add("fact", "laochen", {"fields": {
+        "open": False,
+        "items": [{"name": "电线", "unit": "卷", "note": "", "tag": "批发价"}]}},
+        ts=ts(60 * 24 * 8))
     st_old = reduce_events(list(old.events.values()), old.pubkeys,
                            now=NOW + timedelta(days=1), root_id=root.device_id)
-    check("过期状态不参与", st_old["laochen"].get("open") is None,
+    check("8 天前的货品已过期", st_old["laochen"].get("items") is None,
+          st_old["laochen"].get("items"))
+    check("歇业状态不会自己失效", st_old["laochen"].get("open") is False,
           st_old["laochen"].get("open"))
 
     print("[12] 两机离线记录，同步后状态一致")

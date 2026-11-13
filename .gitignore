@@ -5,3 +5,5 @@ doorplate/p2p/_keys/
 doorplate/app/_interop/
 doorplate/data/tiles/
 doorplate/data/events.jsonl
+doorplate/android/build/
+doorplate/android/assets/

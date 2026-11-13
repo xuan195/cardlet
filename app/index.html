@@ -385,7 +385,8 @@
 </div>
 
 <input type="file" id="scan-input" accept="image/*" capture="environment" style="display:none">
-<script src="vendor/jsQR.js"></script>
+<script src="qrcode.js"></script>
+<script src="jsQR.js"></script>
 <script src="core.js"></script>
 <script>
 /* =========================================================
@@ -407,15 +408,25 @@ let geo = { lat: 29.84, lon: 112.90, z: 16 };
 /* ---------------- 瓦片与投影 ---------------- */
 const tiles = new Map(), loading = new Set();
 const tkey = (z,x,y) => z+"/"+x+"/"+y;
+// 有服务端时走同源代理（可离线缓存）；装成 App 后没有服务端，自动直连上游
 const turl = (z,x,y) => `/tiles/${z}/${x}/${y}.png`;
+const turlDirect = (z,x,y) => `https://tile.openstreetmap.de/${z}/${x}/${y}.png`;
 
 function ensureTile(z,x,y){
   const k = tkey(z,x,y);
   if (tiles.has(k) || loading.has(k)) return;
   loading.add(k);
   const img = new Image();
+  let triedDirect = false;
   img.onload = () => { loading.delete(k); tiles.set(k,img); redrawAll(); };
-  img.onerror = () => { loading.delete(k); tiles.set(k,null); redrawAll(); };
+  img.onerror = () => {
+    if (!triedDirect){
+      triedDirect = true;
+      img.src = turlDirect(z,x,y);     // 代理不可用（如 App 内），直连上游
+      return;
+    }
+    loading.delete(k); tiles.set(k,null); redrawAll();
+  };
   img.src = turl(z,x,y);
 }
 function project(lat,lon,z){
@@ -1087,19 +1098,40 @@ function packItem(s){
   return p;
 }
 
+/* 本地生成二维码：装成 App 后没有服务端，不能靠 /api/qr */
+function qrSvg(text, px){
+  const qr = qrcode(0, "L");
+  qr.addData(text);
+  qr.make();
+  const n = qr.getModuleCount(), quiet = 2, total = n + quiet * 2;
+  let d = "";
+  for (let y = 0; y < n; y++){
+    for (let x = 0; x < n; x++){
+      if (qr.isDark(y, x)) d += `M${x + quiet} ${y + quiet}h1v1h-1z`;
+    }
+  }
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${total} ${total}"
+    width="${px}" height="${px}" shape-rendering="crispEdges">
+    <rect width="${total}" height="${total}" fill="#ffffff"/>
+    <path d="${d}" fill="#1C1B19"/></svg>`;
+}
+
 function shareItem(s){
   const code = b64u(JSON.stringify(packItem(s)));
   const link = location.origin + location.pathname + "?add=" + code;
+  let art;
+  try { art = qrSvg(code, 290); }
+  catch(e){ art = '<p style="color:var(--sub);font-size:13px">这块门牌太大，码画不出来</p>'; }
   $("sheet-body").innerHTML = `
     <h2>分享「${esc(s.name)}」</h2>
     <p style="font-size:13px;color:var(--sub);margin:6px 0 16px;line-height:1.7">
       对方在门牌里点右上角<b>扫一扫</b>，拍下这个码，这块门牌就加到他手机里了。</p>
     <div style="text-align:center;padding:2px 0 12px">
-      <img src="/api/qr?t=${encodeURIComponent(code)}" alt="二维码"
-           style="width:min(74vw,290px);height:auto;border-radius:12px;border:1px solid var(--line);background:#fff">
+      <div style="display:inline-block;padding:12px;background:#fff;border-radius:12px;
+        border:1px solid var(--line);line-height:0">${art}</div>
     </div>
     <p style="font-size:11.5px;color:var(--sub);line-height:1.7;text-align:center">
-      这个码里只有店铺信息，不带任何服务器地址。<br>换个地方、换台电脑，一样能扫。</p>
+      这个码里只有店铺信息，不带任何服务器地址。<br>换个地方、换台手机，一样能扫。</p>
     <details style="margin-top:12px">
       <summary style="font-size:11.5px;color:var(--sub);cursor:pointer">同一 WiFi 时想直接打开？</summary>
       <div style="font-size:11px;color:var(--sub);word-break:break-all;background:#F4F2EC;

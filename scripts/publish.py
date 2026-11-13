@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""门牌 · 发布器：把本地数据编译成一套"可上传的文件"
+"""名片 · 发布器：把本地数据编译成一套"可上传的文件"
 
 设计要点
 --------
@@ -106,7 +106,7 @@ def build(out: Path) -> dict:
 
     index_shops.sort(key=lambda x: (not x.get("open"), x.get("name") or ""))
     meta = {
-        "name": "门牌",
+        "name": "名片",
         "format": 1,
         "generated": datetime.now().strftime("%Y-%m-%dT%H:%M:%S"),
         "shops": len(index_shops),
@@ -132,7 +132,7 @@ def make_zip(out: Path) -> Path:
 
 
 def main():
-    ap = argparse.ArgumentParser(description="把门牌数据编译成可上传的静态文件")
+    ap = argparse.ArgumentParser(description="把名片数据编译成可上传的静态文件")
     ap.add_argument("--out", default=str(DEFAULT_OUT), help="输出目录")
     ap.add_argument("--zip", action="store_true", help="额外打包成 zip")
     args = ap.parse_args()

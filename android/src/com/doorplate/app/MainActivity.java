@@ -16,7 +16,7 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
 /**
- * 门牌 · Android 外壳
+ * 名片 · Android 外壳
  *
  * 整个应用就是 app/ 目录下的网页，打进 assets 里离线运行。
  * 不连任何服务器：数据在 WebView 的 localStorage，分享靠二维码。

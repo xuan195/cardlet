@@ -4,7 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#F7F6F2">
-<title>门牌</title>
+<title>名片</title>
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
 <style>
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
   :root{
@@ -209,7 +211,7 @@
 
 <header class="appbar">
   <div class="row1">
-    <h1>门牌</h1>
+    <h1>名片</h1>
     <div style="display:flex;align-items:center;gap:8px">
       <button id="btn-scan" aria-label="扫一扫"
         style="width:34px;height:34px;border-radius:10px;background:#fff;border:1px solid var(--line);
@@ -367,7 +369,7 @@
     <div class="sec-label"><b>换手机</b></div>
     <div class="form-card">
       <div class="help" style="font-size:12px;color:var(--sub);line-height:1.7">
-        旧手机点「备份」存成一个文件，新手机打开门牌点「恢复」，把这个文件选回来就行。</div>
+        旧手机点「备份」存成一个文件，新手机打开名片点「恢复」，把这个文件选回来就行。</div>
       <div style="display:flex;gap:10px;margin-top:14px">
         <button class="btn ghost sm" id="btn-backup" style="flex:1">备份</button>
         <button class="btn ghost sm" id="btn-restore" style="flex:1">恢复</button>
@@ -415,7 +417,7 @@
 <script src="core.js"></script>
 <script>
 /* =========================================================
-   门牌 · 本地商圈
+   名片 · 本地商圈
    三个页面：逛逛 / 发布 / 我的
    没有担保流程 —— 谁标注的就算谁的
    ========================================================= */
@@ -637,7 +639,7 @@ function boot(){
     if (qs.get("mode") === "map"){ ui.mode = "map"; markActive("[data-mode]", "mode"); }
     if (qs.get("pub") === "rider"){ ui.pub = "rider"; markActive("[data-pub]", "pub");
       $("form-shop").classList.add("hidden"); $("form-rider").classList.remove("hidden");
-      $("btn-save").textContent = "挂上运力牌"; }
+      $("btn-save").textContent = "发运力名片"; }
     if (qs.get("q")){ ui.q = qs.get("q"); $("q").value = ui.q; $("q-clear").classList.add("show"); }
 
     render(); syncNow();
@@ -761,7 +763,7 @@ function renderList(list){
       <div class="big">${hasQ ? "没找到匹配的" : isFav ? "还没有收藏" : "这条街还是空的"}</div>
       <div class="sm">${hasQ ? "换个词试试，比如店名或货品" :
         isFav ? "逛街时点卡片右上角的星标，就能收藏常去的店" :
-        "去「发布」挂一块门牌，邻居就能看到你店里有啥"}</div>
+        "去「发布」贴一张名片，邻居就能看到你店里有啥"}</div>
       ${hasQ ? '<button class="btn ghost sm" id="empty-clear" style="margin-top:18px;width:auto;padding:0 20px">清空搜索</button>' : ""}
     </div>`;
     const c = $("empty-clear");
@@ -865,7 +867,7 @@ function showDetail(raw){
          </div>
          ${s.imported
            ? `<p style="font-size:11.5px;color:var(--sub);line-height:1.75;margin-top:14px">
-                这块门牌是邻居捎来的。歇业、改内容、删除，只有发布者本人才做得动。</p>
+                这张名片是邻居捎来的。歇业、改内容、删除，只有发布者本人才做得动。</p>
               <button id="d-drop" style="display:block;margin:10px auto 0;background:none;border:0;
                 color:var(--sub);font-size:12px;text-decoration:underline;padding:6px 10px">
                 从我这台手机上移除</button>`
@@ -903,7 +905,7 @@ function renderMine(){
     return `<div class="list-item">
       <div class="grow" data-edit="${esc(s.id)}">
         <div class="t">${esc(s.name)}${closed?` <span class="badge off">${s._rider?"已收工":"已歇业"}</span>`:""}</div>
-        <div class="s">${s._rider?"运力牌":"商店"} · ${esc(s._rider?(s.vehicle||""):(s.address||""))||"—"}</div>
+        <div class="s">${s._rider?"运力名片":"商店"} · ${esc(s._rider?(s.vehicle||""):(s.address||""))||"—"}</div>
       </div>
       <button class="btn ${closed?"":"ghost"} sm" data-toggleopen="${esc(s.id)}" data-cur="${closed?0:1}"
         style="width:auto;padding:0 14px;flex:none">${closed?"开业":"歇业"}</button>
@@ -913,7 +915,7 @@ function renderMine(){
       </button>
     </div>`;
   }).join("")
-    : '<div class="empty" style="padding:26px 10px"><div class="sm">还没发布过。去「发布」挂一块门牌试试。</div></div>';
+    : '<div class="empty" style="padding:26px 10px"><div class="sm">还没发布过。去「发布」贴一张名片试试。</div></div>';
 
   $("fav-list").innerHTML = fav.length ? fav.map(s=>`
     <div class="list-item">
@@ -945,7 +947,7 @@ function renderMine(){
 
 /* 删除自己的标注：写一条 retract 事件，只有标注作者发才作数 */
 function deleteItem(id){
-  if (!confirm("删除后这块门牌会从所有邻居的手机上消失，确定吗？")) return;
+  if (!confirm("删除后这张名片会从所有邻居的手机上消失，确定吗？")) return;
   store.add("retract", id, {});
   if (favs.has(id)){ favs.delete(id); localStorage.setItem(K_FAV, JSON.stringify([...favs])); }
   render(); redrawAll(); syncNow();
@@ -1071,7 +1073,7 @@ document.querySelectorAll("[data-pub]").forEach(b=>b.onclick=()=>{
   document.querySelectorAll("[data-pub]").forEach(x=>x.classList.toggle("on", x===b));
   $("form-shop").classList.toggle("hidden", ui.pub!=="shop");
   $("form-rider").classList.toggle("hidden", ui.pub!=="rider");
-  $("btn-save").textContent = ui.pub==="shop" ? "挂上门牌" : "挂上运力牌";
+  $("btn-save").textContent = ui.pub==="shop" ? "贴出名片" : "发运力名片";
   requestAnimationFrame(fitMaps);
 });
 
@@ -1173,11 +1175,11 @@ function shareItem(s){
   const link = location.origin + location.pathname + "?add=" + code;
   let art;
   try { art = qrSvg(code, 290); }
-  catch(e){ art = '<p style="color:var(--sub);font-size:13px">这块门牌太大，码画不出来</p>'; }
+  catch(e){ art = '<p style="color:var(--sub);font-size:13px">这张名片太大，码画不出来</p>'; }
   $("sheet-body").innerHTML = `
     <h2>分享「${esc(s.name)}」</h2>
     <p style="font-size:13px;color:var(--sub);margin:6px 0 16px;line-height:1.7">
-      对方在门牌里点右上角<b>扫一扫</b>，对准这个码，就自动加到他手机里了。</p>
+      对方在名片里点右上角<b>扫一扫</b>，对准这个码，就自动加到他手机里了。</p>
     <div style="text-align:center;padding:2px 0 12px">
       <div style="display:inline-block;padding:12px;background:#fff;border-radius:12px;
         border:1px solid var(--line);line-height:0">${art}</div>
@@ -1324,9 +1326,9 @@ async function scanPhoto(file){
 function importShared(code){
   let p;
   try { p = JSON.parse(b64uDecode(code)); } catch(e){ toast("二维码内容无法识别"); return; }
-  if (!p || p.v !== 1 || !p.n){ toast("这块门牌的数据不完整"); return; }
+  if (!p || p.v !== 1 || !p.n){ toast("这张名片的数据不完整"); return; }
   const sid = p.id || ("n-" + Date.now().toString(36));
-  if (Object.keys(stateAll()).includes(sid)){ toast("这块门牌已经在你的手机里了"); return; }
+  if (Object.keys(stateAll()).includes(sid)){ toast("这张名片已经在你的手机里了"); return; }
 
   const fields = {
     kind: p.k === "r" ? "rider" : "shop",
@@ -1365,7 +1367,7 @@ $("btn-backup").onclick = ()=>{
   const blob = new Blob([JSON.stringify(data)], { type: "application/json" });
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
-  a.download = "门牌备份-" + DP.nowTs().replace(/[:T]/g, "-") + ".json";
+  a.download = "名片备份-" + DP.nowTs().replace(/[:T]/g, "-") + ".json";
   document.body.appendChild(a); a.click(); a.remove();
   setTimeout(()=>URL.revokeObjectURL(a.href), 4000);
   toast("备份文件已存好（" + store.events.size + " 条）");

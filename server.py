@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""门牌 · 本地商圈信息板 —— 技术原型 v0.1
+"""名片 · 本地商圈信息板 —— 技术原型 v0.1
 
 单文件服务端，纯标准库，零依赖。跑在任何有 Python 的机器上（旧安卓 Termux 亦可）。
 
@@ -335,7 +335,7 @@ class Handler(SimpleHTTPRequestHandler):
             shops = load_all("shops")
             riders = load_all("riders")
             return self.send_json({
-                "name": "门牌",
+                "name": "名片",
                 "version": "0.1",
                 "lan_ip": ip,
                 "port": port,
@@ -582,13 +582,13 @@ def main():
     httpd = ThreadingHTTPServer(("0.0.0.0", port), Handler)
     ip = lan_ip()
     print("=" * 52)
-    print("  门牌 · 本地商圈信息板  v0.1")
+    print("  名片 · 本地商圈信息板  v0.1")
     print("=" * 52)
     print(f"  本机访问   http://127.0.0.1:{port}")
     print(f"  手机访问   http://{ip}:{port}   (同一 WiFi)")
     print(f"  顾客入口   http://{ip}:{port}/index.html")
     print(f"  店主入口   http://{ip}:{port}/shop.html")
-    print(f"  电子门牌   http://{ip}:{port}/board.html?id=<店铺id>")
+    print(f"  电子名片   http://{ip}:{port}/board.html?id=<店铺id>")
     print(f"  骑手入口   http://{ip}:{port}/rider.html")
     print("=" * 52)
     print("  Ctrl+C 停止。数据在 data/ 目录，拷走即备份。")

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
-<title>门牌 · 谁有空捎货</title>
+<title>名片 · 谁有空捎货</title>
 <style>
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
   :root{--paper:#F7F6F2;--card:#FFF;--ink:#1F2937;--sub:#6B7280;--line:#E5E3DC;
@@ -45,7 +45,7 @@
 <body>
 <header>
   <b>谁有空捎货</b>
-  <p>只挂运力牌，不报价、不接单、不抽成。价钱你们自己谈。</p>
+  <p>只发运力名片，不报价、不接单、不抽成。价钱你们自己谈。</p>
 </header>
 
 <div class="wrap">
@@ -94,7 +94,7 @@ async function load(){
   const list = d.riders||[];
   const box = document.getElementById('list');
   if (!list.length){
-    box.innerHTML = '<div class="card"><p style="font-size:13px;color:#6B7280">今天还没有人挂运力牌。</p></div>';
+    box.innerHTML = '<div class="card"><p style="font-size:13px;color:#6B7280">今天还没有人发运力名片。</p></div>';
     return;
   }
   box.innerHTML = list.map(r=>`

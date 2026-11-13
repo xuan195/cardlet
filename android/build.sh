@@ -23,13 +23,17 @@ echo "==> 收集网页资源"
 rm -rf "$HERE/assets"
 mkdir -p "$HERE/assets"
 cp "$HERE/../app/index.html" "$HERE/../app/core.js" \
-   "$HERE/../app/qrcode.js" "$HERE/../app/jsQR.js" "$HERE/assets/"
+   "$HERE/../app/qrcode.js" "$HERE/../app/jsQR.js" "$HERE/../app/icon-192.png" "$HERE/assets/"
+
+echo "==> 编译资源（启动图标）"
+"$BT/aapt2.exe" compile --dir "$HERE/res" -o "$OUT/res.zip"
 
 echo "==> aapt2 link（清单 + 资源）"
 "$BT/aapt2.exe" link \
   -o "$OUT/base.apk" \
   -I "$JAR" \
   --manifest "$HERE/AndroidManifest.xml" \
+  -R "$OUT/res.zip" \
   -A "$HERE/assets" \
   --min-sdk-version 21 \
   --target-sdk-version 34 \

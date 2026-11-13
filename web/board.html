@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>门牌 · 电子招牌</title>
+<title>名片 · 电子招牌</title>
 <style>
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
   :root{--open:#0F6E56;--open2:#12805F;--closed:#4B4B45;--cream:#FBF9F1;--dim:#C9C6BA}
@@ -43,7 +43,7 @@
   <div class="state"><i class="pulse"></i><span id="state">营业中</span></div>
   <div class="clock" id="clock"></div>
 </div>
-<h1 id="name">门牌</h1>
+<h1 id="name">名片</h1>
 <div class="addr" id="addr"></div>
 <div class="body">
   <div class="label">今 日 有 货</div>
@@ -105,7 +105,7 @@ async function load(){
   }
 }
 
-// 电子门牌常亮：有 Wake Lock 就用，没有就靠系统设置
+// 电子名片常亮：有 Wake Lock 就用，没有就靠系统设置
 let wl=null;
 async function keepAwake(){
   try{ if ('wakeLock' in navigator) wl = await navigator.wakeLock.request('screen'); }catch(e){}

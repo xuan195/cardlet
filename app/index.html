@@ -51,7 +51,7 @@
 
   /* ---------- 工具条 ---------- */
   .toolbar{display:flex;align-items:center;gap:10px;padding:12px 16px 4px}
-  .chips-row{display:flex;gap:7px;flex:1;overflow-x:auto;scrollbar-width:none}
+  .chips-row{display:flex;gap:7px;flex:1;min-width:0;overflow-x:auto;scrollbar-width:none}
   .chips-row::-webkit-scrollbar{display:none}
   .chip-btn{flex:none;font-size:13px;padding:7px 13px;border-radius:99px;background:#fff;
         border:1px solid var(--line);color:var(--sub);white-space:nowrap;transition:.15s}
@@ -126,8 +126,9 @@
   .field input:focus,.field textarea:focus{outline:none;border-color:var(--teal);
         background:#fff;box-shadow:0 0 0 3px rgba(15,110,86,.1)}
   .field .help{font-size:11.5px;color:var(--sub);margin-top:6px;line-height:1.6}
-  .field2{display:flex;gap:10px}
+  .field2{display:flex;gap:10px;margin-top:14px}
   .field2>*{flex:1;min-width:0}
+  .field2 .field{margin-top:0}
   .btn{width:100%;height:48px;border-radius:12px;background:var(--teal);color:#fff;
         font-size:15.5px;font-weight:600;letter-spacing:.5px;transition:.15s;
         box-shadow:0 2px 8px rgba(15,110,86,.22)}
@@ -343,12 +344,15 @@
         标注会自动和同网段的其他手机交换，不需要手动操作。断网时照常可用，等下次连上自动补齐。</div>
     </div>
 
-    <div class="sec-label"><b>数据</b></div>
+    <div class="sec-label"><b>换手机</b></div>
     <div class="form-card">
       <div class="help" style="font-size:12px;color:var(--sub);line-height:1.7">
-        标注会自动和同网段的其他手机交换。想把某一块门牌发给不在场的邻居，
-        在它的详情里点「分享二维码」，让对方扫一下即可。</div>
-      <button class="btn danger sm" id="btn-reset" style="margin-top:14px">清空本地数据后重新同步</button>
+        旧手机点「备份」存成一个文件，新手机打开门牌点「恢复」，把这个文件选回来就行。</div>
+      <div style="display:flex;gap:10px;margin-top:14px">
+        <button class="btn ghost sm" id="btn-backup" style="flex:1">备份</button>
+        <button class="btn ghost sm" id="btn-restore" style="flex:1">恢复</button>
+      </div>
+      <input type="file" id="restore-input" accept=".json,application/json" style="display:none">
     </div>
   </div>
 </section>
@@ -802,21 +806,21 @@ function showDetail(raw){
       ${esc(s._rider ? [s.vehicle,s.capacity].filter(Boolean).join(" · ") : [s.address,s.hours].filter(Boolean).join(" · "))}</div>
     ${rows || '<div class="itemrow"><span style="color:var(--sub)">今天还没上货</span></div>'}
     ${s.note?`<div class="itemrow"><span style="color:var(--sub);font-size:13px">${esc(s.note)}</span></div>`:""}
-    ${s._mine?`<div class="act">
-      <button class="btn ${s.open===false?"":"ghost"} sm" id="d-toggle">${s.open===false?"恢复营业":"标记歇业"}</button>
-      <button class="btn danger sm" id="d-del">删除</button>
-    </div>`:""}
-    <div class="act">
-      <button class="btn ghost sm" id="d-share">分享二维码</button>
-      <button class="btn ghost sm" id="d-star">${on?"★ 已收藏":"☆ 收藏"}</button>
-      ${s.phone?`<a class="btn sm" href="tel:${esc(s.phone)}" style="display:flex;align-items:center;justify-content:center;text-decoration:none;height:38px;border-radius:10px;background:var(--teal);color:#fff;font-size:13.5px;font-weight:500">打电话</a>`:""}
-    </div>`;
-  $("d-star").onclick = ()=>{ toggleFav(s.id); closeSheet(); };
+    ${s._mine
+      ? `<div class="act">
+           <button class="btn ghost sm" id="d-share">分享</button>
+           <button class="btn ghost sm" id="d-toggle">${s.open===false?"开业":"歇业"}</button>
+           <button class="btn danger sm" id="d-del">删除</button>
+         </div>`
+      : `<div class="act">
+           <button class="btn ghost sm" id="d-share">分享</button>
+           <button class="btn ghost sm" id="d-star">${on?"★ 已收藏":"☆ 收藏"}</button>
+           ${s.phone?`<a class="btn sm" href="tel:${esc(s.phone)}" style="display:flex;align-items:center;justify-content:center;text-decoration:none;height:38px;border-radius:10px;background:var(--teal);color:#fff;font-size:13.5px;font-weight:500">打电话</a>`:""}
+         </div>`}`;
   $("d-share").onclick = ()=> shareItem(s);
-  const dt = $("d-toggle");
-  if (dt) dt.onclick = ()=>{ toggleOpen(s.id, s.open !== false); closeSheet(); };
-  const dd = $("d-del");
-  if (dd) dd.onclick = ()=>{ closeSheet(); deleteItem(s.id); };
+  const st = $("d-star"); if (st) st.onclick = ()=>{ toggleFav(s.id); closeSheet(); };
+  const dt = $("d-toggle"); if (dt) dt.onclick = ()=>{ toggleOpen(s.id, s.open !== false); closeSheet(); };
+  const dd = $("d-del"); if (dd) dd.onclick = ()=>{ closeSheet(); deleteItem(s.id); };
   openSheet();
 }
 
@@ -1165,11 +1169,32 @@ $("scan-input").onchange = async e => {
   try { await scanPhoto(f); } catch(err){ toast("图片读取失败"); }
 };
 
-$("btn-reset").onclick = ()=>{
-  if (!confirm("会清空这台设备上的标注缓存（密钥保留），然后重新从节点拉取。确定？")) return;
-  localStorage.removeItem(K_EV);
-  localStorage.removeItem(K_PUSH);
-  location.reload();
+/* 换手机：备份成一个文件，再在新手机上恢复 */
+$("btn-backup").onclick = ()=>{
+  const data = {
+    v: 1, exported: DP.nowTs(), device: identity.deviceId,
+    events: [...store.events.values()]
+  };
+  const blob = new Blob([JSON.stringify(data)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "门牌备份-" + DP.nowTs().replace(/[:T]/g, "-") + ".json";
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href), 4000);
+  toast("备份文件已存好（" + store.events.size + " 条）");
+};
+
+$("btn-restore").onclick = ()=> $("restore-input").click();
+$("restore-input").onchange = async e => {
+  const f = e.target.files && e.target.files[0];
+  e.target.value = "";
+  if (!f) return;
+  try{
+    const data = JSON.parse(await f.text());
+    const n = store.merge(data.events || []);
+    render(); redrawAll(); syncNow();
+    toast(n ? ("恢复了 " + n + " 条记录") : "没有新记录需要恢复");
+  }catch(err){ toast("备份文件读不出来"); }
 };
 
 document.addEventListener("visibilitychange", ()=>{

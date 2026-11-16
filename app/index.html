@@ -208,6 +208,21 @@
     justify-content:center;color:var(--sub);background:transparent;transition:.15s}
   .typex:active{background:#F2F0E9;color:#A32D2D}
 
+  /* ---------- 名片详情 ---------- */
+  .card-name{font-size:22px;font-weight:500;letter-spacing:.2px;line-height:1.3}
+  .card-org{font-size:15px;color:var(--sub);margin-top:5px}
+  .card-meta{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:12px;color:var(--sub);
+    flex-wrap:wrap}
+  .card-act{display:flex;gap:10px;margin-top:16px}
+  .card-act .btn{flex:1}
+  .prow{display:flex;justify-content:space-between;gap:14px;padding:12px 0;
+    border-bottom:1px solid var(--line);font-size:14px}
+  .prow:last-child{border-bottom:0}
+  .prow .nt{color:var(--sub);font-size:13px;text-align:right;word-break:break-all}
+  .prow.empty .nt{color:#B8B3A8}
+  .card-sec{margin-top:18px}
+  .card-sec > h4{font-size:12.5px;font-weight:400;color:var(--sub);margin-bottom:4px}
+
   /* ---------- 编辑页顶栏 / 开关 / 下拉 ---------- */
   .editbar{display:flex;align-items:center;gap:10px;padding:10px 16px 4px}
   .editbar button{width:34px;height:34px;border-radius:10px;background:#fff;border:1px solid var(--line);
@@ -360,6 +375,24 @@
   </div>
 </section>
 
+<!-- ============ 名片详情 ============ -->
+<section id="page-card" class="hidden">
+  <div class="editbar">
+    <button id="card-back" aria-label="返回">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M15 5l-7 7 7 7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <b id="card-crumb">名片</b>
+  </div>
+  <div class="wrap">
+    <div id="card-body"></div>
+    <div class="mapwrap" id="card-map-wrap" style="margin-top:16px">
+      <canvas id="card-map"></canvas>
+      <div class="attrib">© OpenStreetMap</div>
+    </div>
+  </div>
+</section>
+
 <!-- ============ 设置 ============ -->
 <section id="page-settings" class="hidden">
   <div class="wrap">
@@ -458,7 +491,10 @@ const K_SYNC = "dp.autosync";
 let autosync = localStorage.getItem(K_SYNC) === "1";
 
 let identity = null, store = null, rootId = null;
-let ui = { page: "browse", filter: "all", mode: "list", q: "", editing: null };
+let ui = { page: "browse", filter: "all", mode: "list", q: "",
+           editing: null, cardFrom: "browse", cardId: null, editFrom: "mine" };
+let subDepth = 0;
+function pushSub(){ try{ history.pushState({ sub: 1 }, ""); subDepth++; }catch(e){} }
 let favs = new Set();
 let pickedShop = null;
 let geo = { lat: 29.84, lon: 112.90, z: 16 };
@@ -572,7 +608,7 @@ function createMap(canvas, opts){
   return map;
 }
 
-let browseMap = null, shopMap = null;
+let browseMap = null, shopMap = null, cardMap = null;
 let pendingDraw = false;
 function redrawAll(){
   if (pendingDraw) return;
@@ -655,6 +691,8 @@ function boot(){
       onTap: (m, ll) => { pickedShop = { lat:+ll.lat.toFixed(6), lon:+ll.lon.toFixed(6) };
         $("f-pos").textContent = "✓ 已选"; $("hint-shop").classList.add("hide"); m.draw(); }
     });
+    cardMap = createMap($("card-map"), { height: 190, centerDot: false });
+
     browseMap.bind(); shopMap.bind();
     fitMaps();
 
@@ -864,6 +902,7 @@ function cardHtml(s){
 function toggleOpen(id, currentlyOpen){
   store.add("fact", id, { fields: { open: !currentlyOpen } });
   render(); redrawAll(); syncNow();
+  if (ui.page === "card"){ const st = stateAll()[id]; if (st) showDetail(st); }
   toast(!currentlyOpen ? "已恢复营业" : "已标记歇业");
 }
 
@@ -873,54 +912,88 @@ function toggleFav(id){
   render();
 }
 
-function showDetail(raw){
+function showDetail(raw, silent){
   if (!raw) return;
   const s = { ...raw, _mine: isMine(raw) };
   const tc = typeColor(s.type);
-  const kv = (k, v) => v ? `<div class="itemrow"><span>${k}</span><span class="nt">${esc(v)}</span></div>` : "";
-  const items = (s.items||[]).map(i=>
-    `<div class="itemrow"><span>${esc(i.name)}</span><span class="nt">${esc(i.note||"")}</span></div>`).join("");
   const on = favs.has(s.id);
-  const tel = s.phone
-    ? `<a class="btn sm" href="tel:${esc(s.phone)}" style="display:flex;align-items:center;justify-content:center;text-decoration:none;height:38px;border-radius:10px;background:var(--teal);color:#fff;font-size:13.5px;font-weight:500">打电话</a>`
-    : "";
+  const big = s.person || s.name || "（无名）";
+  const sub = (s.person && s.name) ? s.name : "";
 
-  $("sheet-body").innerHTML = `
-    <h2>${esc(cardTitle(s))}</h2>
-    <div class="sub" style="font-size:13px;color:var(--sub);margin-bottom:12px">
-      ${s.person && s.name ? esc(s.person) + " · " : ""}${s.type?`<span style="color:${tc}">${esc(s.type)}</span> · `:""}第 ${s.ver||1} 版</div>
-    ${kv("地址", s.address)}
-    ${kv("营业", s.hours)}
-    ${kv("电话", s.phone)}
-    ${items || '<div class="itemrow"><span style="color:var(--sub)">还没写提供什么</span></div>'}
-    ${s.note?`<div class="itemrow"><span style="color:var(--sub);font-size:13px">${esc(s.note)}</span></div>`:""}
-    ${s._mine
-      ? `<div class="act">
-           <button class="btn ghost sm" id="d-share">分享</button>
-           <button class="btn ghost sm" id="d-edit">编辑</button>
-           <button class="btn ghost sm" id="d-toggle">${s.open===false?"开业":"歇业"}</button>
-         </div>
-         <button id="d-del" style="display:block;margin:10px auto 0;background:none;border:0;
-           color:var(--danger,#B4232A);font-size:12px;text-decoration:underline;padding:6px 10px">删除这张名片</button>`
-      : `<div class="act">
-           <button class="btn ghost sm" id="d-share">分享</button>
-           <button class="btn ghost sm" id="d-star">${on?"★ 已收藏":"☆ 收藏"}</button>
-           ${tel}
-         </div>
-         ${s.imported
-           ? `<p style="font-size:11.5px;color:var(--sub);line-height:1.75;margin-top:14px">
-                这张名片是别人给你的。歇业、改内容、删除，只有名片主人才做得动。</p>
-              <button id="d-drop" style="display:block;margin:10px auto 0;background:none;border:0;
-                color:var(--sub);font-size:12px;text-decoration:underline;padding:6px 10px">
-                从我这台手机上移除</button>`
-           : ""}`}`;
+  const row = (k, v) => v
+    ? `<div class="prow"><span>${k}</span><span class="nt">${esc(v)}</span></div>`
+    : `<div class="prow empty"><span>${k}</span><span class="nt">未填写</span></div>`;
+
+  const items = s.items || [];
+  const itemsHtml = items.length
+    ? items.map(i=>`<div class="prow"><span>${esc(i.name)}</span><span class="nt">${esc(i.note||"")}</span></div>`).join("")
+    : `<div class="prow empty"><span>还没写</span><span class="nt">未填写</span></div>`;
+
+  const acts = s._mine
+    ? `<div class="card-act">
+         <button class="btn ghost sm" id="d-share">分享</button>
+         <button class="btn ghost sm" id="d-edit">编辑</button>
+         <button class="btn ghost sm" id="d-toggle">${s.open===false?"开业":"歇业"}</button>
+       </div>
+       <button id="d-del" style="display:block;margin:12px auto 0;background:none;border:0;
+         color:#B4232A;font-size:12px;text-decoration:underline;padding:6px 10px">删除这张名片</button>`
+    : `<div class="card-act">
+         ${s.phone?`<a class="btn sm" href="tel:${esc(s.phone)}" style="display:flex;align-items:center;justify-content:center;text-decoration:none;height:38px;border-radius:10px;background:var(--teal);color:#fff;font-size:13.5px;font-weight:500">打电话</a>`:""}
+         <button class="btn ghost sm" id="d-star">${on?"★ 已收藏":"☆ 收藏"}</button>
+         <button class="btn ghost sm" id="d-share">分享</button>
+       </div>
+       ${s.imported
+         ? `<p style="font-size:11.5px;color:var(--sub);line-height:1.75;margin-top:12px;text-align:center">
+              这张名片是别人给你的，改内容只有名片主人才做得动。</p>
+            <button id="d-drop" style="display:block;margin:6px auto 0;background:none;border:0;
+              color:var(--sub);font-size:12px;text-decoration:underline;padding:6px 10px">
+              从我这台手机上移除</button>`
+         : ""}`;
+
+  $("card-crumb").textContent = s._mine ? "我的名片" : "收到的名片";
+  $("card-body").innerHTML = `
+    <div class="card-name">${esc(big)}</div>
+    ${sub?`<div class="card-org">${esc(sub)}</div>`:""}
+    <div class="card-meta">
+      ${s.type?`<span class="badge" style="background:${tc}1f;color:${tc}">${esc(s.type)}</span>`:""}
+      <span>第 ${s.ver||1} 版</span>
+      ${s.open===false?'<span class="badge off">已歇业</span>':""}
+      ${s.imported?'<span class="badge ci">收到</span>':'<span class="badge mine">我的</span>'}
+    </div>
+    ${acts}
+    <div class="card-sec">
+      <h4>联系方式</h4>
+      ${row("电话", s.phone)}
+      ${row("地址", s.address)}
+      ${row("营业时间", s.hours)}
+    </div>
+    <div class="card-sec">
+      <h4>提供什么</h4>
+      ${itemsHtml}
+    </div>
+    ${s.note?`<div class="card-sec"><h4>一句话</h4>
+      <div style="font-size:14px;line-height:1.75">${esc(s.note)}</div></div>`:""}`;
+
+  // 地图：有坐标才显示，没坐标就整块藏起来
+  const hasPos = !!(s.lat && s.lon);
+  $("card-map-wrap").classList.toggle("hidden", !hasPos);
+  if (hasPos && cardMap){
+    cardMap.pin = { lat: s.lat, lon: s.lon };
+    cardMap.centerOn(s.lat, s.lon);
+    setTimeout(()=>{ cardMap.fit(); cardMap.draw(); }, 40);
+  }
+
   $("d-share").onclick = ()=> shareItem(s);
-  const st = $("d-star"); if (st) st.onclick = ()=>{ toggleFav(s.id); closeSheet(); };
-  const ed = $("d-edit"); if (ed) ed.onclick = ()=>{ closeSheet(); editCard(s.id); };
-  const dt = $("d-toggle"); if (dt) dt.onclick = ()=>{ toggleOpen(s.id, s.open !== false); closeSheet(); };
-  const dd = $("d-del"); if (dd) dd.onclick = ()=>{ closeSheet(); deleteItem(s.id); };
-  const dro = $("d-drop"); if (dro) dro.onclick = ()=>{ closeSheet(); dropCopy(s.id); };
-  openSheet();
+  const st = $("d-star"); if (st) st.onclick = ()=>{ toggleFav(s.id); showDetail(stateAll()[s.id]); };
+  const ed = $("d-edit"); if (ed) ed.onclick = ()=> editCard(s.id);
+  const dt = $("d-toggle"); if (dt) dt.onclick = ()=> toggleOpen(s.id, s.open !== false);
+  const dd = $("d-del"); if (dd) dd.onclick = ()=> deleteItem(s.id);
+  const dro = $("d-drop"); if (dro) dro.onclick = ()=> dropCopy(s.id);
+
+  ui.cardId = s.id;
+  if (ui.page !== "card" && ui.page !== "edit") ui.cardFrom = ui.page;
+  go("card");
+  if (!silent) pushSub();
 }
 
 /* 把邻居捎来的那副本从本机抹掉。只删本地事件，不影响原发布者。 */
@@ -932,6 +1005,7 @@ function dropCopy(id){
   store.save();
   if (favs.has(id)){ favs.delete(id); localStorage.setItem(K_FAV, JSON.stringify([...favs])); }
   render(); redrawAll();
+  if (ui.page === "card") go(ui.cardFrom || "browse");
   toast("已从本机移除");
 }
 
@@ -998,6 +1072,7 @@ function deleteItem(id){
   store.add("retract", id, {});
   if (favs.has(id)){ favs.delete(id); localStorage.setItem(K_FAV, JSON.stringify([...favs])); }
   render(); redrawAll(); syncNow();
+  if (ui.page === "card") go(ui.cardFrom || "browse");
   toast("已删除");
 }
 
@@ -1083,7 +1158,9 @@ function editCard(id){
     $("f-pos").textContent = ""; $("hint-shop").classList.remove("hide");
   }
   shopMap.draw();
+  ui.editFrom = (ui.page === "card") ? "card" : "mine";
   go("edit");
+  pushSub();
   setTimeout(fitMaps, 40);
 }
 
@@ -1176,15 +1253,16 @@ async function syncNow(){
 /* ---------------- 交互 ---------------- */
 function go(page){
   ui.page = page;
-  ["browse","mine","edit","settings"].forEach(p=>{
+  ["browse","mine","edit","settings","card"].forEach(p=>{
     const el = $("page-"+p);
     if (el) el.classList.toggle("hidden", p!==page);
   });
   // 编辑页挂在「我的名片」下面，导航仍高亮那一栏
-  const navKey = page === "edit" ? "mine" : page;
+  const navKey = page === "edit" ? "mine" : (page === "card" ? "" : page);
   document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on", b.dataset.page===navKey));
   $("searchbox").classList.toggle("hidden", page!=="browse");
   if (page==="edit") requestAnimationFrame(fitMaps);
+  if (page==="card" && cardMap) requestAnimationFrame(()=>{ cardMap.fit(); cardMap.draw(); });
   if (page==="mysettings"||page==="settings") renderSettings();
   if (page==="mine") renderMine();
   if (page==="browse" && ui.mode==="map") requestAnimationFrame(()=>{browseMap.fit();browseMap.draw();});
@@ -1394,7 +1472,15 @@ function closeScanner(){
   if (scanPushed){ scanPushed = false; try { history.back(); } catch(e){ } }
 }
 window.addEventListener("popstate", ()=>{
-  if (scanPushed){ scanPushed = false; tearDownScanner(); }
+  if (scanPushed){ scanPushed = false; tearDownScanner(); return; }
+  if (subDepth > 0) subDepth--;
+  if (ui.page === "card"){
+    go(ui.cardFrom || "browse");
+  } else if (ui.page === "edit"){
+    ui.editing = null;
+    if (ui.editFrom === "card" && ui.cardId && stateAll()[ui.cardId]) showDetail(stateAll()[ui.cardId], true);
+    else go("mine");
+  }
 });
 $("scanclose").onclick = closeScanner;
 
@@ -1529,7 +1615,13 @@ document.addEventListener("visibilitychange", ()=>{
 
 /* ---------------- 新界面的按钮 ---------------- */
 $("btn-new-card").onclick = ()=> newCard();
-$("edit-back").onclick = ()=>{ ui.editing = null; go("mine"); };
+$("edit-back").onclick = ()=>{
+  if (subDepth > 0){ history.back(); return; }
+  ui.editing = null;
+  if (ui.editFrom === "card" && ui.cardId && stateAll()[ui.cardId]) showDetail(stateAll()[ui.cardId], true);
+  else go("mine");
+};
+$("card-back").onclick = ()=>{ if (subDepth > 0) history.back(); else go(ui.cardFrom || "browse"); };
 
 $("sw-sync").onclick = ()=>{
   autosync = !autosync;

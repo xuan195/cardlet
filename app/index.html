@@ -421,6 +421,7 @@
 
     <div class="sec-label"><b>这台设备</b></div>
     <div class="form-card">
+      <div class="kv"><span>局域网地址</span><span class="v" id="netaddr">—</span></div>
       <div class="kv"><span>设备指纹</span><span class="v" id="devid">—</span></div>
       <div class="kv"><span>本地记录</span><span class="v" id="evcount">0 条</span></div>
       <div class="kv"><span>连线状态</span><span class="v" id="nodeinfo">—</span></div>
@@ -1046,6 +1047,17 @@ function renderMine(){
 /* ---------------- 渲染：设置 ---------------- */
 function renderSettings(){
   $("sw-sync").classList.toggle("on", autosync);
+  if ($("netaddr")){
+    let txt = "只在本机";
+    if (window.Android && Android.info){
+      try{
+        const i = JSON.parse(Android.info());
+        txt = i.ip ? (i.ip + " : " + i.port) : "没有连上局域网";
+        if (i.ip && !autosync) txt += "（同步未开）";
+      }catch(e){ }
+    }
+    $("netaddr").textContent = txt;
+  }
   $("sw-sync").setAttribute("aria-checked", autosync ? "true" : "false");
   $("type-list").innerHTML = types.map((t,i)=>`
     <div class="kv" style="align-items:center;border-bottom:1px solid var(--line);padding:10px 0">
@@ -1512,6 +1524,12 @@ window.addEventListener("popstate", ()=>{
   }
 });
 $("scanclose").onclick = closeScanner;
+
+$("syncpill").onclick = ()=>{
+  if (!autosync){ toast("自动同步没开，去设置里打开"); return; }
+  toast("正在找同一 WiFi 下的手机…");
+  syncNow();
+};
 
 /* 摄像头不可用时的退路 */
 function showPhotoFallback(reason){

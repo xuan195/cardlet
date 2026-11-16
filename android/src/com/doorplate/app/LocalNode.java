@@ -1,5 +1,11 @@
 package com.doorplate.app;
 
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.LinkAddress;
+import android.net.LinkProperties;
+import android.net.Network;
+import android.net.NetworkCapabilities;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
@@ -15,10 +21,12 @@ import java.io.OutputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.HttpURLConnection;
+import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
 import java.net.ServerSocket;
+import java.net.SocketTimeoutException;
 import java.net.Socket;
 import java.net.URL;
 import java.util.ArrayList;
@@ -74,7 +82,7 @@ public class LocalNode {
     }
 
     public void start() {
-        myIp = findMyIp();
+        myIp = findWifiIp();
         Log.i(TAG, "本地节点启动 ip=" + myIp);
         Thread t1 = new Thread(new Runnable() {
             @Override public void run() { serveLoop(); }
@@ -210,30 +218,47 @@ public class LocalNode {
     private void scan() {
         DatagramSocket s = null;
         try {
-            s = new DatagramSocket();
+            // 关键：把发现用的 socket 绑到 WiFi 网卡上。
+            // 手机同时开着移动数据时，默认路由常常不是 WiFi，
+            // 不绑的话广播会从蜂窝网卡出去，同网的另一台永远收不到。
+            InetAddress bind = null;
+            if (myIp.length() > 0) {
+                try { bind = InetAddress.getByName(myIp); } catch (Exception e) { }
+            }
+            s = (bind != null) ? new DatagramSocket(new InetSocketAddress(bind, 0))
+                               : new DatagramSocket();
             s.setBroadcast(true);
-            String me = PROBE + "{\"port\":" + tcpPort + "}";
-            byte[] msg = me.getBytes("UTF-8");
+            byte[] msg = (PROBE + "{\"port\":" + tcpPort + "}").getBytes("UTF-8");
 
-            Set<String> targets = new HashSet<String>();
-            targets.add("255.255.255.255");
-            if (myIp.contains(".")) {
-                targets.add(myIp.substring(0, myIp.lastIndexOf('.')) + ".255");
-            }
-            for (String t : targets) {
-                try {
-                    s.send(new DatagramPacket(msg, msg.length, InetAddress.getByName(t), UDP_PORT));
-                } catch (Exception e) { }
+            // 1) 广播：最快的一条路
+            for (String t : broadcastTargets()) {
+                try { s.send(new DatagramPacket(msg, msg.length, InetAddress.getByName(t), UDP_PORT)); }
+                catch (Exception e) { }
             }
 
-            s.setSoTimeout(350);
-            long end = System.currentTimeMillis() + 1200;
+            // 2) 逐台单播：路由器把广播丢掉时的兜底。
+            //    /24 一共 254 个地址，254 个小包，开销可以忽略。
+            String prefix = netPrefix();
+            if (prefix != null) {
+                for (int i = 1; i <= 254; i++) {
+                    String ip = prefix + "." + i;
+                    if (ip.equals(myIp)) continue;
+                    try {
+                        s.send(new DatagramPacket(msg, msg.length, InetAddress.getByName(ip), UDP_PORT));
+                    } catch (Exception e) { }
+                }
+            }
+
+            s.setSoTimeout(300);
+            long end = System.currentTimeMillis() + 1600;
             while (System.currentTimeMillis() < end) {
                 byte[] buf = new byte[512];
                 DatagramPacket p = new DatagramPacket(buf, buf.length);
                 try {
                     s.receive(p);
-                } catch (Exception te) {
+                } catch (SocketTimeoutException te) {
+                    continue;
+                } catch (Exception e) {
                     break;
                 }
                 onPacket(new String(p.getData(), 0, p.getLength(), "UTF-8"),
@@ -246,9 +271,27 @@ public class LocalNode {
         }
     }
 
+    private List<String> broadcastTargets() {
+        List<String> out = new ArrayList<String>();
+        out.add("255.255.255.255");
+        String prefix = netPrefix();
+        if (prefix != null) out.add(prefix + ".255");
+        return out;
+    }
+
+    /** 本机所在的 /24 前缀，比如 192.168.1 */
+    private String netPrefix() {
+        if (myIp == null || myIp.lastIndexOf('.') <= 0) return null;
+        return myIp.substring(0, myIp.lastIndexOf('.'));
+    }
+
     private void udpLoop() {
         try {
-            DatagramSocket s = new DatagramSocket(UDP_PORT);
+            // 端口复用：应用刚重启时旧 socket 可能还没释放，不复用会绑定失败，
+            // 那样别的手机就永远问不到我
+            DatagramSocket s = new DatagramSocket(null);
+            s.setReuseAddress(true);
+            s.bind(new InetSocketAddress(UDP_PORT));
             byte[] buf = new byte[512];
             while (running) {
                 DatagramPacket p = new DatagramPacket(buf, buf.length);
@@ -456,7 +499,39 @@ public class LocalNode {
         os.flush();
     }
 
-    private static String findMyIp() {
+    /**
+     * 拿当前 WiFi 的 IPv4 地址。
+     * 不能用「遍历网卡挑一个私网地址」—— 国内运营商的移动数据也常发 10.x，
+     * 挑错了广播就会从蜂窝网卡出去，同网手机永远收不到。
+     */
+    private String findWifiIp() {
+        try {
+            Context ctx = web.getContext();
+            ConnectivityManager cm =
+                    (ConnectivityManager) ctx.getSystemService(Context.CONNECTIVITY_SERVICE);
+            if (cm != null) {
+                for (Network n : cm.getAllNetworks()) {
+                    NetworkCapabilities cap = cm.getNetworkCapabilities(n);
+                    if (cap == null || !cap.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) continue;
+                    LinkProperties lp = cm.getLinkProperties(n);
+                    if (lp == null) continue;
+                    for (LinkAddress la : lp.getLinkAddresses()) {
+                        InetAddress a = la.getAddress();
+                        if (a instanceof Inet4Address && !a.isLoopbackAddress()) {
+                            return a.getHostAddress();
+                        }
+                    }
+                }
+            }
+        } catch (Throwable t) {
+            Log.w(TAG, "取 WiFi 地址失败: " + t);
+        }
+        return findAnyIp();
+    }
+
+    /** 兜底：真拿不到 WiFi 网卡时，挑一个私网地址 */
+    private static String findAnyIp() {
+        String fallback = "";
         try {
             Enumeration<NetworkInterface> ifs = NetworkInterface.getNetworkInterfaces();
             while (ifs != null && ifs.hasMoreElements()) {
@@ -466,10 +541,12 @@ public class LocalNode {
                 while (addrs.hasMoreElements()) {
                     InetAddress a = addrs.nextElement();
                     String ip = a.getHostAddress();
-                    if (ip != null && ip.indexOf(':') < 0 && !ip.startsWith("127.")) return ip;
+                    if (ip == null || ip.indexOf(':') >= 0 || ip.startsWith("127.")) continue;
+                    if (ip.startsWith("192.168.")) return ip;          // 家用路由器最常见
+                    if (fallback.length() == 0) fallback = ip;
                 }
             }
         } catch (Exception e) { }
-        return "";
+        return fallback;
     }
 }

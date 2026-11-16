@@ -1562,7 +1562,8 @@ async function scanPhoto(file){
 function importShared(code){
   let p;
   try { p = JSON.parse(b64uDecode(code)); } catch(e){ toast("二维码内容无法识别"); return; }
-  if (!p || !p.n || !p.pe){ toast("这张名片的数据不完整"); return; }
+  // 姓名和店名填一个就成立，两个都空才算坏码
+  if (!p || (!p.n && !p.pe)){ toast("这张名片是空的，没有姓名也没有店名"); return; }
 
   const sid = p.id || ("n-" + Date.now().toString(36));
   const fields = {

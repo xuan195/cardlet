@@ -7,7 +7,7 @@
 <meta name="description" content="一个装在自己手机里的数字名片钱包。零服务器、零抽成，不标价、不评价、不承载交易。">
 <meta name="theme-color" content="#F6F3EA">
 <meta property="og:title" content="名片 Cardlet · 名片只递给你认识的人，不给平台">
-<meta property="og:description" content="每台手机就是一个完整钱包。名片靠面对面扫码递过去，同一个 WiFi 下自动比对版本 —— 全程没有服务器。">
+<meta property="og:description" content="每台手机就是一个钱包。名片靠面对面扫码传过去，连着同一个 WiFi 时自动比对版本。没有服务器，也没有账号。">
 <meta property="og:type" content="website">
 <link rel="icon" href="assets/icon-192.png">
 <style>
@@ -77,7 +77,7 @@
   h1 em{font-style:normal;color:var(--seal)}
   .lead{
     margin-top:26px;font-size:16px;line-height:1.95;color:var(--ink-2);
-    max-width:32em;
+    max-width:32em;text-wrap:balance;
   }
   .lead b{font-weight:500;color:var(--ink)}
   .actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:34px}
@@ -116,7 +116,7 @@
     font-weight:600;line-height:1.5;letter-spacing:.01em;
     max-width:20em;
   }
-  .sub-lead{margin-top:18px;color:var(--ink-2);max-width:44em;line-height:1.9}
+  .sub-lead{margin-top:18px;color:var(--ink-2);max-width:44em;line-height:1.9;text-wrap:pretty}
   .sub-lead b{font-weight:500;color:var(--ink)}
 
   /* ---------------- 三条红线 ---------------- */
@@ -133,12 +133,6 @@
     letter-spacing:.04em;margin-bottom:12px;
   }
   .fence p{font-size:14px;color:var(--ink-2);line-height:1.85}
-  .creed{
-    margin-top:56px;padding-top:34px;border-top:1px solid var(--line);
-    font-family:var(--serif);font-size:clamp(17px,2.2vw,21px);
-    line-height:1.8;color:var(--ink);letter-spacing:.02em;
-  }
-  .creed span{color:var(--seal)}
 
   /* ---------------- 边界 ---------------- */
   .bounds{margin-top:44px;border-top:1px solid var(--line)}
@@ -258,8 +252,8 @@
   <div class="wrap bar">
     <div class="brand"><b>名片</b><span>Cardlet</span></div>
     <nav>
-      <a href="#redlines">红线</a>
-      <a href="#how">怎么用</a>
+      <a href="#redlines">不做什么</a>
+      <a href="#how">用法</a>
       <a href="#sync">同步</a>
       <a href="#download">下载</a>
       <a class="out" href="https://github.com/xuan195/cardlet" target="_blank" rel="noopener">GitHub</a>
@@ -275,9 +269,9 @@
       <span class="kicker">本地优先 · 零服务器 · MIT</span>
       <h1>名片只递给你<br>认识的人，<em>不给平台。</em></h1>
       <p class="lead">
-        每台手机就是一个完整钱包。名片靠面对面扫码递过去，
-        同一个 WiFi 下自动比对版本、补齐过期的 —— <b>全程没有服务器</b>。
-        不是因为省钱，而是因为没有服务器，才不需要把名片交给谁保管。
+        每台手机就是一个钱包。名片靠面对面扫码传过去，
+        连着同一个 WiFi 时，两台手机会自动比对版本、把过期的补齐。
+        没有服务器，也没有账号。
       </p>
       <div class="actions">
         <a class="btn btn-main" href="assets/cardlet.apk" download>
@@ -298,56 +292,53 @@
 
 <section id="redlines">
   <div class="wrap">
-    <span class="kicker">三条红线</span>
-    <h2>没有这三个字段，<br>就没有变坏的权力位。</h2>
+    <span class="kicker">不做什么</span>
+    <h2>不标价，不评价，<br>也不碰钱。</h2>
     <p class="sub-lead">
-      一个工具要变成平台，需要三个支点：把价格拿来比、把口碑变成评分、把钱经一手。
-      这三样在这里都不是"约定不做"，而是<b>数据结构里根本没有</b>。
+      这三样在应用里没有对应的字段，不是藏在设置里关掉了。
+      所以一张名片上能看到的就是：姓名、店名、地址、电话、营业时间、提供什么。
     </p>
 
     <div class="fence">
       <div>
         <span class="num">01</span>
         <h3>不标价格</h3>
-        <p>没有价格数据可卖，就没有比价、竞价排名和价格战。名片上写"我提供什么"，不写多少钱。</p>
+        <p>名片上写"提供什么"和营业时间，不写多少钱。没有价格可比，也就没有比价和竞价排名。</p>
       </div>
       <div>
         <span class="num">02</span>
         <h3>不做评价</h3>
-        <p>没有评分体系，就没有刷单、没有差评师勒索、没有人能靠限流收你的钱。</p>
+        <p>没有星级，没有打分，也没有评价留言。想了解一家店，去店里看，或者问认识的人。</p>
       </div>
       <div>
         <span class="num">03</span>
         <h3>不承载交易</h3>
-        <p>钱不经过工具，就没有佣金、没有资金沉淀，也不构成"平台经营者"。</p>
+        <p>没有下单、支付和担保流程。买卖在应用之外完成，钱不经过这里。</p>
       </div>
     </div>
-
-    <p class="creed">所以屠龙少年变恶龙需要的那个位置，<span>压根不存在。</span></p>
   </div>
 </section>
 
 <section>
   <div class="wrap">
     <span class="kicker">边界</span>
-    <h2>你没扫过的名片，<br>永远不会出现在你手机里。</h2>
+    <h2>没扫过的名片，<br>不会出现在你手机里。</h2>
     <p class="sub-lead">
-      这不是一条产品策略，是钱包这个东西本身的规矩 —— 你钱包里有谁的卡片，
-      只取决于谁把卡片递给了你。
+      名片只能从一台手机传到另一台手机。没有搜索框，没有推荐，也没有"附近的人"。
     </p>
 
     <dl class="bounds">
       <div class="bound">
         <dt><s>不是</s> 平台目录</dt>
-        <dd>没有全城搜索，没有黄页式收录。名片只能从一个人手里，递到另一个人手里。</dd>
+        <dd>没有全城搜索，也没有黄页式收录。只有你扫过的那几张。</dd>
       </div>
       <div class="bound">
         <dt><s>不是</s> 点评网站</dt>
-        <dd>没有星级、没有评价、没有"附近评分最高"。只有店主自己写的"我提供什么"。</dd>
+        <dd>没有星级和评价，只有店主自己写的"提供什么"。</dd>
       </div>
       <div class="bound">
         <dt><s>不是</s> 抽成中介</dt>
-        <dd>不碰钱，不做担保，不留手续费的口子。生意谈成了，那是你和对方的事。</dd>
+        <dd>不碰钱，没有佣金和手续费。</dd>
       </div>
     </dl>
   </div>
@@ -355,24 +346,24 @@
 
 <section id="how">
   <div class="wrap">
-    <span class="kicker">怎么用</span>
-    <h2>递名片这件事，<br>本来就不该经过中间人。</h2>
+    <span class="kicker">用法</span>
+    <h2>做一张，<br>让对方扫一下。</h2>
 
     <div class="steps">
       <div class="step">
         <span class="num">第一步</span>
         <h3>做一张自己的</h3>
-        <p>姓名和店名<b>填一个就成立</b>。一个人可以有好几张 —— 店一张、跑腿一张、临时帮工一张。</p>
+        <p>姓名和店名<b>填一个就成立</b>。一个人可以有好几张：店一张，跑腿一张。</p>
       </div>
       <div class="step">
         <span class="num">第二步</span>
         <h3>让对方扫</h3>
-        <p>二维码里<b>只有名片数据</b>，不含任何服务器地址。换台手机、换个网络，码照样有效。</p>
+        <p>二维码里<b>只有名片数据</b>，不含服务器地址。换台手机、换个网络，码照样有效。</p>
       </div>
       <div class="step">
         <span class="num">第三步</span>
         <h3>见面再扫一次</h3>
-        <p>你改完内容，版本号 +1。对方再扫到同一张时<b>只刷新这一张</b>，不会多出陌生人来。</p>
+        <p>改完内容，版本号加一。对方再扫到同一张时<b>只刷新这一张</b>，不会带进别的名片。</p>
       </div>
     </div>
 
@@ -383,7 +374,7 @@
       </figure>
       <figure class="plate">
         <img src="assets/screenshot-map.png" alt="地图模式：名片按位置落在地图上" width="500" height="700" loading="lazy">
-        <figcaption>地图模式 · 名片落在它该在的位置上，底图攒在手机里，断网也能看</figcaption>
+        <figcaption>地图模式 · 名片按地址落在地图上，底图存在手机里，断网也能看</figcaption>
       </figure>
     </div>
   </div>
@@ -392,33 +383,32 @@
 <section id="sync">
   <div class="wrap">
     <span class="kicker">同步</span>
-    <h2>没有服务器，<br>靠三条物理通道同步。</h2>
+    <h2>数据只走<br>这三条通道。</h2>
     <p class="sub-lead">
-      两台手机之间的数据只能通过这几条路过去。这不是技术选型，是物理限制 ——
-      没有共享网络，就没有通道。
+      没有服务器，两台手机之间就这三种传法。
     </p>
 
     <div class="lanes">
       <div class="lane">
         <h3>二维码</h3>
-        <p>一方屏幕、一方摄像头。码里只有名片数据，扫完直接进钱包。</p>
+        <p>一方屏幕、一方摄像头，扫完直接进钱包。</p>
         <span class="tag now">主力 · 只要一方配合</span>
       </div>
       <div class="lane">
         <h3>同一个 WiFi</h3>
-        <p>两台手机连同一个路由器、都开着应用，自动发现并只交换双方都持有的名片。</p>
+        <p>两台手机连同一个路由器、都开着应用，自动发现，只交换双方都有的名片。</p>
         <span class="tag now">自动 · 需双方都开着</span>
       </div>
       <div class="lane">
         <h3>转发一张图片</h3>
-        <p>把二维码截图发到微信，收到的人扫一下就收进手机。零基础设施的"广播"。</p>
-        <span class="tag">最实用 · 不需要见面</span>
+        <p>把二维码截图发到微信，收到的人扫一下就能收进手机。</p>
+        <span class="tag">不用见面</span>
       </div>
     </div>
 
     <p class="side-note">
-      自动同步默认是关的 —— 它要求两台手机连同一个 WiFi 且都开着应用，
-      一直开着只会白耗电。想刷新某个人的名片，还是见面扫一下最省事。
+      自动同步默认是关的。它要求两台手机连同一个 WiFi 且都开着应用，一直开着耗电。
+      想刷新某张名片，见面扫一下更快。
     </p>
   </div>
 </section>
@@ -426,7 +416,7 @@
 <section id="download">
   <div class="wrap">
     <span class="kicker">下载</span>
-    <h2>装在自己手机上，<br>而不是装在谁的服务器上。</h2>
+    <h2>下载 Android 安装包。</h2>
 
     <div class="dl">
       <div>
@@ -436,7 +426,7 @@
           <div>系统<b>Android 5.0+</b></div>
           <div>更新<b>2026-11-16</b></div>
         </div>
-        <p class="fine" style="margin-top:16px">不用注册，不要手机号，装上就能用。</p>
+        <p class="fine" style="margin-top:16px">不用注册，也不要手机号。</p>
       </div>
       <a class="btn btn-main" href="assets/cardlet.apk" download>
         <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -469,7 +459,7 @@
     <p class="side-note" style="margin-top:26px">
       不想装也可以先<a href="app/index.html?demo=1" style="color:var(--seal);border-bottom:1px solid var(--seal)">在浏览器里试用</a>。
       网页版预置了四张示例名片，名片夹、编辑、二维码都能用；
-      地图底图和自动同步需要服务端配合，网页版里会降级或不生效 —— 完整效果还是装在手机上。
+      地图底图和自动同步需要服务端配合，网页版里会降级或不生效。完整效果还是装在手机上。
     </p>
   </div>
 </section>
@@ -480,7 +470,7 @@
     <h2>源码在 GitHub，MIT 许可。</h2>
     <p class="sub-lead">
       服务端是纯 Python 标准库，一行依赖都不用装；界面是一个 HTML 加几个 JS 文件。
-      引擎还有一份 Python 参考实现，和 JS 版本双向互验签名 —— 两边算出来的结果必须一致。
+      引擎还有一份 Python 参考实现，和 JS 版本双向互验签名，两边算出来的结果必须一致。
     </p>
 
     <div class="stats">

@@ -19,3 +19,6 @@ data/events.jsonl
 android/build/
 android/assets/
 *.idsig
+
+# 已发布应用的内部标记文件
+*.genie

@@ -10,7 +10,12 @@
 
 它不是发布平台：**你没扫过的名片，永远不会出现在你手机里。**
 
-<img src="docs/screenshot-home.png" width="360" alt="名片夹：按类型筛选，我发布的和收来的一眼分开">
+<p align="center">
+  <img src="docs/screenshot-home.png" width="330" alt="名片夹：按类型筛选，我发布的还是收来的一眼分开">
+  <img src="docs/screenshot-map.png" width="330" alt="地图模式：名片按位置落在地图上">
+</p>
+
+<p align="center"><sub>列表 / 地图双模式 · 底图 © OpenStreetMap contributors</sub></p>
 
 ## 三条红线（代码里也写着）
 

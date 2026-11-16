@@ -162,7 +162,7 @@ def main():
     st = merged.state(NOW)["haoyouduo"]
     check("恶意货品已作废", "三无产品" not in [i["name"] for i in st.get("items", [])])
 
-    print("[11] 时间衰减：只有「今天有什么」会过期，营业开关不过期")
+    print("[11] 没有时间衰减：名片信息写一次就一直算数")
     old = mk(passer2)
     old.add("anchor", "laochen", {"fields": {"name": "老陈五金"}}, ts=ts(60 * 24 * 9))
     old.add("fact", "laochen", {"fields": {
@@ -171,7 +171,7 @@ def main():
         ts=ts(60 * 24 * 8))
     st_old = reduce_events(list(old.events.values()), old.pubkeys,
                            now=NOW + timedelta(days=1), root_id=root.device_id)
-    check("8 天前的货品已过期", st_old["laochen"].get("items") is None,
+    check("8 天前的货品依然有效", len(st_old["laochen"].get("items") or []) == 1,
           st_old["laochen"].get("items"))
     check("歇业状态不会自己失效", st_old["laochen"].get("open") is False,
           st_old["laochen"].get("open"))

@@ -1,14 +1,21 @@
-# 本文件位于 doorplate/ 下，路径相对本目录
+# 本文件位于 cardlet/ 下，路径相对本目录
 .shots/
 __pycache__/
 *.pyc
+.workbuddy/
+
+# 私钥：签名密钥一律本地生成，绝不入库
 p2p/_keys/
+android/debug.keystore
+
+# 互验中间产物
 app/_interop/
 
 # 运行时数据
 data/tiles/
 data/events.jsonl
 
-# APK 构建中间产物（doorplate.apk 本体仍入库）
+# APK 构建中间产物（cardlet.apk 本体仍入库）
 android/build/
 android/assets/
+*.idsig

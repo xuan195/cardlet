@@ -19,7 +19,9 @@
   const TEMPORAL_FIELDS = new Set([]);
   // 结构性字段：店名、地址、营业开关…… 写一次就一直算数，直到有人改
   const STRUCTURAL_FIELDS = new Set(["kind", "name", "address", "phone", "hours",
-    "lat", "lon", "tags", "vehicle", "capacity", "areas", "window", "open", "imported",
+    // 注意：imported 是本机私有标记（这张名片是我收来的），绝不进事件字段，
+    // 否则会跟着同步跑到别人手机上，把主人自己的名片判成「收来的」
+    "lat", "lon", "tags", "vehicle", "capacity", "areas", "window", "open",
     // 名片模型：姓名、类型、版本号
     "person", "type", "ver",
     // 原来挂在时间字段里的两项，名片模型下它们是长期信息

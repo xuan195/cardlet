@@ -44,7 +44,7 @@ TEMPORAL_FIELDS = set()   # 名片没有会过期的字段
 # 结构性字段（店名、地址、营业开关、运力牌内容）：写一次一直算数，直到有人改
 STRUCTURAL_FIELDS = {"kind", "name", "address", "phone", "hours",
                      "lat", "lon", "tags", "vehicle", "capacity", "areas", "window",
-                     "open", "imported",
+                     "open",
                      # 名片模型：姓名、类型、版本号
                      "person", "type", "ver",
                      # 原来挂在时间字段里的两项，名片模型下它们是长期信息

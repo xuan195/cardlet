@@ -489,6 +489,13 @@ const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({"&":"&amp;
 
 const K_ID = "dp_identity", K_EV = "dp_events", K_PUSH = "dp_last_push", K_FAV = "dp_favs";
 const K_SYNC = "dp.autosync";
+/* 这张名片是我收来的、不是我自己建的 —— 纯本机状态。
+   它绝对不能写进事件字段，否则会跟着同步跑到别人手机上。 */
+const K_IMPORTED = "dp.imported";
+let importedIds = new Set((()=>{
+  try { return JSON.parse(localStorage.getItem(K_IMPORTED) || "[]"); } catch(e){ return []; }
+})());
+function saveImported(){ localStorage.setItem(K_IMPORTED, JSON.stringify([...importedIds])); }
 // 自动同步默认关闭：它要求两台手机连同一个 WiFi 且都开着名片，一直开着只会白耗电
 let autosync = localStorage.getItem(K_SYNC) === "1";
 
@@ -703,6 +710,7 @@ function boot(){
     if (qs.get("mode") === "map"){ ui.mode = "map"; markActive("[data-mode]", "mode"); }
     if (qs.get("q")){ ui.q = qs.get("q"); $("q").value = ui.q; $("q-clear").classList.add("show"); }
 
+    migrateImported();
     refreshChips();
     renderSettings();
     renderTypeSelect();
@@ -730,23 +738,27 @@ function markActive(sel, key){
 function seedDemo(){
   const base = { lat: geo.lat, lon: geo.lon };
   const rows = [
-    { person:"王建国", name:"好又多超市", type:"日用百货", address:"解放路 12 号", phone:"13800000001",
-      hours:"07:00-22:00", ver:3, imported:1,
+    { imp:1, person:"王建国", name:"好又多超市", type:"日用百货", address:"解放路 12 号", phone:"13800000001",
+      hours:"07:00-22:00", ver:3,
       items:[{name:"本地鸡蛋",note:"今早到货"},{name:"大米 25kg",note:""},{name:"酱油",note:"两种牌子"}] },
-    { person:"李桂芳", name:"桂芳理发", type:"理发", address:"解放路 18 号", phone:"13800000002",
-      hours:"09:00-19:00，周一休", ver:1, imported:1,
+    { imp:1, person:"李桂芳", name:"桂芳理发", type:"理发", address:"解放路 18 号", phone:"13800000002",
+      hours:"09:00-19:00，周一休", ver:1,
       items:[{name:"剪发",note:"老人小孩便宜"},{name:"烫发",note:""}] },
-    { person:"老赵", name:"赵记早点", type:"餐饮", address:"建设街 3 号", phone:"13800000003",
-      hours:"05:30-10:00", ver:7, imported:1,
+    { imp:1, person:"老赵", name:"赵记早点", type:"餐饮", address:"建设街 3 号", phone:"13800000003",
+      hours:"05:30-10:00", ver:7,
       items:[{name:"热干面",note:"六点出锅"},{name:"豆皮",note:"卖完为止"}] },
     { person:"陈师傅", name:"", type:"跑腿", address:"", phone:"13800000004",
-      hours:"", ver:2, imported:0,
+      hours:"", ver:2,
       items:[{name:"三轮车",note:"能带 200 斤"},{name:"下午两点到六点有空",note:""}] }
   ];
   rows.forEach((r,i)=>{
+    const mine = r.imp === 1 ? false : true;
     const fields = { ...r, lat: base.lat + (i-2)*0.0012, lon: base.lon + (i-2)*0.0009, open:true };
+    delete fields.imp;
     store.add("anchor", "demo-" + i, { fields });
+    if (!mine){ importedIds.add("demo-" + i); }
   });
+  saveImported();
   render(); redrawAll();
 }
 
@@ -777,17 +789,20 @@ function isRider(s){ return s.kind === "rider" || !!s.vehicle || !!s.capacity; }
 function isShop(s){ return !isRider(s); }
 
 function anchorAuthor(shopId){
+  let best = null;
   for (const e of store.events.values()){
-    if (e.target === shopId && e.type === "anchor") return e.author;
+    if (e.target !== shopId || e.type !== "anchor") continue;
+    if (!best || DP.byCand(e, best) < 0) best = e;
   }
-  return null;
+  return best ? best.author : null;
 }
 /* 这块钱到底是我写的、还是邻居捎来的？
    扫别人的码进来时，那条 anchor 是用我自己密钥重签的（技术上绕不开），
    所以只看作者会把别人的店算成我的 —— 必须再用 imported 挡一道。
    捎来的店我没有处置权：不能歇业、不能删。 */
 function isMine(s){
-  if (!s || s.imported) return false;
+  if (!s) return false;
+  if (importedIds.has(s.id)) return false;      // 收来的，永远是收来的
   return anchorAuthor(s.id) === identity.deviceId;
 }
 
@@ -894,7 +909,7 @@ function cardHtml(s){
     <h3>${esc(cardTitle(s))}
       ${s.type?`<span class="badge" style="background:${tc}1f;color:${tc}">${esc(s.type)}</span>`:""}
       ${closed?'<span class="badge off">已歇业</span>':""}
-      ${s.imported?'<span class="badge ci">收来的</span>':(s._mine?'<span class="badge mine">我的</span>':"")}
+      ${s._mine?'<span class="badge mine">我的</span>':'<span class="badge ci">收来的</span>'}
     </h3>
     <div class="sub">${esc(sub)||"&nbsp;"}</div>
     ${tags.length?`<div class="tagline">${tags.join("")}</div>`:""}
@@ -945,7 +960,7 @@ function showDetail(raw, silent){
          <button class="btn ghost sm" id="d-star">${on?"★ 已收藏":"☆ 收藏"}</button>
          <button class="btn ghost sm" id="d-share">分享</button>
        </div>
-       ${s.imported
+       ${!s._mine
          ? `<p style="font-size:11.5px;color:var(--sub);line-height:1.75;margin-top:12px;text-align:center">
               这张名片是别人给你的，改内容只有名片主人才做得动。</p>
             <button id="d-drop" style="display:block;margin:6px auto 0;background:none;border:0;
@@ -961,7 +976,7 @@ function showDetail(raw, silent){
       ${s.type?`<span class="badge" style="background:${tc}1f;color:${tc}">${esc(s.type)}</span>`:""}
       <span>第 ${s.ver||1} 版</span>
       ${s.open===false?'<span class="badge off">已歇业</span>':""}
-      ${s.imported?'<span class="badge ci">收到</span>':'<span class="badge mine">我的</span>'}
+      ${s._mine?'<span class="badge mine">我的</span>':'<span class="badge ci">收到</span>'}
     </div>
     ${acts}
     <div class="card-sec">
@@ -1006,6 +1021,7 @@ function dropCopy(id){
   for (const e of [...store.events.values()]) if (e.target === id) gone.push(e.id);
   for (const eid of gone) store.events.delete(eid);
   store.save();
+  if (importedIds.delete(id)) saveImported();
   if (favs.has(id)){ favs.delete(id); localStorage.setItem(K_FAV, JSON.stringify([...favs])); }
   render(); redrawAll();
   if (ui.page === "card") go(ui.cardFrom || "browse");
@@ -1084,6 +1100,7 @@ function renderSettings(){
 function deleteItem(id){
   if (!confirm("删除后这张名片会从所有邻居的手机上消失，确定吗？")) return;
   store.add("retract", id, {});
+  if (importedIds.delete(id)) saveImported();
   if (favs.has(id)){ favs.delete(id); localStorage.setItem(K_FAV, JSON.stringify([...favs])); }
   render(); redrawAll(); syncNow();
   if (ui.page === "card") go(ui.cardFrom || "browse");
@@ -1217,7 +1234,21 @@ function parseItems(text){
   }).filter(x=>x.name);
 }
 
-/* ---------------- 同步 ---------------- */
+/* 老数据的迁移：以前 imported 写在名片字段里，现在改成纯本机标记。
+   只看「我自己那条 anchor 的 payload 里有没有写过 imported」——
+   自己建的名片从来没有这个字段，被同步污染的那些也不会误判。 */
+function migrateImported(){
+  if (localStorage.getItem("dp.migrated.imp") === "1") return;
+  let n = 0;
+  for (const e of store.events.values()){
+    if (e.type !== "anchor" || e.author !== identity.deviceId) continue;
+    const f = (e.payload && e.payload.fields) || {};
+    if (f.imported && !importedIds.has(e.target)){ importedIds.add(e.target); n++; }
+  }
+  if (n) saveImported();
+  localStorage.setItem("dp.migrated.imp", "1");
+}
+
 /* ---------------- 同步 ----------------
    只交换「双方都持有」的名片：请求方带上自己有的名片 id，
    对方只收交集内的事件，也只回交集内的。陌生名片永远进不来。 */
@@ -1605,15 +1636,15 @@ function importShared(code){
       showDetail(cur);
       return;
     }
-    store.add("fact", sid, { fields: { ...fields, imported: 1 } });
+    store.add("fact", sid, { fields });
     render(); redrawAll(); syncNow();
     toast("已更新到第 " + theirs + " 版：" + p.n);
     setTimeout(()=>{ const st = stateAll()[sid]; if (st) showDetail(st); }, 90);
     return;
   }
 
-  fields.imported = 1;
   store.add("anchor", sid, { fields });
+  importedIds.add(sid); saveImported();          // 本机记住：这张是收来的
   render(); redrawAll(); syncNow();
   toast("收下了：" + p.n);
   setTimeout(()=>{ const st = stateAll()[sid]; if (st) showDetail(st); }, 90);

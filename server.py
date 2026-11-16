@@ -117,7 +117,7 @@ def fetch_upstream_tile(z: str, x: str, y: str):
             _last_fetch[0] = time.time()
             try:
                 req = urllib.request.Request(
-                    url, headers={"User-Agent": "doorplate/0.1 (local trial)"})
+                    url, headers={"User-Agent": "cardlet/0.1 (local trial)"})
                 with urllib.request.urlopen(req, timeout=12) as r:
                     data = r.read()
                 return data if len(data) > 100 else TILE_EMPTY
@@ -212,7 +212,7 @@ class Handler(SimpleHTTPRequestHandler):
         rel = urlparse(path).path.lstrip("/") or "index.html"
         if rel == "":
             rel = "index.html"
-        # /app/ 指向 doorplate/app（本地优先的离线应用）
+        # /app/ 指向 cardlet/app（本地优先的离线应用）
         if rel.startswith("app/"):
             return str(ROOT / rel)
         return str(WEB / rel)

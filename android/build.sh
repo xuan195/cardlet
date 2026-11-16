@@ -3,7 +3,7 @@
 #
 #   bash android/build.sh
 #
-# 产物：android/build/doorplate.apk
+# 产物：cardlet.apk
 set -e
 
 HERE="$(cd "$(dirname "$0")" && pwd)"
@@ -69,9 +69,9 @@ fi
 java -jar "$BT/lib/apksigner.jar" sign \
   --ks "$KS" --ks-pass pass:doorplate --key-pass pass:doorplate \
   --ks-key-alias doorplate \
-  --out "$HERE/../doorplate.apk" "$OUT/aligned.apk"
+  --out "$HERE/../cardlet.apk" "$OUT/aligned.apk"
 
 echo "==> 校验"
-java -jar "$BT/lib/apksigner.jar" verify --print-certs "$HERE/../doorplate.apk" | head -4
-ls -lh "$HERE/../doorplate.apk"
-echo "完成：doorplate/doorplate.apk"
+java -jar "$BT/lib/apksigner.jar" verify --print-certs "$HERE/../cardlet.apk" | head -4
+ls -lh "$HERE/../cardlet.apk"
+echo "完成：cardlet/cardlet.apk"

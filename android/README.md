@@ -9,7 +9,7 @@
 bash android/build.sh
 ```
 
-产物：`doorplate/doorplate.apk`（约 105 KB）
+产物：`cardlet/cardlet.apk`（约 105 KB）
 
 脚本直接用 SDK 里的 `aapt2 / d8 / zipalign / apksigner`，**不经过 Gradle**，
 所以不需要下载几百 MB 的构建依赖。会用到：
@@ -23,7 +23,7 @@ bash android/build.sh
 
 ## 安装
 
-1. 把 `doorplate.apk` 发到手机（微信文件传输助手、数据线都行）
+1. 把 `cardlet.apk` 发到手机（微信文件传输助手、数据线都行）
 2. 点开安装，系统提示"未知来源"时选择允许
 3. 桌面出现「名片」图标，点开即用
 

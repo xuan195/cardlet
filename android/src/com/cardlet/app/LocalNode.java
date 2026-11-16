@@ -1,4 +1,4 @@
-package com.doorplate.app;
+package com.cardlet.app;
 
 import android.content.Context;
 import android.net.ConnectivityManager;

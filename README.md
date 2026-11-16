@@ -22,7 +22,7 @@
 ## 快速开始
 
 ```bash
-cd doorplate
+cd cardlet
 python server.py            # 默认 8000 端口，纯标准库，无需安装任何依赖
 ```
 
@@ -55,8 +55,8 @@ python server.py            # 默认 8000 端口，纯标准库，无需安装�
 pkg update && pkg upgrade -y
 pkg install python -y
 
-# 2. 把 doorplate 目录拷进手机，然后
-cd ~/doorplate
+# 2. 把 cardlet 目录拷进手机，然后
+cd ~/cardlet
 termux-wake-lock
 python server.py 8000
 ```
@@ -108,7 +108,7 @@ curl -s http://127.0.0.1:8000/api/sync/export      # 整包导出，谁都能拷
 ## 目录结构
 
 ```
-doorplate/
+cardlet/
 ├── server.py            # 单文件服务端（纯标准库）
 ├── data/                # 唯一真相源，拷走即备份
 │   ├── shops/*.json     # 一家店一个文件

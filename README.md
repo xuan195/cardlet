@@ -2,7 +2,7 @@
 
 > 名片只递给你认识的人，不给平台。
 
-[MIT 许可](LICENSE) · 纯标准库零依赖 · 不联网也能跑
+[项目主页](https://wbapp-9a7xpyiixluucbdpwlcz6i.app.workbuddy.host/?sharecode=NNFXYE3XID) · [直接下载 APK](https://wbapp-9a7xpyiixluucbdpwlcz6i.app.workbuddy.host/assets/cardlet.apk) · [MIT 许可](LICENSE) · 纯标准库零依赖 · 不联网也能跑
 
 一个**零抽成、零服务器、零平台**的数字名片钱包。每台手机就是一个独立钱包，
 名片靠面对面扫码交换；开启自动同步后，同一个 WiFi 下的两台手机只会

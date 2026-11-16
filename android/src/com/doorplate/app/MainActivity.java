@@ -27,6 +27,7 @@ public class MainActivity extends Activity {
     private static final int REQ_CAM = 1002;
     private WebView web;
     private ValueCallback<Uri[]> fileCallback;
+    private LocalNode node;
 
     @Override
     protected void onCreate(Bundle saved) {
@@ -90,6 +91,11 @@ public class MainActivity extends Activity {
             }
         });
 
+        // 本地节点：自己当服务器，同 WiFi 的手机之间直接对账，不经过任何中心
+        node = new LocalNode(web);
+        web.addJavascriptInterface(node, "Android");
+        node.start();
+
         setContentView(web);
         web.loadUrl("file:///android_asset/index.html");
     }
@@ -113,6 +119,12 @@ public class MainActivity extends Activity {
             return;
         }
         super.onActivityResult(req, res, data);
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (node != null) node.stop();
+        super.onDestroy();
     }
 
     @Override

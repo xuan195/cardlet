@@ -14,12 +14,16 @@
   const DOMAIN = "doorplate/v1|";
   const KEY_BITS = 1024;
   // 会随时间失效的字段（"今天有什么"类）：7 天没人确认就当过期
-  const TEMPORAL_FIELDS = new Set(["items", "note"]);
+  // 名片模型里没有「会过期」的字段：一张名片上的提供什么、一句话，
+  // 都是主人写的长期信息，不该七天后自己消失。
+  const TEMPORAL_FIELDS = new Set([]);
   // 结构性字段：店名、地址、营业开关…… 写一次就一直算数，直到有人改
   const STRUCTURAL_FIELDS = new Set(["kind", "name", "address", "phone", "hours",
     "lat", "lon", "tags", "vehicle", "capacity", "areas", "window", "open", "imported",
     // 名片模型：姓名、类型、版本号
-    "person", "type", "ver"]);
+    "person", "type", "ver",
+    // 原来挂在时间字段里的两项，名片模型下它们是长期信息
+    "items", "note"]);
   const DEFAULT_TTL_DAYS = 7;
   const ANCHOR_TTL_DAYS = 30;
   const TRUST_L1_AUTHORS = 3;
@@ -441,9 +445,7 @@
       state.claim_pending = pending;
     } else if (authors.size >= TRUST_L1_AUTHORS && !Object.keys(conflicts).length) {
       trust = "L1"; reason = authors.size + " 台设备各自标注且一致";
-    } else if (anchors.length && (now - parseTs(anchors[0].ts)) > ANCHOR_TTL_DAYS * 86400000) {
-      trust = "L0"; reason = "路人标注超过 30 天无人认领，已淡出"; state.faded = true;
-    } else { trust = "L0"; reason = "仅路人标注，未经店主确认"; }
+    } else { trust = "L0"; reason = "还没有人和主人核对过"; }
 
     state.trust = trust;
     state.trust_reason = reason;

@@ -473,6 +473,34 @@ class Handler(SimpleHTTPRequestHandler):
                 write_json(RIDERS / f"{rid}.json", record)
             return self.send_json({"ok": True, "rider": record, "token": record["token"]})
 
+        # ---- 交集交换：只同步双方都持有的名片 ----
+        if path == "/api/p2p/exchange":
+            ids = set(x for x in (data.get("ids") or []) if isinstance(x, str) and x)
+            incoming = data.get("events") or []
+            with _ev_lock:
+                mine = set(e.get("target") for e in EVENTS.values()
+                           if e.get("type") == "anchor" and e.get("target"))
+                fresh = []
+                for ev in incoming:
+                    eid = ev.get("id")
+                    if not eid or eid in EVENTS:
+                        continue
+                    # 我没有的名片，一律不收 —— 这是「只同步双方都存在的」那条约束
+                    if ev.get("target") not in mine:
+                        continue
+                    if not verify_event(ev):
+                        continue
+                    EVENTS[eid] = ev
+                    fresh.append(ev)
+                if fresh:
+                    EVENTS_FILE.parent.mkdir(parents=True, exist_ok=True)
+                    with EVENTS_FILE.open("a", encoding="utf-8") as f:
+                        for ev in fresh:
+                            f.write(json.dumps(ev, ensure_ascii=False) + "\n")
+                back = [e for e in EVENTS.values()
+                        if e.get("target") in ids and e.get("target") in mine]
+            return self.send_json({"events": back, "accepted": len(fresh), "returned": len(back)})
+
         # ---- 事件节点：手机来推 ----
         if path == "/api/p2p/push":
             incoming = data.get("events") or []

@@ -40,16 +40,18 @@ from pathlib import Path
 from identity import Identity, canonical, sha256_hex, device_id_of
 
 # 会随时间失效的字段（"今天有什么"类）
-TEMPORAL_FIELDS = {"items", "note"}
+TEMPORAL_FIELDS = set()   # 名片没有会过期的字段
 # 结构性字段（店名、地址、营业开关、运力牌内容）：写一次一直算数，直到有人改
 STRUCTURAL_FIELDS = {"kind", "name", "address", "phone", "hours",
                      "lat", "lon", "tags", "vehicle", "capacity", "areas", "window",
                      "open", "imported",
                      # 名片模型：姓名、类型、版本号
-                     "person", "type", "ver"}
+                     "person", "type", "ver",
+                     # 原来挂在时间字段里的两项，名片模型下它们是长期信息
+                     "items", "note"}
 
 DEFAULT_TTL_DAYS = 7          # 营业状态/货品 7 天没人确认就过期
-ANCHOR_TTL_DAYS = 30          # 路人标注 30 天没人认领就淡出
+ANCHOR_TTL_DAYS = 30          # 名片不按时间作废，保留常量供以后使用
 TRUST_L1_AUTHORS = 3          # ≥3 个不同设备说同一件事 → L1
 SPONSOR_NEEDED = 2            # 普通店主作保需要 2 位；发起人（根）1 位即可
 
@@ -321,11 +323,8 @@ def _reduce_one(shop_id: str, group: list, now: datetime, rc: dict) -> dict:
         state["claim_pending"] = pending
     elif len(authors) >= TRUST_L1_AUTHORS and not conflicts:
         trust, reason = "L1", f"{len(authors)} 台设备各自标注且一致"
-    elif anchors and (now - _parse_ts(anchors[0]["ts"])) > timedelta(days=ANCHOR_TTL_DAYS):
-        trust, reason = "L0", "路人标注超过 30 天无人认领，已淡出"
-        state["faded"] = True
     else:
-        trust, reason = "L0", "仅路人标注，未经店主确认"
+        trust, reason = "L0", "还没有人和主人核对过"
 
     state.update({
         "trust": trust,

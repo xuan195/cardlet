@@ -403,7 +403,8 @@
         <button class="switch" id="sw-sync" role="switch" aria-checked="false"></button>
       </div>
       <div class="help" style="font-size:11.5px;color:var(--sub);margin-top:12px;line-height:1.75">
-        关闭时，名片只能靠扫二维码更新。开启后，两台手机连同一个路由器、都开着名片，就会自动比对版本、只补过期的内容。<br>
+        关闭时，名片只能靠扫二维码更新。开启后，同一个 WiFi 下开着名片的手机之间会自动对账，
+        只补过期的内容。<br>
         只同步双方都已经持有的名片 —— 不会凭空多出陌生的名片。</div>
     </div>
 
@@ -714,7 +715,8 @@ function boot(){
       history.replaceState(null, "", location.pathname);   // 刷新时别重复导入
       setTimeout(()=>importShared(code), 320);
     }
-    setInterval(()=>{ if (document.visibilityState === "visible") syncNow(); }, 6000);
+    // 自动同步开着时，每 10 秒找一次同网的名片；关掉就什么都不做
+    setInterval(()=>{ if (autosync && document.visibilityState === "visible") syncNow(); }, 10000);
     if (navigator.geolocation) tryGeolocate();
   }, 30);
 }
@@ -1204,49 +1206,76 @@ function parseItems(text){
 }
 
 /* ---------------- 同步 ---------------- */
-function latestTs(){
-  let m="";
-  for (const e of store.events.values()) if (e.ts>m) m=e.ts;
-  return m;
+/* ---------------- 同步 ----------------
+   只交换「双方都持有」的名片：请求方带上自己有的名片 id，
+   对方只收交集内的事件，也只回交集内的。陌生名片永远进不来。 */
+function syncPayload(){
+  const ids = Object.keys(stateAll());
+  const idSet = new Set(ids);
+  const events = [...store.events.values()].filter(e => idSet.has(e.target));
+  return { ids, events };
 }
-function shiftMin(ts,min){ const d=new Date(ts); d.setMinutes(d.getMinutes()-min); return DP.nowTs(d); }
+
+function applySyncEvents(list){
+  if (!list || !list.length) return false;
+  return store.merge(list) > 0;
+}
+
+/* 把自己现在的名片镜像交给原生层，供同网的其他手机来取 */
+function lanPublish(){
+  if (!window.Android || !Android.publish) return;
+  try { Android.publish(JSON.stringify(syncPayload())); } catch(e){ }
+}
+
+/* 原生层同步完会回调这里 */
+window.__lanResult = function(json){
+  let d = null;
+  try { d = JSON.parse(json); } catch(e){ return; }
+  const pill = $("syncpill");
+  const n = d.peers || 0;
+  if (n > 0){ pill.className = "pill ok"; pill.textContent = "附近 " + n + " 台"; }
+  else { pill.className = "pill"; pill.textContent = "没找到手机"; }
+  const info = $("nodeinfo");
+  if (info) info.textContent = n > 0
+    ? ("和附近 " + n + " 台手机对上了")
+    : "同一个 WiFi 下没找到别的名片";
+  if (applySyncEvents(d.events)){
+    render(); redrawAll();
+    toast("已从上门的手机更新了名片");
+  }
+  lanPublish();
+};
 
 async function syncNow(){
   if (!store) return;
   const pill = $("syncpill");
-  // 自动同步没开就什么都不做：名片只在手动扫码时才动
-  if (!autosync){
+  if (!autosync){ pill.className = "pill"; pill.textContent = "手动"; return; }
+
+  // APK：发现和交换都在原生层做，JS 不碰网络，也就没有跨域问题
+  if (window.Android && Android.syncAsync){
+    lanPublish();
     pill.className = "pill";
-    pill.textContent = "手动";
+    pill.textContent = "找手机…";
+    try { Android.syncAsync(); } catch(e){ }
     return;
   }
+
+  // 网页版 / 有服务端的场景：走同一个协议
   try{
-    const since = latestTs();
-    const url = "/api/p2p/pull" + (since ? "?since=" + encodeURIComponent(shiftMin(since,5)) : "");
-    const d1 = await (await fetch(url,{cache:"no-store"})).json();
-    let changed = false;
-    if (d1.events && d1.events.length){
-      if (store.merge(d1.events)) changed = true;
-    }
-    const last = localStorage.getItem(K_PUSH) || "";
-    const batch = [...store.events.values()].filter(e=>!last || e.ts >= shiftMin(last,10));
-    let total = d1.total;
-    if (batch.length){
-      const d2 = await (await fetch("/api/p2p/push",{
-        method:"POST", headers:{"Content-Type":"application/json"},
-        body: JSON.stringify({ events: batch })
-      })).json();
-      total = d2.total;
-      localStorage.setItem(K_PUSH, batch.reduce((m,e)=>e.ts>m?e.ts:m, last));
-    }
+    const r = await fetch("/api/p2p/exchange", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(syncPayload())
+    });
+    const d = await r.json();
+    const changed = applySyncEvents(d.events);
     pill.className = "pill ok";
     pill.textContent = "已连线";
-    $("nodeinfo").textContent = "已连上，自动同步中";
+    if ($("nodeinfo")) $("nodeinfo").textContent = "已连上，自动同步中";
     if (changed){ render(); redrawAll(); }
-  } catch(e){
+  }catch(e){
     pill.className = "pill err";
     pill.textContent = "离线";
-    $("nodeinfo").textContent = "未连上，数据只在本机";
+    if ($("nodeinfo")) $("nodeinfo").textContent = "未连上，数据只在本机";
   }
 }
 
